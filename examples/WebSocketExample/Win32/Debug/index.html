@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>WebSocket demo</title>
+<script type="text/javascript">
+var ws;
+function log(s) {
+ document.getElementById("log").innerHTML += s + "\n";
+}
+function sendMessage(s) {
+  log(">> " + s);
+  ws.send(s);
+}
+function send() {
+  sendMessage(document.getElementById("text").value);
+}
+function init() {
+ ws = new WebSocket("ws://127.0.0.1");
+ ws.onopen = function() {
+   log("WebSocket opened");
+   sendMessage("Hello ?");
+ }
+ ws.onclose = function() {
+   log("WebSocket closed");
+ }
+ ws.onmessage = function(e) {
+   log("<< " + e.data);
+ }
+}
+</script>
+</head>
+<body onLoad="init()">
+<input type="text" id="text"> <button onclick="send()">Send</button>
+<pre id="log"></pre>
+</body>
+</html>

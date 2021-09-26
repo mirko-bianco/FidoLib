@@ -1,0 +1,76 @@
+(*
+ * Copyright 2021 Mirko Bianco (email: writetomirko@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *)
+
+unit Fido.Collections;
+
+interface
+
+uses
+  System.TypInfo,
+  System.SysUtils,
+  System.Generics.Defaults,
+  Spring.Collections,
+  Spring.Collections.Lists,
+  Fido.DesignPatterns.Observable.Intf,
+  Fido.Collections.DeepObservableList.Intf,
+  Fido.Collections.DeepObservableList;
+
+type
+  TCollections = class
+  public
+    class function GetListOfDeepObservable<T: IObservable>: IDeepObservableList<T>; overload; static;
+    class function GetListOfDeepObservable<T: IObservable>(const Collection: IEnumerable<T>): IDeepObservableList<T>; overload; static;
+    class function GetListOfDeepObservable<T: IObservable>(const Values: array of T): IDeepObservableList<T>; overload; static;
+    class function GetListOfDeepObservable<T: IObservable>(const Comparer: IComparer<T>): IDeepObservableList<T>; overload; static;
+    class function GetListOfDeepObservable<T: IObservable>(const Comparison: TComparison<T>): IDeepObservableList<T>; overload; static;
+  end;
+
+implementation
+
+{ TCollections }
+
+class function TCollections.GetListOfDeepObservable<T>: IDeepObservableList<T>;
+begin
+  Result := TDeepObservableList<T>.Create();
+end;
+
+class function TCollections.GetListOfDeepObservable<T>(const Collection: IEnumerable<T>): IDeepObservableList<T>;
+begin
+  Result := TDeepObservableList<T>.Create(Collection);
+end;
+
+class function TCollections.GetListOfDeepObservable<T>(const Values: array of T): IDeepObservableList<T>;
+begin
+  Result := TDeepObservableList<T>.Create(Values);
+end;
+
+class function TCollections.GetListOfDeepObservable<T>(const Comparer: IComparer<T>): IDeepObservableList<T>;
+begin
+  Result := TDeepObservableList<T>.Create(Comparer);
+end;
+
+class function TCollections.GetListOfDeepObservable<T>(const Comparison: TComparison<T>): IDeepObservableList<T>;
+begin
+  Result := TDeepObservableList<T>.Create(Comparison);
+end;
+
+end.

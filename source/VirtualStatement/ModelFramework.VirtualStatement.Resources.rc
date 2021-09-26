@@ -1,0 +1,3 @@
+SQL_VIRTUAL_TEMPLATE_FUNCTION RCDATA "ModelFramework.VirtualStatement.Template.Function.sql"
+SQL_VIRTUAL_TEMPLATE_SEQUENCE RCDATA "ModelFramework.VirtualStatement.Template.Sequence.sql"
+

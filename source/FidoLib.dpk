@@ -1,0 +1,169 @@
+package FidoLib;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$RUNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  dbrtl,
+  CustomIPTransport,
+  IndySystem,
+  IndyProtocols,
+  IndyCore,
+  bindengine,
+  bindcomp,
+  RESTComponents,
+  Spring.Base,
+  Spring.Core,
+  JOSE,
+  DbxCommonDriver,
+  IndyIPCommon,
+  IndyIPClient,
+  FireDAC,
+  FireDACCommonDriver,
+  FireDACCommon;
+
+contains
+  Fido.Collections.DeepObservableList in 'Collections\Fido.Collections.DeepObservableList.pas',
+  Fido.Collections in 'Collections\Fido.Collections.pas',
+  Fido.Collections.DeepObservableList.Intf in 'Collections\Fido.Collections.DeepObservableList.Intf.pas',
+  Fido.Db.Transaction.Handler.Base in 'Db\Fido.Db.Transaction.Handler.Base.pas',
+  Fido.Db.Transaction.Handler.Intf in 'Db\Fido.Db.Transaction.Handler.Intf.pas',
+  Fido.Db.Transaction.Intf in 'Db\Fido.Db.Transaction.Intf.pas',
+  Fido.Db.Transaction in 'Db\Fido.Db.Transaction.pas',
+  Fido.Db.Transactional.Intf in 'Db\Fido.Db.Transactional.Intf.pas',
+  Fido.Db.Transactional in 'Db\Fido.Db.Transactional.pas',
+  Fido.DesignPatterns.Observable.Delegated in 'DesignPatterns\Fido.DesignPatterns.Observable.Delegated.pas',
+  Fido.DesignPatterns.Observable.Intf in 'DesignPatterns\Fido.DesignPatterns.Observable.Intf.pas',
+  Fido.DesignPatterns.Observer.Intf in 'DesignPatterns\Fido.DesignPatterns.Observer.Intf.pas',
+  Fido.DesignPatterns.Observer.Notification.Intf in 'DesignPatterns\Fido.DesignPatterns.Observer.Notification.Intf.pas',
+  Fido.DesignPatterns.Observer.Notification in 'DesignPatterns\Fido.DesignPatterns.Observer.Notification.pas',
+  Fido.Environment.Intf in 'Environment\Fido.Environment.Intf.pas',
+  Fido.Environment in 'Environment\Fido.Environment.pas',
+  Fido.Environment.Vault in 'Environment\Fido.Environment.Vault.pas',
+  Fido.Http.Request.Intf in 'Http\Fido.Http.Request.Intf.pas',
+  Fido.Http.Request in 'Http\Fido.Http.Request.pas',
+  Fido.Http.Response.Intf in 'Http\Fido.Http.Response.Intf.pas',
+  Fido.Http.Response in 'Http\Fido.Http.Response.pas',
+  Fido.Http.Types in 'Http\Fido.Http.Types.pas',
+  Fido.NamedObject.Intf in 'Interfaces\Fido.NamedObject.Intf.pas',
+  Fido.JWT.Manager.Intf in 'JWT\Fido.JWT.Manager.Intf.pas',
+  Fido.JWT.Manager in 'JWT\Fido.JWT.Manager.pas',
+  Fido.Logging.Appenders.ElasticSearch in 'Logging\Fido.Logging.Appenders.ElasticSearch.pas',
+  Fido.Resource.StreamReader.Intf in 'Resources\Fido.Resource.StreamReader.Intf.pas',
+  Fido.Resource.StreamReader in 'Resources\Fido.Resource.StreamReader.pas',
+  Fido.Resource.StringReader.Intf in 'Resources\Fido.Resource.StringReader.Intf.pas',
+  Fido.Resource.StringReader in 'Resources\Fido.Resource.StringReader.pas',
+  Fido.MonitoredService in 'Service\Fido.MonitoredService.pas',
+  Fido.Service.Intf in 'Service\Fido.Service.Intf.pas',
+  Fido.Testing.BaseDB in 'Testing\Fido.Testing.BaseDB.pas',
+  Fido.Testing.Mock.Utils in 'Testing\Fido.Testing.Mock.Utils.pas',
+  Fido.StatementExecutor.Abstract in 'VirtualStatement\Fido.StatementExecutor.Abstract.pas',
+  Fido.StatementExecutor.Intf in 'VirtualStatement\Fido.StatementExecutor.Intf.pas',
+  Fido.VirtualQuery.Attributes in 'VirtualStatement\Fido.VirtualQuery.Attributes.pas',
+  Fido.VirtualQuery.Intf in 'VirtualStatement\Fido.VirtualQuery.Intf.pas',
+  Fido.VirtualQuery.Metadata.Intf in 'VirtualStatement\Fido.VirtualQuery.Metadata.Intf.pas',
+  Fido.VirtualQuery in 'VirtualStatement\Fido.VirtualQuery.pas',
+  Fido.Web.Server.Abstract in 'Web\Server\Fido.Web.Server.Abstract.pas',
+  Fido.Web.Server.Files in 'Web\Server\Fido.Web.Server.Files.pas',
+  Fido.Web.Server.Interpreter.Intf in 'Web\Server\Fido.Web.Server.Interpreter.Intf.pas',
+  Fido.Web.Server.Intf in 'Web\Server\Fido.Web.Server.Intf.pas',
+  Fido.Web.Server.Resources in 'Web\Server\Fido.Web.Server.Resources.pas',
+  Fido.Consts in 'Fido.Consts.pas',
+  Fido.Exceptions in 'Fido.Exceptions.pas',
+  Fido.Mappers in 'Fido.Mappers.pas',
+  Fido.Registration in 'Fido.Registration.pas',
+  Fido.Types in 'Fido.Types.pas',
+  Fido.Utilities in 'Fido.Utilities.pas',
+  Fido.VirtualInterface in 'Fido.VirtualInterface.pas',
+  Fido.Db.TypeConverter in 'Db\Fido.Db.TypeConverter.pas',
+  Fido.Db.Connections.FireDac in 'Db\Fido.Db.Connections.FireDac.pas',
+  Fido.Db.StatementExecutor.FireDac in 'Db\Fido.Db.StatementExecutor.FireDac.pas',
+  Fido.Collections.PerThreadDictionary in 'Collections\Fido.Collections.PerThreadDictionary.pas',
+  Fido.Web.Server.WebSocket.Loop.Intf in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.Loop.Intf.pas',
+  Fido.Web.Server.WebSocket.Loop.Abstract in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.Loop.Abstract.pas',
+  Fido.Web.Server.WebSocket.Tool in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.Tool.pas',
+  Fido.Types.TGuid.Variant in 'Fido.Types.TGuid.Variant.pas',
+  Fido.Db.ScriptRunner.Intf in 'Db\Fido.Db.ScriptRunner.Intf.pas',
+  Fido.Db.ScriptRunner.FireDac in 'Db\Fido.Db.ScriptRunner.FireDac.pas',
+  Fido.Db.Migrations.Model.Intf in 'Db\Fido.Db.Migrations.Model.Intf.pas',
+  Fido.Db.Migrations.Model in 'Db\Fido.Db.Migrations.Model.pas',
+  Fido.Db.Migrations.Repository.Intf in 'Db\Fido.Db.Migrations.Repository.Intf.pas',
+  Fido.Db.DatasetFieldAttributes.Intf in 'Fido.Db.DatasetFieldAttributes.Intf',
+  Fido.Db.DatasetFieldAttributes in 'Fido.Db.DatasetFieldAttributes.pas',
+  Fido.Logging.DeadManSwitch in 'Logging\Fido.Logging.DeadManSwitch.pas',
+  Fido.Logging.Null in 'Logging\Fido.Logging.Null.pas',
+  Fido.Logging.Types in 'Logging\Fido.Logging.Types.pas',
+  Fido.Logging.Appenders.ElasticSearch.Authenticated in 'Logging\Fido.Logging.Appenders.ElasticSearch.Authenticated.pas',
+  Fido.Logging.Utils in 'Logging\Fido.Logging.Utils.pas',
+  Fido.Containers in 'Fido.Containers.pas',
+  Fido.VirtualStatement.Intf in 'VirtualStatement\Fido.VirtualStatement.Intf.pas',
+  Fido.VirtualStatement in 'VirtualStatement\Fido.VirtualStatement.pas',
+  Fido.VirtualStatement.Attributes in 'VirtualStatement\Fido.VirtualStatement.Attributes.pas',
+  Fido.VirtualStatement.Metadata.Intf in 'VirtualStatement\Fido.VirtualStatement.Metadata.Intf.pas',
+  Fido.VirtualDto.Database in 'VirtualStatement\Fido.VirtualDto.Database.pas',
+  Fido.ValueEnumerator.Intf in 'VirtualStatement\Fido.ValueEnumerator.Intf.pas',
+  Fido.ValueEnumerator in 'VirtualStatement\Fido.ValueEnumerator.pas',
+  Fido.VirtualDto.Abstract in 'Fido.VirtualDto.Abstract.pas',
+  Fido.JSON.Marshalling in 'Json\Fido.JSON.Marshalling.pas',
+  Fido.Json.Utilities in 'Json\Fido.Json.Utilities.pas',
+  Fido.DesignPatterns.Decorator.DataSetAsReadonlyList in 'DesignPatterns\Fido.DesignPatterns.Decorator.DataSetAsReadonlyList.pas',
+  Fido.DesignPatterns.Decorator.JSonArrayAsReadonlyList in 'DesignPatterns\Fido.DesignPatterns.Decorator.JSonArrayAsReadonlyList.pas',
+  Fido.JSON.Mapping in 'Json\Fido.JSON.Mapping.pas',
+  Fido.OwningObject in 'Fido.OwningObject.pas',
+  Fido.Collections.UpdateablePerThreadDictionary in 'Collections\Fido.Collections.UpdateablePerThreadDictionary.pas',
+  Fido.Environment.Vault.Intf in 'Environment\Fido.Environment.Vault.Intf.pas',
+  Fido.Http.RequestInfo.Intf in 'Http\Fido.Http.RequestInfo.Intf.pas',
+  Fido.DesignPatterns.Decorator.TIdHTTPRequestInfoAsIHTTPRequestInfo in 'DesignPatterns\Fido.DesignPatterns.Decorator.TIdHTTPRequestInfoAsIHTTPRequestInfo.pas',
+  Fido.Http.ResponseInfo.Intf in 'Http\Fido.Http.ResponseInfo.Intf.pas',
+  Fido.DesignPatterns.Decorator.TIdHTTPResponseInfoAsIHTTPResponseInfo in 'DesignPatterns\Fido.DesignPatterns.Decorator.TIdHTTPResponseInfoAsIHTTPResponseInfo.pas',
+  Fido.Api.Client.Exception in 'Api\Client\Fido.Api.Client.Exception.pas',
+  Fido.Api.Client.VirtualApi.ElasticSearch.Authenticated.Document.Intf in 'Api\Client\ElasticSearch\Fido.Api.Client.VirtualApi.ElasticSearch.Authenticated.Document.Intf.pas',
+  Fido.Api.Client.VirtualApi.ElasticSearch.Document.Intf in 'Api\Client\ElasticSearch\Fido.Api.Client.VirtualApi.ElasticSearch.Document.Intf.pas',
+  Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Request in 'Api\Client\ElasticSearch\Dto\Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Request.pas',
+  Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Response in 'Api\Client\ElasticSearch\Dto\Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Response.pas',
+  Fido.Api.Client.VirtualApi.Abstract in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Abstract.pas',
+  Fido.Api.Client.VirtualApi.Attributes in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Attributes.pas',
+  Fido.Api.Client.VirtualApi.Call in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Call.pas',
+  Fido.Api.Client.VirtualApi.Configuration.Intf in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Configuration.Intf.pas',
+  Fido.Api.Client.VirtualApi.Configuration in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Configuration.pas',
+  Fido.Api.Client.VirtualApi.Intf in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Intf.pas',
+  Fido.Api.Client.VirtualApi.json in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.json.pas',
+  Fido.Api.Client.VirtualApi.Request in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Request.pas',
+  Fido.Api.Server.Exceptions in 'Api\Server\Fido.Api.Server.Exceptions.pas',
+  Fido.Api.Server.Indy in 'Api\Server\Fido.Api.Server.Indy.pas',
+  Fido.Api.Server.Intf in 'Api\Server\Fido.Api.Server.Intf.pas',
+  Fido.Api.Server.Resource.Attributes in 'Api\Server\Resources\Fido.Api.Server.Resource.Attributes.pas',
+  Fido.Api.Server.Resources.JWT.Types in 'Api\Server\Resources\JWTAuthorization\Fido.Api.Server.Resources.JWT.Types.pas',
+  Fido.Api.Server.Resources.JWTAuthorization.Abstract in 'Api\Server\Resources\JWTAuthorization\Fido.Api.Server.Resources.JWTAuthorization.Abstract.pas',
+  Fido.Api.Server.Resources.JWT.Dto.Request in 'Api\Server\Resources\JWTAuthorization\Dto\Fido.Api.Server.Resources.JWT.Dto.Request.pas';
+
+end.
+
+
+

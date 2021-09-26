@@ -1,0 +1,3 @@
+_ RCDATA "resources\index.html"
+_static_file_js RCDATA "resources\static\file.js"
+_static_road_jpg RCDATA "resources\static\road.jpg"
