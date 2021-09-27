@@ -6,12 +6,12 @@ uses
   Spring,
 
   Fido.DesignPatterns.Observer.Notification,
-  Fido.DesignPatterns.Observable,
+  Fido.DesignPatterns.Observable.Delegated,
 
   Song.DomainObject.Intf;
 
 type
-  TSong = class(TObservable, ISong)
+  TSong = class(TDelegatedObservable, ISong)
   private
     FId: Integer;
     FTitle: string;
