@@ -6,16 +6,13 @@
         <Projects Include="source\FidoCore.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="source\FidoWin.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="source\FidoGui.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="tests\FidoLibTests.dproj">
+        <Projects Include="source\FidoWin.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="examples\MVVMExample\MVVMExample.dproj">
+        <Projects Include="tests\FidoLibTests.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="examples\ElasticsearchLogExample\ElasticSearchLogExample.dproj">
@@ -28,6 +25,9 @@
             <Dependencies/>
         </Projects>
         <Projects Include="examples\WebSocketExample\WebSocketExample.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="examples\MVVMExample\MVVMExample.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -47,15 +47,6 @@
     <Target Name="FidoCore:Make">
         <MSBuild Projects="source\FidoCore.dproj" Targets="Make"/>
     </Target>
-    <Target Name="FidoWin">
-        <MSBuild Projects="source\FidoWin.dproj"/>
-    </Target>
-    <Target Name="FidoWin:Clean">
-        <MSBuild Projects="source\FidoWin.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="FidoWin:Make">
-        <MSBuild Projects="source\FidoWin.dproj" Targets="Make"/>
-    </Target>
     <Target Name="FidoGui">
         <MSBuild Projects="source\FidoGui.dproj"/>
     </Target>
@@ -65,6 +56,15 @@
     <Target Name="FidoGui:Make">
         <MSBuild Projects="source\FidoGui.dproj" Targets="Make"/>
     </Target>
+    <Target Name="FidoWin">
+        <MSBuild Projects="source\FidoWin.dproj"/>
+    </Target>
+    <Target Name="FidoWin:Clean">
+        <MSBuild Projects="source\FidoWin.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FidoWin:Make">
+        <MSBuild Projects="source\FidoWin.dproj" Targets="Make"/>
+    </Target>
     <Target Name="FidoLibTests">
         <MSBuild Projects="tests\FidoLibTests.dproj"/>
     </Target>
@@ -73,15 +73,6 @@
     </Target>
     <Target Name="FidoLibTests:Make">
         <MSBuild Projects="tests\FidoLibTests.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="MVVMExample">
-        <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj"/>
-    </Target>
-    <Target Name="MVVMExample:Clean">
-        <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="MVVMExample:Make">
-        <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj" Targets="Make"/>
     </Target>
     <Target Name="ElasticSearchLogExample">
         <MSBuild Projects="examples\ElasticsearchLogExample\ElasticSearchLogExample.dproj"/>
@@ -119,14 +110,23 @@
     <Target Name="WebSocketExample:Make">
         <MSBuild Projects="examples\WebSocketExample\WebSocketExample.dproj" Targets="Make"/>
     </Target>
+    <Target Name="MVVMExample">
+        <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj"/>
+    </Target>
+    <Target Name="MVVMExample:Clean">
+        <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="MVVMExample:Make">
+        <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="FidoCore;FidoWin;FidoGui;FidoLibTests;MVVMExample;ElasticSearchLogExample;FileRestServerExample;ResourceRestServerExample;WebSocketExample"/>
+        <CallTarget Targets="FidoCore;FidoGui;FidoWin;FidoLibTests;ElasticSearchLogExample;FileRestServerExample;ResourceRestServerExample;WebSocketExample;MVVMExample"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="FidoCore:Clean;FidoWin:Clean;FidoGui:Clean;FidoLibTests:Clean;MVVMExample:Clean;ElasticSearchLogExample:Clean;FileRestServerExample:Clean;ResourceRestServerExample:Clean;WebSocketExample:Clean"/>
+        <CallTarget Targets="FidoCore:Clean;FidoGui:Clean;FidoWin:Clean;FidoLibTests:Clean;ElasticSearchLogExample:Clean;FileRestServerExample:Clean;ResourceRestServerExample:Clean;WebSocketExample:Clean;MVVMExample:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="FidoCore:Make;FidoWin:Make;FidoGui:Make;FidoLibTests:Make;MVVMExample:Make;ElasticSearchLogExample:Make;FileRestServerExample:Make;ResourceRestServerExample:Make;WebSocketExample:Make"/>
+        <CallTarget Targets="FidoCore:Make;FidoGui:Make;FidoWin:Make;FidoLibTests:Make;ElasticSearchLogExample:Make;FileRestServerExample:Make;ResourceRestServerExample:Make;WebSocketExample:Make;MVVMExample:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
