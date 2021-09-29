@@ -58,7 +58,7 @@ implementation
 {$IFDEF DELPHIX_SYDNEY_UP}
 class operator TImmutable<T>.Assign(var Dest: TImmutable<T>; const [ref] Src: TImmutable<T>);
 begin
-  if not FAssigned.IsEmpty then
+  if not Src.FAssigned.IsEmpty then
     raise EImmutableException.Create('Immutables cannot be reassigned.');
 end;
 
