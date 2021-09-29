@@ -715,11 +715,13 @@ var
   Path: string;
   MethodParams: TArray<TValue>;
   QueryParams: Shared<TStringList>;
+  PathParams: Shared<TStringList>;
   I: Integer;
   Params: IDictionary<string, string>;
   Param: TRttiParameter;
   Attr: TCustomAttribute;
   EndPointMethod: string;
+  Index: Integer;
 begin
   Result := False;
 
@@ -727,6 +729,9 @@ begin
   Path := Url;
   QueryParams := TStringList.Create;
   QueryParams.Value.Delimiter := '&';
+  PathParams := TStringList.Create;
+  PathParams.Value.Delimiter := '/';
+
   if Pos('?', Path) <> 0 then
   begin
     Path := Copy(Path, 1, Pos('?', Path) - 1);
@@ -742,7 +747,8 @@ begin
         EndPointMethod := Copy(EndPointInfo.EndPoint, 2, Length(EndPointInfo.EndPoint));
         EndPointMethod := '/' + Copy(EndPointMethod, 1, Pos('/', EndPointMethod) - 1);
 
-        Path := Copy(Path, Pos(EndPointMethod, Path), Length(Path));
+        PathParams.Value.DelimitedText := Copy(Path, Pos(EndPointMethod, Path) + Length(EndPointMethod) + 1, Length(Path));
+        Index := 0;
 
         RegExpPath := StringReplace(EndPointInfo.EndPoint, '/', '\/', [rfReplaceAll]);
         with TRegEx.Matches(RegExpPath, '{[\s\S][^{]+}').GetEnumerator do
@@ -750,21 +756,28 @@ begin
           while MoveNext do
           begin
             CurrentParamName := StringReplace(StringReplace(Current.Value, '{', '', []), '}', '', []);
-            CurrentParamValue := StringReplace(Path, Copy(Path, 1, Pos('{' + CurrentParamName.ToUpper + '}', EndPointInfo.EndPoint.ToUpper) - 1), '', [rfIgnoreCase]);
-            if Pos(CurrentParamValue, '/') > 0 then
-                CurrentParamValue := Copy(CurrentParamValue, 1, Pos(CurrentParamValue, '/') - 1);
-            Path := StringReplace(Path, Copy(Path, 1, Pos('{' + CurrentParamName.ToUpper + '}', EndPointInfo.EndPoint.ToUpper) + Length(CurrentParamValue) + 2), '', [rfIgnoreCase]);
+
+            if PathParams.Value.Count > Index then
+              CurrentParamValue := PathParams.Value[Index];
+
+            Inc(Index);
 
             for Param in Method.GetParameters do
               for Attr in Param.GetAttributes do
                 if Attr is ApiParamAttribute then
                    if ApiParamAttribute(Attr).ParamName.ToUpper = CurrentParamName.ToUpper then
+                   begin
                      CurrentParamName := Param.Name;
+                     Break;
+                   end;
 
             for Attr in Method.GetAttributes do
               if Attr is ParamAttribute then
                 if ParamAttribute(Attr).ApiParam.ToUpper = CurrentParamName.ToUpper then
+                begin
                   CurrentParamName := ParamAttribute(Attr).MethodParam;
+                  Break;
+                end;
 
             Params.AddOrSetValue(CurrentParamName, CurrentParamValue);
           end;
@@ -779,12 +792,18 @@ begin
             for Attr in Param.GetAttributes do
               if Attr is ApiParamAttribute then
                  if ApiParamAttribute(Attr).ParamName.ToUpper = CurrentParamName then
+                 begin
                    CurrentParamName := Param.Name;
+                   Break;
+                 end;
 
           for Attr in Method.GetAttributes do
             if Attr is ParamAttribute then
               if ParamAttribute(Attr).ApiParam.ToUpper = CurrentParamName.ToUpper then
+              begin
                 CurrentParamName := ParamAttribute(Attr).MethodParam;
+                Break;
+              end;
 
           Params.AddOrSetValue(CurrentParamName, QueryParams.Value.ValueFromIndex[I]);
         end;
@@ -806,6 +825,7 @@ begin
           Result := True;
         except
         end;
+        Exit;
       end;
 end;
 
