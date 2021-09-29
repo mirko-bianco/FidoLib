@@ -63,58 +63,19 @@ implementation
 
 procedure TVirtualDtoJSONTests.TryCreateObjectWorksWithAString;
 var
-  JSONObject: Shared<TJSONObject>;
-  JSONObject2: TJSONObject;
-  JSONObject3: TJSONObject;
-  JSONObject4: TJSONObject;
-  JSONArray: TJSONArray;
-  JSONArray2: TJSONArray;
+  Json: string;
   Song: ISong;
-  ReleaseDate: TDateTime;
 begin
-  JSONObject := TJSONObject.Create;
-  JSONObject.Value.AddPair('Id', TJSONNumber.Create(1));
-  JSONObject.Value.AddPair('Guid', TJSONString.Create('F76CD4D4-35E1-4C66-A30A-37C050C0B324'));
-  JSONObject.Value.AddPair('Title', TJSONString.Create('My Title'));
-  JSONObject.Value.AddPair('IsGood', TJSONFalse.Create);
-  ReleaseDate := Now;
-  JSONObject.Value.AddPair('ReleaseDate', TJSONString.Create(DateToISO8601(ReleaseDate)));
-  JSONObject.Value.AddPair('Price', TJSONString.Create('15.95'));
+  Json := '{"Id":1,"Guid":"F76CD4D4-35E1-4C66-A30A-37C050C0B324","Title":"My Title","IsGood":false,"ReleaseDate":"2021-09-29T22:15:30.579Z","Price":"15.95","Author":{"Id":2,"Name":"Author name"},' +
+    '"Years":[2001,2002],"Singers":[{"Id":3,"Name":"First singer"},{"Id":4,"Name":"Second singer"}],"Media":2}';
 
-  JSONObject2 := TJSONObject.Create;
-  JSONObject2.AddPair('Id', TJSONNumber.Create(2));
-  JSONObject2.AddPair('Name', TJSONString.Create('Author name'));
-
-  JSONObject.Value.AddPair('Author', JSONObject2);
-
-  JSONArray := TJSONArray.Create;
-  JSONArray.AddElement(TJSONNumber.Create(2001));
-  JSONArray.AddElement(TJSONNumber.Create(2002));
-  JSONObject.Value.AddPair('Years', JSONArray);
-
-  JSONArray2 := TJSONArray.Create;
-
-  JSONObject3 := TJSONObject.Create;
-  JSONObject3.AddPair('Id', TJSONNumber.Create(3));
-  JSONObject3.AddPair('Name', TJSONString.Create('First singer'));
-
-  JSONObject4 := TJSONObject.Create;
-  JSONObject4.AddPair('Id', TJSONNumber.Create(4));
-  JSONObject4.AddPair('Name', TJSONString.Create('Second singer'));
-
-  JSONArray2.AddElement(JSONObject3);
-  JSONArray2.AddElement(JSONObject4);
-  JSONObject.Value.AddPair('Singers', JSONArray2);
-
-  JSONObject.Value.AddPair('Media', TJSONNumber.Create(Integer(mtCD)));
-
-  Song := TJSONVirtualDto.Create(TypeInfo(ISong), JSONObject) as ISong;
+  Song := TJSONVirtualDto.Create(TypeInfo(ISong), Json) as ISong;
 
   Assert.AreEqual(1, Song.Id);
   Assert.AreEqual(StringToGuid('{F76CD4D4-35E1-4C66-A30A-37C050C0B324}'), Song.Guid);
   Assert.AreEqual('My Title', Song.Title);
   Assert.AreEqual(False, Song.IsGood);
-  Assert.AreEqual(ReleaseDate, Song.ReleaseDate.Value);
+  Assert.AreEqual(ISO8601ToDate('2021-09-29T22:15:30.579Z'), Song.ReleaseDate.Value);
   Assert.AreEqual(False, Song.RetirementDate.HasValue);
   Assert.AreEqual<Currency>(15.95, Song.Price);
   Assert.AreEqual('Author name', song.Author.Name);
