@@ -71,18 +71,18 @@ type
     GetterPrefix = 'GET';
   strict private
     FRecordMethods: IDictionary<string, TJSONDTOMethodDescriptor>;
-    FJSONObject: TJSONObject;
-    FPIID: PTypeInfo;
 
     function GetIsGetterName(const Name: string): boolean;
     procedure CacheColumns(const JSONObject: TJSONObject);
   protected
     function GetMappedName(const Name: string): string;
     procedure DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
-    procedure ProcessDtoAttributes;
+    procedure ProcessDtoAttributes(const PIID: PTypeInfo);
     procedure ProcessMethod(const Method: TRttiMethod);
   public
-    constructor Create(const PIID: PTypeInfo; const JSONObject: TJSONObject);
+    constructor Create(const PIID: PTypeInfo; const JSONObject: TJSONObject); overload;
+    constructor Create(const PIID: PTypeInfo; const Json: string); overload;
+    destructor Destroy; override;
 
     procedure AfterConstruction; override;
   end;
@@ -154,24 +154,26 @@ uses
 procedure TJSONVirtualDto.AfterConstruction;
 begin
   inherited;
-  ProcessDtoAttributes;
-  CacheColumns(FJSONObject);
+
 end;
 
 procedure TJSONVirtualDto.CacheColumns(const JSONObject: TJSONObject);
 var
   D: TPair<string, TJSONDTOMethodDescriptor>;
   ObjectValue: TJsonValue;
-  LJSONObject: TJSONObject;
+  LJSONObject: Shared<TJSONObject>;
 begin
   LJSONObject := TJSONObject.Create;
   with JSONObject.GetEnumerator do
+  begin
     while MoveNext do
-      LJSONObject.AddPair(GetCurrent.JsonString.Value.ToUpper, GetCurrent.JsonValue);
+      LJSONObject.Value.AddPair(GetCurrent.JsonString.Value.ToUpper, TJSONObject.ParseJSONValue(GetCurrent.JsonValue.ToJSON));
+    Free;
+  end;
 
   for D in FRecordMethods do
   begin
-    ObjectValue := LJSONObject.GetValue(D.Value.MappedName);
+    ObjectValue := LJSONObject.Value.GetValue(D.Value.MappedName);
     if Assigned(ObjectValue) then
     begin
       if D.Value.IsInterface then
@@ -186,15 +188,38 @@ begin
   end;
 end;
 
+constructor TJSONVirtualDto.Create(const PIID: PTypeInfo; const Json: string);
+var
+  JSONObject: TJSONObject;
+begin
+  inherited Create(PIID, DoInvoke);
+
+  FRecordMethods := TCollections.CreateDictionary<string, TJSONDTOMethodDescriptor>([doOwnsValues]);
+  ProcessDtoAttributes(PIID);
+  JSONObject := TJSonObject.ParseJSONValue(Json) as TJSONObject;
+  try
+    CacheColumns(JSONObject);
+  finally
+    JSONObject.Free;
+  end;
+end;
+
 constructor TJSONVirtualDto.Create(const PIID: PTypeInfo; const JSONObject: TJSONObject);
 begin
   inherited Create(PIID, DoInvoke);
 
   Guard.CheckNotNull(JSONObject, 'JSONObject');
-  FJSONObject := JSONObject;
-  FPIID := PIID;
 
   FRecordMethods := TCollections.CreateDictionary<string, TJSONDTOMethodDescriptor>([doOwnsValues]);
+
+  ProcessDtoAttributes(PIID);
+  CacheColumns(JSONObject);
+end;
+
+destructor TJSONVirtualDto.Destroy;
+begin
+
+  inherited;
 end;
 
 procedure TJSONVirtualDto.DoInvoke(Method: TRttiMethod;
@@ -230,7 +255,7 @@ begin
     Delete(Result, 1, Length(GetterPrefix));
 end;
 
-procedure TJSONVirtualDto.ProcessDtoAttributes;
+procedure TJSONVirtualDto.ProcessDtoAttributes(const PIID: PTypeInfo);
 var
   Context: TRttiContext;
   RttiType: TRttiType;
@@ -241,7 +266,7 @@ begin
 
   Context := TRttiContext.Create;
 
-  RttiType := Context.GetType(FPIID);
+  RttiType := Context.GetType(PIID);
 
   // process all methods (and their attributes)
   for Method in RttiType.GetMethods do
