@@ -27,6 +27,7 @@ interface
 uses
   System.TypInfo,
   System.JSON,
+  System.Generics.Collections,
 
   Spring.Collections,
   Spring.Collections.Lists,
