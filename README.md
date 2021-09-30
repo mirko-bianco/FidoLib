@@ -10,7 +10,7 @@ The Fido library is mostly based on composition and attributes, hence it won't f
 
 ## Acknowledgements
 
-Fido library was born, with a different name and different scopes, several years ago. In one of its many incarnations it has been used and improved while I was employed at one of the biggest online shops of the the Netherlands, and it's during that time that it bloomed to most of its functionalities.
+Fido library was born, with a different name and different scopes, several years ago. In one of its many incarnations it has been used and improved while I was employed at one of the biggest online shops of the Netherlands, and it's during that time that it bloomed to most of its functionalities.
 
 And it was working with amazing people that gave me the inspiration. You will notice that the Fido library makes extensive usage of the `TVirtualInterface` class, and for this I want to thank my great friend and amazing developer Michal Kulczycki. He is the guy who came up with the idea of using "Virtual things" to describe behaviour instead of coding it, and wrote the first implementation of the virtual statement. I just tagged along and added bits and pieces. 
 
@@ -35,6 +35,8 @@ The Fido library depends on the following open source libraries:
 [Spring4D](https://bitbucket.org/sglienke/spring4d/src/master/)
 
 [Delphi JOSE and JWT Library](https://github.com/paolo-rossi/delphi-jose-jwt)
+
+[DUnitX](https://github.com/VSoftTechnologies/DUnitX)
 
 ## Installation
 
