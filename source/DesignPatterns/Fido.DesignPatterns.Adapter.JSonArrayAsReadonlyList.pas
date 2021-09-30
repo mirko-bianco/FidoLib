@@ -20,13 +20,14 @@
  * SOFTWARE.
  *)
 
-unit Fido.DesignPatterns.Decorator.JSonArrayAsReadonlyList;
+unit Fido.DesignPatterns.Adapter.JSonArrayAsReadonlyList;
 
 interface
 
 uses
   System.TypInfo,
   System.JSON,
+  System.Generics.Collections,
 
   Spring.Collections,
   Spring.Collections.Lists,

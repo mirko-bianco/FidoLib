@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.DesignPatterns.Decorator.TIdHTTPResponseInfoAsIHTTPResponseInfo;
+unit Fido.DesignPatterns.Adapter.TIdHTTPResponseInfoAsIHTTPResponseInfo;
 
 interface
 

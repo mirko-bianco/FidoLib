@@ -145,18 +145,17 @@ begin
   Context := TRttiContext.Create;
   RttiType := Context.Value.GetType(TypeInfo(TA));
 
-  if Length(RttiType.GetProperties) <> 0 then
-    for RttiProp in RttiType.GetProperties do
-      if (RttiProp.Visibility = mvPublished) and
-         RttiProp.IsReadable then
-        Result.AddOrSetValue(RttiProp.Name.ToUpper, RttiProp.GetValue(InstanceValue.AsPointer))
-  else
-    for RttiMeth in RttiType.GetMethods do
-      if (RttiMeth.Visibility = mvPublished) and
-         (RttiMeth.MethodKind = mkFunction) and
-         (Length(RttiMeth.GetParameters) = 0) and
-         TryGetGetterMethodPropName(RttiMeth, PropertyName) then
-        Result.AddOrSetValue(PropertyName, RttiMeth.Invoke(InstanceValue, []));
+  for RttiProp in RttiType.GetProperties do
+    if (RttiProp.Visibility = mvPublished) and
+       RttiProp.IsReadable then
+      Result.AddOrSetValue(RttiProp.Name.ToUpper, RttiProp.GetValue(InstanceValue.AsPointer));
+
+  for RttiMeth in RttiType.GetMethods do
+    if (RttiMeth.Visibility = mvPublished) and
+       (RttiMeth.MethodKind = mkFunction) and
+       (Length(RttiMeth.GetParameters) = 0) and
+       TryGetGetterMethodPropName(RttiMeth, PropertyName) then
+      Result.AddOrSetValue(PropertyName, RttiMeth.Invoke(InstanceValue, []));
 end;
 
 function Mappers.TMappers.SetInstanceValues<TB>(const Instance: TB; const Values: IDictionary<string, TValue>): Boolean;
@@ -174,22 +173,20 @@ begin
   Context := TRttiContext.Create();
   try
     RttiType := Context.GetType(TypeInfo(TB));
-    if Length(RttiType.GetProperties) <> 0 then
-    begin
-      for RttiProp in RttiType.GetProperties do
-        if (RttiProp.Visibility = mvPublished) and
-           RttiProp.IsWritable and
-           Values.TryGetValue(RttiProp.Name.ToUpper, Value) then
-          RttiProp.SetValue(InstanceValue.AsPointer, Value);
-    end
-    else
-      for RttiMeth in RttiType.GetMethods do
-        if (RttiMeth.Visibility = mvPublished) and
-           (RttiMeth.MethodKind = mkProcedure) and
-           (Length(RttiMeth.GetParameters) = 1) and
-           TryGetSetterMethodPropName(RttiMeth, PropertyName) and
-           Values.TryGetValue(PropertyName, Value) then
-          RttiMeth.Invoke(InstanceValue, [Value]);
+
+    for RttiProp in RttiType.GetProperties do
+      if (RttiProp.Visibility = mvPublished) and
+         RttiProp.IsWritable and
+         Values.TryGetValue(RttiProp.Name.ToUpper, Value) then
+        RttiProp.SetValue(InstanceValue.AsPointer, Value);
+
+    for RttiMeth in RttiType.GetMethods do
+      if (RttiMeth.Visibility = mvPublished) and
+         (RttiMeth.MethodKind = mkProcedure) and
+         (Length(RttiMeth.GetParameters) = 1) and
+         TryGetSetterMethodPropName(RttiMeth, PropertyName) and
+         Values.TryGetValue(PropertyName, Value) then
+        RttiMeth.Invoke(InstanceValue, [Value]);
 
     Result := True;
   except

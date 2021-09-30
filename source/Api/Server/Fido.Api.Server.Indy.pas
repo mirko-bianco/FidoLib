@@ -64,8 +64,8 @@ uses
   Fido.Web.Server.Intf,
   Fido.Web.Server.WebSocket.Loop.Intf,
   Fido.Web.Server.WebSocket.Tool,
-  Fido.DesignPatterns.Decorator.TIdHTTPRequestInfoAsIHTTPRequestInfo,
-  Fido.DesignPatterns.Decorator.TIdHTTPResponseInfoAsIHTTPResponseInfo;
+  Fido.DesignPatterns.Adapter.TIdHTTPRequestInfoAsIHTTPRequestInfo,
+  Fido.DesignPatterns.Adapter.TIdHTTPResponseInfoAsIHTTPResponseInfo;
 
 type
   {$M+}

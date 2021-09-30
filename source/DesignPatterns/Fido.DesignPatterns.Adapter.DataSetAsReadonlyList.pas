@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.DesignPatterns.Decorator.DataSetAsReadonlyList;
+unit Fido.DesignPatterns.Adapter.DataSetAsReadonlyList;
 
 interface
 

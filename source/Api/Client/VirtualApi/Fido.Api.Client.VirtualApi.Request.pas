@@ -20,6 +20,7 @@
  * SOFTWARE.
  *)
 
+{$I Jedi.inc}
 unit Fido.Api.Client.VirtualApi.Request;
 
 interface
@@ -60,7 +61,7 @@ begin
     if Self.Method in [TRESTRequestMethod.rmPUT, TRESTRequestMethod.rmPOST] then
     begin
       // Process query params in the url
-      DoPrepareQueryString(AParamList, AURL);
+      DoPrepareQueryString(AParamList, {$IFDEF DELPHIX_SYDNEY_UP}ContentType(AParamList),{$ENDIF} AURL);
 
       // Remove query params (else it will be processed in the body too).
       for Index := Params.Count-1 downto 0 do

@@ -29,6 +29,7 @@ uses
   System.SysUtils,
   System.Rtti,
   System.Json,
+  System.TypInfo,
   System.Generics.Collections,
   Rest.Types,
   Rest.Client,

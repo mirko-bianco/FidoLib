@@ -10,7 +10,7 @@ The Fido library is mostly based on composition and attributes, hence it won't f
 
 ## Acknowledgements
 
-Fido library was born, with a different name and different scopes, several years ago. In one of its many incarnations it has been used and improved while I was employed at one of the biggest online shops of the the Netherlands, and it's during that time that it bloomed to most of its functionalities.
+Fido library was born, with a different name and different scopes, several years ago. In one of its many incarnations it has been used and improved while I was employed at one of the biggest online shops of the Netherlands, and it's during that time that it bloomed to most of its functionalities.
 
 And it was working with amazing people that gave me the inspiration. You will notice that the Fido library makes extensive usage of the `TVirtualInterface` class, and for this I want to thank my great friend and amazing developer Michal Kulczycki. He is the guy who came up with the idea of using "Virtual things" to describe behaviour instead of coding it, and wrote the first implementation of the virtual statement. I just tagged along and added bits and pieces. 
 
@@ -20,11 +20,11 @@ He is also the guy behind the observer/(delegate)observable implementation.
 
 Help is always welcome and appreciated, and I will embrace any good idea that comes this way.
 
-But remember that this library was born because I couldn't find around anything that was working the way I wanted, so I won't accept PRs that try to change the nature of the library, that is:
+But remember that this library was born because I couldn't find anything around that was working the way I wanted, so I won't accept PRs that try to change the nature of the library, that is:
 
 - Describe behaviour instead of coding it, whenever is possible.
 - User composition as much as possible and avoid class hierarchies. Anyone should be able to start with the library without the need to change and rewrite their own codebase.
-- Think (as a library designed) about your user (the developer). Clear and elegant interfaces and, if possible, one single way to achieve a result.
+- Think (as a library designer) about your user (the developer). Clear and elegant interfaces and, if possible, one single way to achieve a result.
 
 If you are willing to play by the rules then let's have fun togheter. 
 
@@ -35,6 +35,8 @@ The Fido library depends on the following open source libraries:
 [Spring4D](https://bitbucket.org/sglienke/spring4d/src/master/)
 
 [Delphi JOSE and JWT Library](https://github.com/paolo-rossi/delphi-jose-jwt)
+
+[DUnitX](https://github.com/VSoftTechnologies/DUnitX)
 
 ## Installation
 

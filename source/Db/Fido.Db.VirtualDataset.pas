@@ -88,7 +88,11 @@ type
     FFieldData: Variant;
   protected
     procedure ReadBlobData;
+    {$IFDEF DELPHIX_ALEXANDRIA_UP}
+    function Realloc(var NewCapacity: Nativeint): Pointer; override;
+    {$ELSE}
     function Realloc(var NewCapacity: Longint): Pointer; override;
+    {$ENDIF}
   public
     constructor Create(const Field: TBlobField; const Mode: TBlobStreamMode);
     destructor Destroy; override;
@@ -349,8 +353,11 @@ begin
   end;
 end;
 
+{$IFDEF DELPHIX_ALEXANDRIA_UP}
+function TADBlobStream.Realloc(var NewCapacity: Nativeint): Pointer;
+{$ELSE}
 function TADBlobStream.Realloc(var NewCapacity: Longint): Pointer;
-
+{$ENDIF}
   procedure VarAlloc(var V: Variant; Field: TFieldType);
   var
     W: Widestring;
@@ -606,7 +613,6 @@ function TCustomVirtualDataset.GetFieldData(Field: TField; var Buffer: TValueBuf
 var
   recBuf: TRecordBuffer;
   Data: Variant;
-
   {$IFDEF DELPHIXE3_UP}
   procedure CurrToBuffer(const C: Currency);
   var
@@ -622,7 +628,6 @@ var
     DataConvert(Field, @C, Buffer, True)
   end;
   {$ENDIF}
-
   {$IFDEF DELPHIXE3_UP}
   procedure VarToBuffer;
   var
@@ -818,14 +823,12 @@ var
     end;
   end;
   {$ENDIF}
-
   procedure RefreshBuffers;
   begin
     Reserved := Pointer(FieldListCheckSum(Self));
     UpdateCursorPos;
     Resync([]);
   end;
-
   function DataToInt64: Int64;
   begin
     if PDecimal(@Data).sign > 0 then
@@ -833,30 +836,23 @@ var
     else
       Result := PDecimal(@Data).Lo64;
   end;
-
 begin
   if not Assigned(Reserved) then
     RefreshBuffers;
-
   Result := GetActiveRecBuf(recBuf);
-
   if not Result then
     Exit;
-
   Data := PVariantList(recBuf + SizeOf(TArrayRecInfo))[Field.Index];
-
   if VarIsEmpty(Data) then
   begin
     DoGetFieldValue(Field, PArrayRecInfo(recBuf).Index, Data);
     if VarIsEmpty(Data) then
       Data := Null;
-
     if VarType(Data) = varInt64 then
       PVariantList(recBuf + SizeOf(TArrayRecInfo))[Field.Index] := DataToInt64
     else
       PVariantList(recBuf + SizeOf(TArrayRecInfo))[Field.Index] := Data;
   end;
-
   Result := not VarIsNull(Data);
   if Result and (Buffer <> nil) then
     VarToBuffer;

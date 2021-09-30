@@ -42,27 +42,34 @@ type
     FEventType: TLogEventType;
     FMsg: string;
     FTimeStamp: TDateTime;
-    FRaisedException: Exception;
-    FContent: TObject;
-  public
+
+    FRaisedException: Exception;
+
+    FContent: TObject;
+
+  public
     constructor Create(
       const Level: TLogLevel;
       const EventType: TLogEventType;
       const Msg: string;
       const TimeStamp: TDateTime;
-      const RaisedException: Exception;
-      const Content: TObject = nil);
 
-  published
-    property Level: TLogLevel read FLevel write FLevel;
+      const RaisedException: Exception;
+
+      const Content: TObject = nil);
+
+
+  published
+
+    property Level: TLogLevel read FLevel write FLevel;
     property EventType: TLogEventType read FEventType write FEventType;
     property Msg: string read FMsg write FMsg;
     property TimeStamp: TDateTime read FTimeStamp write FTimeStamp;
     property RaisedException: Exception read FRaisedException write FRaisedException;
     property Content: TObject read FContent write FContent;
   end;
-  {$M-}
 
+  {$M-}
 implementation
 
 { TElasticsearchDocumentRequest }
@@ -80,8 +87,11 @@ begin
   FEventType := EventType;
   FMsg := Msg;
   FTimeStamp := TimeStamp;
-  FRaisedException := RaisedException;
-  FContent := Content;
-end;
+
+  FRaisedException := RaisedException;
+
+  FContent := Content;
+
+end;
 
 end.
