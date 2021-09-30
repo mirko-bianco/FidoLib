@@ -58,8 +58,10 @@ implementation
 {$IFDEF DELPHIX_SYDNEY_UP}
 class operator TImmutable<T>.Assign(var Dest: TImmutable<T>; const [ref] Src: TImmutable<T>);
 begin
-  if not Src.FAssigned.IsEmpty then
+  if not Dest.FAssigned.IsEmpty then
     raise EImmutableException.Create('Immutables cannot be reassigned.');
+  Dest.FValue := Src.FValue;
+  Dest.FAssigned := Src.FAssigned;
 end;
 
 class operator TImmutable<T>.Implicit(const Value: TImmutable<T>): T;
@@ -69,12 +71,11 @@ end;
 
 class operator TImmutable<T>.Implicit(const Value: T): TImmutable<T>;
 begin
-  raise EImmutableException.Create('Immutables cannot be reassigned.');
+  Result := TImmutable<T>.Make(Value);
 end;
 
 constructor TImmutable<T>.Make(const Value: T);
 begin
-  Writeln('TImmutable<T>.Make');
   FValue := Value;
   FAssigned := 'Y';
 end;

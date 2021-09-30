@@ -477,25 +477,26 @@ end;
 
 procedure TClientVirtualApiJsonTest.TestTryExecuteDirectUrlFailsWhenCalledWithNonProperData;
 var
-  Response: ITestResponse;
   Conf: ITestConfiguration;
-  Api: TTestApiImplementation;
+  ApiIntf: ITestClientVirtualApi;
   SomeApiKey: string;
   Result: Boolean;
   ResultValue: TValue;
   SomeInteger: Integer;
+  Url: string;
 begin
   SomeApiKey := MockUtils.SomeString;
   SomeInteger := MockUtils.SomeInteger;
 
   Conf := TTestConfiguration.Create(BASEURL, True, True, SomeApiKey);
-  Api := TTestApiImplementation.Create(Conf);
+  ApiIntf := TTestApiImplementation.Create(Conf) as ITestClientVirtualApi;
+
+  Url := BASEURL + GETMULTIPLEPARAMS + IntToStr(SomeInteger) + '/' + IntToStr(MockUtils.SomeInteger);
 
   Assert.WillNotRaiseAny(
     procedure
     begin
-      Result := (Api as ITestClientVirtualApi).TryExecuteRelUrl(BASEURL + GETMULTIPLEPARAMS + IntToStr(SomeInteger) + '/' + IntToStr(MockUtils.SomeInteger), rmGET, ResultValue);
-      Response := ResultValue.AsType<ITestResponse>;
+      Result := ApiIntf.TryExecuteRelUrl(Url, rmGET, ResultValue);
     end);
 
   Assert.IsFalse(Result);

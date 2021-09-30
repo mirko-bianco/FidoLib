@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.DesignPatterns.Decorator.TIdHTTPRequestInfoAsIHTTPRequestInfo;
+unit Fido.DesignPatterns.Adapter.TIdHTTPRequestInfoAsIHTTPRequestInfo;
 
 interface
 

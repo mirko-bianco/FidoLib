@@ -26,7 +26,10 @@ uses
   Fido.Db.ListDataSet.Test in 'Db\Fido.Db.ListDataSet.Test.pas',
   Fido.Db.Transaction.Test in 'Db\Fido.Db.Transaction.Test.pas',
   Fido.Db.TransactionHandler.Base.Test in 'Db\Fido.Db.TransactionHandler.Base.Test.pas',
-  Fido.Db.TransactionHandler.Test in 'Db\Fido.Db.TransactionHandler.Test.pas';
+  Fido.Db.TransactionHandler.Test in 'Db\Fido.Db.TransactionHandler.Test.pas',
+  Fido.OwningObject.Test in 'Fido.OwningObject.Test.pas',
+  Fido.Immutable.Test in 'Fido.Immutable.Test.pas',
+  Fido.Mappers.Test in 'Fido.Mappers.Test.pas';
 
 var
   runner : ITestRunner;
@@ -55,6 +58,8 @@ begin
     runner.AddLogger(nunitLogger);
     runner.FailsOnNoAsserts := False; //When true, Assertions must be made during tests;
 
+    TDUnitX.Options.ExitBehavior := TDUnitXExitBehavior.Pause;
+
     //Run tests
     results := runner.Execute;
     if not results.AllPassed then
@@ -70,6 +75,11 @@ begin
     {$ENDIF}
   except
     on E: Exception do
+    begin
       System.Writeln(E.ClassName, ': ', E.Message);
+      {$IFNDEF CI}
+      System.Readln;
+      {$ENDIF}
+    end;
   end;
 end.

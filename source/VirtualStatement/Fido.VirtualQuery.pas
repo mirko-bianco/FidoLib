@@ -47,7 +47,7 @@ uses
   Fido.VirtualQuery.Intf,
   Fido.VirtualQuery.Metadata.Intf,
   Fido.VirtualQuery.Attributes,
-  Fido.DesignPatterns.Decorator.DataSetAsReadonlyList;
+  Fido.DesignPatterns.Adapter.DataSetAsReadonlyList;
 
 type
   EFidoVirtualQueryError = class(EFidoException);

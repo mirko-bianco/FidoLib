@@ -147,7 +147,7 @@ const
 implementation
 
 uses
-  Fido.DesignPatterns.Decorator.JSonArrayAsReadonlyList;
+  Fido.DesignPatterns.Adapter.JSonArrayAsReadonlyList;
 
 { TJSONVirtualDto }
 

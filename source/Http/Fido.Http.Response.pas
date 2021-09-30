@@ -36,7 +36,7 @@ uses
   Fido.Http.RequestInfo.Intf,
   Fido.Http.ResponseInfo.Intf,
   Fido.Http.Response.Intf,
-  Fido.DesignPatterns.Decorator.TIdHTTPRequestInfoAsIHTTPRequestInfo;
+  Fido.DesignPatterns.Adapter.TIdHTTPRequestInfoAsIHTTPRequestInfo;
 
 type
   THttpResponse = class(TInterfacedObject, IHttpResponse)
