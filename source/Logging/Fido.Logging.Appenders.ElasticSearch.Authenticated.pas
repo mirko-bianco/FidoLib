@@ -83,7 +83,7 @@ begin
   TThread.CreateAnonymousThread(
     procedure
     var
-      Request: Shared<TElasticsearchDocumentRequest>;
+      Request: TElasticsearchDocumentRequest;
       Response: IElasticsearchDocumentResponse;
       Content: TObject;
     begin
@@ -98,8 +98,12 @@ begin
         Exception(ExceptionPtr),
         Content);
 
-        Response := FApi.Add('ApiKey ' + FApiKey, FIndex, FTypeName, Request.Value);
+      Response := FApi.Add('ApiKey ' + FApiKey, FIndex, FTypeName, Request);
 
+      try
+        Request.Free;
+      except
+      end;
     end).Start;
 end;
 
