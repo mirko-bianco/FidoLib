@@ -36,8 +36,6 @@ type
 
     function IsActive: Boolean;
     function GetLastStatusCode: integer;
-
-    function TryExecuteRelUrl(const Url: string; const ApiMethod: TRestRequestMethod; out Result: TValue): Boolean;
   end;
 
 implementation

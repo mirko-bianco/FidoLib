@@ -156,8 +156,6 @@ type
       const Call: TClientVirtualApiCall);
     procedure MapArgumentAndConfiguration(const Arguments: IDictionary<string, TPair<string, TValue>>);
     procedure DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
-
-    function TryGetMethodFromUrl(const Url: string; const ApiMethod: TRESTRequestMethod; out Name: string; out EndPointInfo: TClientVirtualApiEndPointInfo): Boolean;
   protected
   const
     CONTENT = 'application/json';
@@ -174,8 +172,6 @@ type
     class destructor Destroy;
 
     function IsActive: Boolean;
-
-    function TryExecuteRelUrl(const Url: string; const ApiMethod: TRESTRequestMethod; out MethodResult: TValue): Boolean;
   end;
 
 implementation
@@ -506,11 +502,6 @@ begin
   begin
     Result := TValue.From<Integer>(FLastStatusCode);
     Exit;
-  end
-  else if SameText(Method.Name, 'TryExecuteRelUrl') then
-  begin
-    Result := TValue.From<Boolean>(TryExecuteRelUrl(Args[1].AsType<string>, Args[2].AsType<TRESTRequestMethod>, Args[3]));
-    Exit;
   end;
 
   Supports(FConfiguration, IActiveClientVirtualApiConfiguration, ActiveConfig);
@@ -558,6 +549,7 @@ begin
   CallApi(Call);
 
   FLastStatusCode := Call.Value.ResponseCode;
+
 
   if not Call.Value.IsOk then
   begin
@@ -669,164 +661,6 @@ end;
 function TAbstractClientVirtualApi<T, IConfiguration>.IsActive: Boolean;
 begin
   Result := FConfiguration.Active;
-end;
-
-function TAbstractClientVirtualApi<T, IConfiguration>.TryGetMethodFromUrl(const Url: string; const ApiMethod: TRESTRequestMethod; out Name: string; out EndPointInfo: TClientVirtualApiEndPointInfo): Boolean;
-var
-  TempUrl: string;
-  RegExpPath: string;
-begin
-  Result := False;
-  TempUrl := StringReplace(Url, FConfiguration.BaseUrl, '', [rfIgnoreCase]);
-  with FEndPointInfo.Keys.GetEnumerator do
-    while MoveNext do
-    begin
-      EndPointInfo := FEndPointInfo.Items[Current];
-
-      RegExpPath := StringReplace(EndPointInfo.EndPoint, '/', '\/', [rfReplaceAll]);
-
-      with TRegEx.Matches(RegExpPath, '{[\s\S][^{]+}').GetEnumerator do
-      begin
-        while MoveNext do
-          RegExpPath := StringReplace(RegExpPath, GetCurrent.Value, '[\s\S]+', []);
-        Free;
-      end;
-      RegExpPath := RegExpPath + '$';
-
-      if TRegEx.IsMatch(TempUrl, RegExpPath) and
-         (EndPointInfo.Method = ApiMethod) then
-      begin
-        Name := Current;
-        Exit(True);
-      end;
-    end;
-end;
-
-function TAbstractClientVirtualApi<T, IConfiguration>.TryExecuteRelUrl(const Url: string; const ApiMethod: TRESTRequestMethod; out MethodResult: TValue): Boolean;
-var
-  MethodName: string;
-  EndPointInfo: TClientVirtualApiEndPointInfo;
-  RttiContext: TRttiContext;
-  RttiType: TRttiType;
-  Method: TRttiMethod;
-  RegExpPath: string;
-  CurrentParamName: string;
-  CurrentParamValue: string;
-  Path: string;
-  MethodParams: TArray<TValue>;
-  QueryParams: Shared<TStringList>;
-  PathParams: Shared<TStringList>;
-  I: Integer;
-  Params: IDictionary<string, string>;
-  Param: TRttiParameter;
-  Attr: TCustomAttribute;
-  EndPointMethod: string;
-  Index: Integer;
-begin
-  Result := False;
-
-  Params := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
-  Path := Url;
-  QueryParams := TStringList.Create;
-  QueryParams.Value.Delimiter := '&';
-  PathParams := TStringList.Create;
-  PathParams.Value.Delimiter := '/';
-
-  if Pos('?', Path) <> 0 then
-  begin
-    Path := Copy(Path, 1, Pos('?', Path) - 1);
-    QueryParams.Value.DelimitedText := Copy(Path, Pos('?', Path) + 1, Length(Path));
-  end;
-
-  RttiType := RttiContext.GetType(TypeInfo(T));
-
-  if TryGetMethodFromUrl(Url, ApiMethod, MethodName, EndPointInfo) then
-    for Method in RttiType.GetMethods do
-      if Method.Name = MethodName then
-      begin
-        EndPointMethod := Copy(EndPointInfo.EndPoint, 2, Length(EndPointInfo.EndPoint));
-        EndPointMethod := '/' + Copy(EndPointMethod, 1, Pos('/', EndPointMethod) - 1);
-
-        PathParams.Value.DelimitedText := Copy(Path, Pos(EndPointMethod, Path) + Length(EndPointMethod) + 1, Length(Path));
-        Index := 0;
-
-        RegExpPath := StringReplace(EndPointInfo.EndPoint, '/', '\/', [rfReplaceAll]);
-        with TRegEx.Matches(RegExpPath, '{[\s\S][^{]+}').GetEnumerator do
-        begin
-          while MoveNext do
-          begin
-            CurrentParamName := StringReplace(StringReplace(Current.Value, '{', '', []), '}', '', []);
-
-            if PathParams.Value.Count > Index then
-              CurrentParamValue := PathParams.Value[Index];
-
-            Inc(Index);
-
-            for Param in Method.GetParameters do
-              for Attr in Param.GetAttributes do
-                if Attr is ApiParamAttribute then
-                   if ApiParamAttribute(Attr).ParamName.ToUpper = CurrentParamName.ToUpper then
-                   begin
-                     CurrentParamName := Param.Name;
-                     Break;
-                   end;
-
-            for Attr in Method.GetAttributes do
-              if Attr is ParamAttribute then
-                if ParamAttribute(Attr).ApiParam.ToUpper = CurrentParamName.ToUpper then
-                begin
-                  CurrentParamName := ParamAttribute(Attr).MethodParam;
-                  Break;
-                end;
-
-            Params.AddOrSetValue(CurrentParamName, CurrentParamValue);
-          end;
-          Free;
-        end;
-
-        for I := 0 to QueryParams.Value.Count - 1 do
-        begin
-          CurrentParamName := QueryParams.Value.Names[I];
-
-          for Param in Method.GetParameters do
-            for Attr in Param.GetAttributes do
-              if Attr is ApiParamAttribute then
-                 if ApiParamAttribute(Attr).ParamName.ToUpper = CurrentParamName then
-                 begin
-                   CurrentParamName := Param.Name;
-                   Break;
-                 end;
-
-          for Attr in Method.GetAttributes do
-            if Attr is ParamAttribute then
-              if ParamAttribute(Attr).ApiParam.ToUpper = CurrentParamName.ToUpper then
-              begin
-                CurrentParamName := ParamAttribute(Attr).MethodParam;
-                Break;
-              end;
-
-          Params.AddOrSetValue(CurrentParamName, QueryParams.Value.ValueFromIndex[I]);
-        end;
-
-        if Params.Count <> Length(Method.GetParameters) then
-          Exit;
-
-        SetLength(MethodParams, Params.Count + 1);
-        MethodParams[0] := Self;
-        I := 1;
-        for Param in Method.GetParameters do
-        begin
-          MethodParams[I] := TValue.From<string>(Params.Items[Param.Name]);
-          Inc(I)
-        end;
-
-        try
-          DoInvoke(Method, MethodParams, MethodResult);
-          Result := True;
-        except
-        end;
-        Exit;
-      end;
 end;
 
 { TVirtualApiEndPointInfo }
