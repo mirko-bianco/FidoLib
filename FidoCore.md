@@ -75,9 +75,9 @@ The following types are supported:
 
 - Interfaces (any descendent of `IInterface`). 
 
-  Any public and published parameter-less function and readable property is marshalled.
+  Any public parameter-less function and readable property is marshalled.
 
-  Any public and published one-parameter method and writeable property is unmarshalled.
+  Any public one-parameter method and writeable property is unmarshalled.
 
 - Lists of primitives (`Spring.Collections.IReadonlyList<T>` where T is one of the supported Primitives).
 - Lists of interfaces (`Spring.Collections.IReadonlyList<T: IInterface>` ).
@@ -238,8 +238,8 @@ Fido library will unmarshall classes and interfaces, adopting the following rule
 
 Fido library will marshall interfaces, adopting the following rules:
 
-- Only public and published parameter-less functions are used
-- Only public and published readable properties will be used
+- Only public parameter-less functions are used
+- Only public readable properties will be used
 
 Fido library will marshall classes, adopting the following rules:
 
