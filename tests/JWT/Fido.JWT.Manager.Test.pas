@@ -5,6 +5,7 @@ interface
 uses
   DUnitX.TestFramework,
   SysUtils,
+  System.JSON,
 
   Spring,
 
@@ -52,10 +53,8 @@ end;
 procedure TJWTManagerTests.JWTManagerDoesNotVerifyAnInvalidToken;
 var
   Manager: Shared<TJWTManager>;
-  Token: Shared<TJWT>;
   Duration: Integer;
   Issuer: string;
-  SignedToken: string;
   VerifiedToken: TJWT;
   Check: Boolean;
 begin
