@@ -37,8 +37,6 @@ uses
 
   Fido.Types,
   Fido.DesignPatterns.Observable.Intf,
-  Fido.DesignPatterns.Observer.Intf,
-  Fido.DesignPatterns.Observer.Notification.Intf,
   Fido.Collections.DeepObservableList.Intf,
   Fido.Exceptions,
   Fido.Collections,
