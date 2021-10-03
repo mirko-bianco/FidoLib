@@ -37,6 +37,9 @@ uses
 
   Fido.Types,
   Fido.DesignPatterns.Observable.Intf,
+  Fido.DesignPatterns.Observer.Intf,
+  Fido.DesignPatterns.Observer.Notification.Intf,
+  Fido.Collections.DeepObservableList.Intf,
   Fido.Exceptions,
   Fido.Collections,
   Fido.Utilities,
@@ -102,6 +105,9 @@ type
     procedure _OnPostData(Sender: TCustomVirtualDataset; const Index: Integer); virtual;
     procedure _OnLocate(Sender: TCustomVirtualDataset; const KeyFields: string; const KeyValues: Variant; const Options: TLocateOptions; var Index: Integer); virtual;
     procedure _OnLookupValue(Sender: TCustomVirtualDataset; const KeyFields: string; const KeyValues: Variant; const ResultFields: string; var Value: Variant); virtual;
+  private
+    function GetIsGetterName(const Name: string): boolean;
+    function GetMappedName(const Name: string): string;
   protected
     FListFactory: TFunc<IList<T>>;
 
@@ -221,7 +227,7 @@ begin
   Context := TRttiContext.Create;
 
   LType := Context.GetType(Entity.TypeInfo);
-  if Length(LType.GetProperties) <> 0 then
+  if Length(LType.GetDeclaredProperties) <> 0 then
     for LProp in LType.GetProperties do
     begin
       if LProp.PropertyType.TypeKind = tkClass then
@@ -247,7 +253,7 @@ begin
       end;
     end
   else
-    for LMethod in LType.GetMethods do
+    for LMethod in LType.GetDeclaredMethods do
       if TryGetGetterMethodInfo(LMethod, LMethodInfo) then
       begin
         LField := Fields.FindField(Prefix + LMethodInfo.FieldName);
@@ -281,8 +287,8 @@ begin
 
   LRttiType := Context.GetType(TypInfo);
 
-  // if it is a class
-  if Length(LRttiType.GetProperties) <> 0 then
+  if Length(LRttiType.GetDeclaredProperties) <> 0 then
+
     for LRttiProp in LRttiType.GetProperties do
     begin
 
@@ -306,9 +312,8 @@ begin
         AddFieldDef(Prefix + LRttiProp.Name, DataTypeDescriptor.FieldType);
     end
 
-  // else is an interface
   else
-    for LRttiMeth in LRttiType.GetMethods do
+    for LRttiMeth in LRttiType.GetDeclaredMethods do
     begin
       // don't even try to analyse if field already done or doesn't have a getter or setter
       if not (TryGetGetterMethodInfo(LRttiMeth, LMethodInfo) or
@@ -361,7 +366,11 @@ begin
       if Active then
         Refresh;
     end;
-    caChanged: FilterDataset;
+    caChanged: begin
+      FilterDataset;
+      if Active then
+        Refresh;
+    end;
   end;
   EnableControls;
 end;
@@ -419,7 +428,7 @@ begin
   Context := TRttiContext.Create;
 
   LTypes := Context.GetType(Entity.TypeInfo);
-  if Length(LTypes.GetProperties) <> 0 then
+  if Length(LTypes.GetDeclaredProperties) <> 0 then
     for LProp in LTypes.GetProperties do
     begin
       Field := Fields.FindField(Prefix + LProp.Name);
@@ -444,7 +453,7 @@ begin
       end;
     end
   else
-    for LMethod in LTypes.GetMethods do
+    for LMethod in LTypes.GetDeclaredMethods do
       if TryGetSetterMethodInfo(LMethod, LMethodInfo) and
          (LMethodInfo.TypeKind <> tkInterface) then
       begin
@@ -718,18 +727,29 @@ begin
   FilterDataSet;
 end;
 
+function TListDataSet<T>.GetIsGetterName(const Name: string): boolean;
+begin
+  Result := Name.ToUpper.StartsWith(GETTER_PREFIX, true);
+end;
+
+function TListDataSet<T>.GetMappedName(const Name: string): string;
+begin
+  Result := Name.ToUpper;
+
+  if GetIsGetterName(Result) then
+    Result := Copy(Result, Length(GETTER_PREFIX) + 1, Length(Result));
+end;
+
 function TListDataSet<T>.TryGetGetterMethodInfo(const RttiMeth: TRttiMethod; out MethodInfo: TMethodInfo): Boolean;
 begin
-  Result := RttiMeth.Name.ToUpper.StartsWith(GETTER_PREFIX);
-  if not Result then
-    Exit;
-
-  if Length(RttiMeth.GetParameters) <> 0 then
+  if not ((RttiMeth.Visibility in [mvPublic, mvPublished]) and
+          (RttiMeth.MethodKind = mkFunction) and
+          (Length(RttiMeth.GetParameters) = 0)) then
     Exit(False);
 
   MethodInfo.IsList := Assigned(RttiMeth.ReturnType) and RttiMeth.ReturnType.QualifiedName.ToUpper.Contains('ILIST<');
 
-  MethodInfo.FieldName := RttiMeth.Name.Remove(0, Length(GETTER_PREFIX));
+  MethodInfo.FieldName := GetMappedName(RttiMeth.Name);
 
   if MethodInfo.FieldName.IsEmpty then
     Exit(False);
@@ -737,16 +757,20 @@ begin
   MethodInfo.TypeKind := RttiMeth.ReturnType.TypeKind;
   MethodInfo.VariableTypeName := RttiMeth.ReturnType.QualifiedName;
   MethodInfo.Handle := RttiMeth.ReturnType.Handle;
+  Result := True;
 end;
 
 function TListDataSet<T>.TryGetSetterMethodInfo(const RttiMeth: TRttiMethod; out MethodInfo: TMethodInfo): Boolean;
 begin
+  if not ((RttiMeth.Visibility in [mvPublic, mvPublished]) and
+          (RttiMeth.MethodKind = mkProcedure) and
+          (Length(RttiMeth.GetParameters) = 1)) then
+    Exit(False);
+
+
   Result := RttiMeth.Name.ToUpper.StartsWith(SETTER_PREFIX);
   if not Result then
     Exit;
-
-  if Length(RttiMeth.GetParameters) <> 1 then
-    Exit(False);
 
   MethodInfo.FieldName := RttiMeth.Name.Remove(0, Length(SETTER_PREFIX));
 
