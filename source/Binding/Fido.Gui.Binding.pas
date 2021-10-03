@@ -174,7 +174,11 @@ begin
     if SourceAttributeName.StartsWith('Get') then
       SourceMethod := RttiContext.GetType(TypeInfo(DomainObject)).GetMethod(SourceAttributeName)
     else
-      SourceMethod := RttiContext.GetType(TypeInfo(DomainObject)).GetMethod('Get' + SourceAttributeName);
+    begin
+      SourceMethod := RttiContext.GetType(TypeInfo(DomainObject)).GetMethod(SourceAttributeName);
+      if not Assigned(SourceMethod) then
+        SourceMethod := RttiContext.GetType(TypeInfo(DomainObject)).GetMethod('Get' +SourceAttributeName);
+    end;
     if Assigned(SourceMethod) and not ((SourceMethod.MethodKind = mkFunction) and (Length(SourceMethod.GetParameters) = 0)) then
       SourceMethod := nil;
     if not Assigned(SourceMethod) then
