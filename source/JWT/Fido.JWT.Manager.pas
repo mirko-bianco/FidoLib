@@ -83,6 +83,7 @@ begin
     Token := TJOSE.Verify(Key.Value, CompactToken);
     Result := Token.Verified;
   except
+    Token := nil;
   end;
 end;
 

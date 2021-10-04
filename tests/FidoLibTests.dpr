@@ -29,7 +29,10 @@ uses
   Fido.Db.TransactionHandler.Test in 'Db\Fido.Db.TransactionHandler.Test.pas',
   Fido.OwningObject.Test in 'Fido.OwningObject.Test.pas',
   Fido.Immutable.Test in 'Fido.Immutable.Test.pas',
-  Fido.Mappers.Test in 'Fido.Mappers.Test.pas';
+  Fido.Mappers.Test in 'Fido.Mappers.Test.pas',
+  Fido.JWT.Manager.Test in 'JWT\Fido.JWT.Manager.Test.pas',
+  Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test.pas',
+  Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas';
 
 var
   runner : ITestRunner;

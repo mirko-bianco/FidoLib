@@ -3,8 +3,21 @@ unit Song.View;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons, System.Actions, Vcl.ActnList,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Variants,
+  System.Classes,
+  System.Actions,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+  Vcl.Buttons,
+  Vcl.ActnList,
+  Vcl.Mask,
 
   Spring,
 
@@ -16,10 +29,14 @@ uses
 
 type
   TSongView = class(TForm)
+    // The View observes the ViewModel and sets the edTitle.Text to ViewModel.Text
+    // everytime the edTitle.OnExit event is called.
     [BidirectionalToObservableBinding('Title', 'Text', 'OnExit')]
     edTitle: TLabeledEdit;
-    [MethodToActionBinding('Save', oeetAfter)]
-    btnOk: TBitBtn;
+    // When the user presses the button then the ViewModel.Save method is called
+    // If the component is linked to an action then that action is triggered before the ViewModel method.
+    [MethodToActionBinding('Save', oeetBefore)]
+    btnSave: TBitBtn;
     btnCancel: TBitBtn;
     ActionList: TActionList;
     actClose: TAction;
@@ -32,9 +49,7 @@ type
     procedure InitializeGui;
   public
     { Public declarations }
-    constructor Create(
-      const Id: Integer;
-      const SongViewModelFactoryFunc: TFunc<Integer, ISongViewModel>); reintroduce;
+    constructor Create(const SongViewModel: ISongViewModel); reintroduce;
   end;
 
 implementation
@@ -45,16 +60,15 @@ implementation
 
 procedure TSongView.actCloseExecute(Sender: TObject);
 begin
+  btnSave.SetFocus;
   Close;
 end;
 
-constructor TSongView.Create(
-  const Id: Integer;
-  const SongViewModelFactoryFunc: TFunc<Integer, ISongViewModel>);
+constructor TSongView.Create(const SongViewModel: ISongViewModel);
 begin
-  Guard.CheckTrue(Assigned(SongViewModelFactoryFunc), 'SongViewModelFactoryFunc is not assigned');
+  Guard.CheckNotNull(SongViewModel, 'SongViewModel');
   inherited Create(nil);
-  FSongViewModel := SongViewModelFactoryFunc(Id);
+  FSongViewModel := SongViewModel;
   InitializeGui;
   FSongViewModel.Broadcast('Initialization');
 end;
@@ -66,7 +80,9 @@ end;
 
 procedure TSongView.InitializeGui;
 begin
+  // Sets up the bindings between the ViewModel and the View
   Guibinding.Setup<ISongViewModel, TSongView>(FSongViewModel, Self);
+  // Sets up the methods binding between the ViewModel and the View
   Guibinding.MethodsSetup<ISongViewModel, TSongView>(FSongViewModel, Self);
 end;
 

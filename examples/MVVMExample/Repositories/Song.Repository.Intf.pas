@@ -15,6 +15,8 @@ type
     function GetList: IDeepObservableList<ISong>;
     function GetById(const Id: Integer): ISong;
     procedure Update(const Song: ISong);
+    function Store(const Song: ISong): ISong;
+    procedure Delete(const Id: Integer);
   end;
 
 implementation

@@ -63,6 +63,9 @@ type
     // Transforms an observable Entity into a TDataSet.
     class function ObservableEntityToDataset<TEntity: IObservable>(const Entity: TEntity): TDataSet; overload; static;
 
+    // Transforms a list of observable Entities into a TDataSet.
+    class function ListOfObservablesToDataset<TEntity: IObservable>(const List: IDeepObservableList<TEntity>): TListDataSetOfObservable<TEntity>; overload; static;
+
     // Transforms an Entity into a TDataSet.
     class function EntityToDataset<TEntity: IInvokable>(const Entity: TEntity): TDataSet; overload; static;
 
@@ -70,7 +73,13 @@ type
     // Accepts an IDatasetFieldAttributes in order to decorate the fields
     class function ObservableEntityToDataset<TEntity: IObservable>(
       const Entity: TEntity;
-      const DatasetFieldAttributes: IDatasetFieldAttributes): TDataSet; overload; static;
+      const DatasetFieldAttributes: IDatasetFieldAttributes): TListDataSetOfObservable<TEntity>; overload; static;
+
+    // Transforms a list of observable Entities into a TDataSet.
+    // Accepts an IDatasetFieldAttributes in order to decorate the fields
+    class function ListOfObservablesToDataset<TEntity: IObservable>(
+      const List: IDeepObservableList<TEntity>;
+      const DatasetFieldAttributes: IDatasetFieldAttributes): TListDataSetOfObservable<TEntity>; overload; static;
 
     // Transforms an Entity into a TDataSet.
     // Accepts an IDatasetFieldAttributes in order to decorate the fields
@@ -86,9 +95,9 @@ begin
   Result := ObservableEntityToDataset<TEntity>(Entity, TDatasetFieldAttributes.Create);
 end;
 
-class function ListDatasets.ObservableEntityToDataset<TEntity>(const Entity: TEntity; const DatasetFieldAttributes: IDatasetFieldAttributes): TDataSet;
+class function ListDatasets.ObservableEntityToDataset<TEntity>(const Entity: TEntity; const DatasetFieldAttributes: IDatasetFieldAttributes): TListDataSetOfObservable<TEntity>;
 var
-  ListDataSet: TListDataSet<TEntity>;
+  ListDataSet: TListDataSetOfObservable<TEntity>;
 begin
   ListDataSet := TListDataSetOfObservable<TEntity>.Create(
     nil,
@@ -145,6 +154,30 @@ begin
   ListDataSet.Open;
 
   Result := ListDataSet;
+end;
+
+class function ListDatasets.ListOfObservablesToDataset<TEntity>(
+  const List: IDeepObservableList<TEntity>;
+  const DatasetFieldAttributes: IDatasetFieldAttributes): TListDataSetOfObservable<TEntity>;
+var
+  ListDataSet: TListDataSetOfObservable<TEntity>;
+begin
+  ListDataSet := TListDataSetOfObservable<TEntity>.Create(
+    nil,
+    function(TypeInfo: PTypeInfo): TValue
+    begin
+    end,
+    DatasetFieldAttributes);
+  ListDataSet.DataList := List;
+  ListDataSet.Open;
+
+  Result := ListDataSet;
+end;
+
+class function ListDatasets.ListOfObservablesToDataset<TEntity>(
+  const List: IDeepObservableList<TEntity>): TListDataSetOfObservable<TEntity>;
+begin
+  Result := ListOfObservablesToDataset<TEntity>(List, TDatasetFieldAttributes.Create);
 end;
 
 class function ListDatasets.ListToDataset<TEntity>(

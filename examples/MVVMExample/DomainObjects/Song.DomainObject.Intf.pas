@@ -6,16 +6,14 @@ uses
   Fido.DesignPatterns.Observable.Intf;
 
 type
+  {$M+}
   ISong = interface(IObservable)
   ['{B2960A14-103D-42FE-BAB2-C22EE7DF37FD}']
-    function GetId: Integer;
+    function Id: Integer;
     procedure SetId(const Id: Integer);
 
-    function GetTitle: string;
+    function Title: string;
     procedure SetTitle(const Title: string);
-
-    property Id: Integer read GetId write SetId;
-    property Title: string read GetTitle write SetTitle;
   end;
 
 implementation

@@ -1,7 +1,7 @@
 select
-  id,
+  rowid as id,
   title
 from
   songs
 where
-  id = :id
+  rowid = :id

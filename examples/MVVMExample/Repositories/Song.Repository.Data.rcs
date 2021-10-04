@@ -1,3 +1,6 @@
 SQL_SONG_GetList RCDATA "Queries\SQL_SONG_GetList.sql"
 SQL_SONG_Get RCDATA "Queries\SQL_SONG_Get.sql"
 SQL_SONG_Update RCDATA "Queries\SQL_SONG_Update.sql"
+SQL_SONG_Insert RCDATA "Queries\SQL_SONG_Insert.sql"
+SQL_SONG_LastId RCDATA "Queries\SQL_SONG_LastId.sql"
+SQL_SONG_Delete RCDATA "Queries\SQL_SONG_Delete.sql"

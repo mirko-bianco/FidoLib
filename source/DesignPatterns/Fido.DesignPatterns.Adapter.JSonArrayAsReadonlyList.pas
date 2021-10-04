@@ -103,7 +103,7 @@ begin
     end,
     function(Index: Integer): T
     begin
-       (FJsonArray.Items[Index] as TJSONValue).TryGetValue<T>(Result);
+       Result := JSONUnmarshaller.To<T>((FJsonArray.Items[Index] as TJSONObject).ToJSON);
     end);
   FJsonArray := TJSONObject.ParseJSONValue(JsonArray.ToJSON) as TJSONArray;
 end;

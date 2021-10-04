@@ -185,6 +185,9 @@
         <DCCReference Include="Fido.OwningObject.Test.pas"/>
         <DCCReference Include="Fido.Immutable.Test.pas"/>
         <DCCReference Include="Fido.Mappers.Test.pas"/>
+        <DCCReference Include="JWT\Fido.JWT.Manager.Test.pas"/>
+        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test.pas"/>
+        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -200,10 +200,6 @@ type
     procedure TestCallApiThatRequiresAResponseHeaderParamReturnsTheValueWhenTheCodeIsCorrect;
     [Test]
     procedure TestCallApiThatRequiresAResponseHeaderParamReturnsTheValueWhenTheCodeIsIncorrect;
-    [Test]
-    procedure TestTryExecuteDirectUrlWorksWhenCalledWithProperData;
-    [Test]
-    procedure TestTryExecuteDirectUrlFailsWhenCalledWithNonProperData;
   end;
 
 implementation
@@ -473,60 +469,6 @@ begin
     end);
 
   Assert.AreEqual(rmPOST, Response.TheRequestMethod);
-end;
-
-procedure TClientVirtualApiJsonTest.TestTryExecuteDirectUrlFailsWhenCalledWithNonProperData;
-var
-  Conf: ITestConfiguration;
-  ApiIntf: ITestClientVirtualApi;
-  SomeApiKey: string;
-  Result: Boolean;
-  ResultValue: TValue;
-  SomeInteger: Integer;
-  Url: string;
-begin
-  SomeApiKey := MockUtils.SomeString;
-  SomeInteger := MockUtils.SomeInteger;
-
-  Conf := TTestConfiguration.Create(BASEURL, True, True, SomeApiKey);
-  ApiIntf := TTestApiImplementation.Create(Conf) as ITestClientVirtualApi;
-
-  Url := BASEURL + GETMULTIPLEPARAMS + IntToStr(SomeInteger) + '/' + IntToStr(MockUtils.SomeInteger);
-
-  Assert.WillNotRaiseAny(
-    procedure
-    begin
-      Result := ApiIntf.TryExecuteRelUrl(Url, rmGET, ResultValue);
-    end);
-
-  Assert.IsFalse(Result);
-end;
-
-procedure TClientVirtualApiJsonTest.TestTryExecuteDirectUrlWorksWhenCalledWithProperData;
-var
-  Response: ITestResponse;
-  Conf: ITestConfiguration;
-  Api: TTestApiImplementation;
-  SomeApiKey: string;
-  Result: Boolean;
-  ResultValue: TValue;
-  SomeInteger: Integer;
-begin
-  SomeApiKey := MockUtils.SomeString;
-  SomeInteger := MockUtils.SomeInteger;
-
-  Conf := TTestConfiguration.Create(BASEURL, True, True, SomeApiKey);
-  Api := TTestApiImplementation.Create(Conf);
-
-  Assert.WillNotRaiseAny(
-    procedure
-    begin
-      Result := (Api as ITestClientVirtualApi).TryExecuteRelUrl(BASEURL + GETSOMETHING + IntToStr(SomeInteger), rmGET, ResultValue);
-      Response := ResultValue.AsType<ITestResponse>;
-    end);
-
-  Assert.IsTrue(Result);
-  Assert.AreEqual(IntToStr(SomeInteger), Response.AString);
 end;
 
 { TTestConfiguration }

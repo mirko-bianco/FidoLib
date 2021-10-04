@@ -47,3 +47,5 @@ __recovery/
 *.a
 *.skincfg
 Win32/Debug/dunitx-results.xml
+tests/dunitx-results.xml
+tests/TestInsightSettings.ini

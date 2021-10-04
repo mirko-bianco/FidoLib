@@ -639,7 +639,7 @@ begin
 
   for Method in RttiType.GetMethods do
   begin
-    if (Method.Visibility in [mvPublic, mvPublished]) and
+    if (Method.Visibility in [mvPublic]) and
        (Method.MethodKind = mkFunction) and
        (Length(Method.GetParameters) = 0) then
     begin
@@ -653,7 +653,7 @@ begin
 
   for Prop in RttiType.GetProperties do
   begin
-    if (Prop.Visibility in [mvPublic, mvPublished]) and
+    if (Prop.Visibility in [mvPublic]) and
        Prop.IsReadable then
     begin
       ReturnValue := Prop.GetValue(Value.AsInterface);

@@ -1,5 +1,5 @@
 select
-  id,
+  rowid as id,
   title
 from
   songs
