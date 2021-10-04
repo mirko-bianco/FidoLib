@@ -28,21 +28,20 @@ uses
   Fido.Db.Connections.FireDac,
   Fido.StatementExecutor.Intf,
   Fido.Db.StatementExecutor.FireDac,
-  Fido.VirtualQuery,
 
   Main.View,
-  Song.Model,
-  Song.DomainObject,
-  Song.DomainObject.Intf,
-  Song.Model.Intf,
-  Song.View,
-  Song.ViewModel,
-  Song.ViewModel.Intf,
   Main.ViewModel.Intf,
   Main.ViewModel,
+  Song.DomainObject,
+  Song.DomainObject.Intf,
   Song.Repository.Data.Intf,
   Song.Repository.Intf,
-  Song.Repository;
+  Song.Repository,
+  Song.Model.Intf,
+  Song.Model,
+  Song.View,
+  Song.ViewModel.Intf,
+  Song.ViewModel;
 
 type
   MVVMExampleInitialization = class
@@ -74,17 +73,17 @@ begin
   Container.RegisterType<TMainView>.AsSingleton;
   Container.RegisterType<IMainViewModel, TMainViewModel>;
   Container.RegisterType<TSongView>;
-  Container.RegisterInstance<TFunc<Integer, TSongView>>(
-    function(Id: Integer): TSongView
+  Container.RegisterInstance<TFunc<ISongViewModel, TSongView>>(
+    function(SongViewModel: ISongViewModel): TSongView
     begin
-      Result := Container.Resolve<TSongView>([TNamedValue.From<Integer>(Id, 'Id')]);
+      Result := Container.Resolve<TSongView>([TNamedValue.From<ISongViewModel>(SongViewModel, 'SongViewModel')]);
     end
   );
   Container.RegisterType<ISongViewModel, TSongViewModel>;
-  Container.RegisterInstance<TFunc<Integer, ISongViewModel>>(
-    function(Id: Integer): ISongViewModel
+  Container.RegisterInstance<TFunc<Integer, ISongModel, ISongViewModel>>(
+    function(Id: Integer;  SongModel: ISongModel): ISongViewModel
     begin
-      Result := Container.Resolve<ISongViewModel>([TNamedValue.From<Integer>(Id, 'Id')]);
+      Result := Container.Resolve<ISongViewModel>([TNamedValue.From<Integer>(Id, 'Id'), TNamedValue.From<ISongModel>(SongModel, 'SongModel')]);
     end
   );
   Container.RegisterType<ISongModel, TSongModel>;
@@ -92,6 +91,9 @@ begin
   Containers.RegisterVirtualQuery<ISongRecord, ISongListQuery>(Container);
   Containers.RegisterVirtualQuery<ISongRecord, ISongByIdQuery>(Container);
   Containers.RegisterVirtualStatement<ISongUpdateByIdCommand>(Container);
+  Containers.RegisterVirtualStatement<ISongInsertCommand>(Container);
+  Containers.RegisterVirtualQuery<IIdRecord, ISongLastIdQuery>(Container);
+  Containers.RegisterVirtualStatement<ISongDeleteByIdCommand>(Container);
 
   Container.RegisterType<ISongRepository, TSongRepository>;
 

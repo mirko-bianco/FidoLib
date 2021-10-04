@@ -3,4 +3,4 @@ update
 set
   title = :title
 where
-  id = :id
+  rowid = :id

@@ -4,8 +4,17 @@ interface
 
 uses
   System.Classes,
+  System.SysUtils,
+  System.UITypes,
+  System.Actions,
+  Data.DB,
   Vcl.Forms,
   Vcl.StdCtrls,
+  Vcl.Controls,
+  Vcl.Grids,
+  Vcl.DBGrids,
+  Vcl.Dialogs,
+  Vcl.ActnList,
 
   Spring,
 
@@ -13,12 +22,35 @@ uses
   Fido.Gui.Binding,
   Fido.Gui.Types,
 
-  Main.ViewModel.Intf, Vcl.Controls;
+  Main.ViewModel.Intf;
 
 type
   TMainView = class(TForm)
-    [MethodToActionBinding('ShowSong', oeetAfter)]
-    Button1: TButton;
+    // When the user presses the button then the ViewModel.ShowSong method is called
+    // If the component is linked to an action then that action is triggered before the ViewModel method.
+    [MethodToActionBinding('ShowSong', oeetBefore)]
+    // The View observes the ViewModel and sets the Button.Enabled to ViewModel.IsModelNotEmpty
+    // everytime there is a notification.
+    [UnidirectionalToGuiBindingAttribute('IsModelNotEmpty',  'Enabled')]
+    ShowButton: TButton;
+    SongsDataSource: TDataSource;
+    SongsGrid: TDBGrid;
+    // When the user presses the button then the ViewModel.NewSong method is called
+    // If the component is linked to an action then that action is triggered before the ViewModel method.
+    [MethodToActionBinding('NewSong', oeetBefore)]
+    NewButton: TButton;
+    ActionList: TActionList;
+    actNewSong: TAction;
+    // When the user presses the button then the ViewModel.DeleteSong method is called
+    // If the component is linked to an action then that action is triggered before the ViewModel method.
+    [MethodToActionBinding('DeleteSong', oeetBefore)]
+    // The View observes the ViewModel and sets the Button.Enabled to ViewModel.IsModelNotEmpty
+    // everytime there is a notification.
+    [UnidirectionalToGuiBindingAttribute('IsModelNotEmpty',  'Enabled')]
+    DeleteButton: TButton;
+    actDeleteSong: TAction;
+    procedure SongsGridDblClick(Sender: TObject);
+    procedure actDeleteSongExecute(Sender: TObject);
   private
     { Private declarations }
     FMainViewModel: IMainViewModel;
@@ -37,6 +69,14 @@ implementation
 
 { TMainView }
 
+procedure TMainView.actDeleteSongExecute(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to delete the song?', mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+    // The abort will interrupt the UI flow and stop the decorated event from happening.
+    // This way the ViewModel can deal with the pure logic while the View can be in charge of the UI interactions.
+    Abort;
+end;
+
 constructor TMainView.Create(
   const Owner: TComponent;
   const MainViewModel: IMainViewModel);
@@ -49,7 +89,21 @@ end;
 
 procedure TMainView.InitializeGui;
 begin
+  // Sets up the bindings between the ViewModel and the View
+  Guibinding.Setup<IMainViewModel, TMainView>(FMainViewModel, Self);
+  // Sets up the methods binding between the ViewModel and the View
   Guibinding.MethodsSetup<IMainViewModel, TMainView>(FMainViewModel, Self);
+
+  SongsDataSource.DataSet := FMainViewModel.GetSongDataset;
+  ShowButton.Enabled := FMainViewModel.IsModelNotEmpty;
+  DeleteButton.Enabled := FMainViewModel.IsModelNotEmpty;
+end;
+
+procedure TMainView.SongsGridDblClick(Sender: TObject);
+begin
+  // Double clicking on the grid will show the song, but only if the button is enabled.
+  if ShowButton.Enabled then
+    ShowButton.Click;
 end;
 
 end.

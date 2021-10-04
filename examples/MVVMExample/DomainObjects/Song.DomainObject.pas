@@ -19,10 +19,10 @@ type
   public
     constructor Create;
 
-    function GetId: Integer;
+    function Id: Integer;
     procedure SetId(const Id: Integer);
 
-    function GetTitle: string;
+    function Title: string;
     procedure SetTitle(const Title: string);
   end;
 
@@ -35,12 +35,12 @@ begin
   inherited Create(Self);
 end;
 
-function TSong.GetId: Integer;
+function TSong.Id: Integer;
 begin
   Result := FId;
 end;
 
-function TSong.GetTitle: string;
+function TSong.Title: string;
 begin
   Result := FTitle;
 end;

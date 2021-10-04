@@ -37,7 +37,35 @@ type
   [Statement(stCommand, 'SQL_SONG_Update')]
   ISongUpdateByIdCommand = interface(IVirtualStatement)
     ['{8ACAA604-8182-4FE3-B205-BBE2153B87B8}']
-    function Update(const Id: Integer; [Column('title')] const Name: string): Integer;
+
+    function Execute(const Id: Integer; [Column('title')] const Name: string): Integer;
+  end;
+
+  [Statement(stCommand, 'SQL_SONG_Insert')]
+  ISongInsertCommand = interface(IVirtualStatement)
+    ['{F2482C88-AC0A-420E-983D-4DF60E4E1FEF}']
+
+    function Execute([Column('title')] const Name: string): Integer;
+  end;
+
+  IIdRecord = interface(IInvokable)
+    ['{BF8168FE-B3F3-48C8-9BD7-FAAAE2ADDCAB}']
+
+    function Id: Integer;
+  end;
+
+  [SQLResource('SQL_SONG_LastId')]
+  ISongLastIdQuery = interface(IVirtualQuery)
+    ['{02061EC0-76B1-46BE-AF8D-D7898B5785AD}']
+
+    function Execute: IReadonlyList<IIdRecord>;
+  end;
+
+  [Statement(stCommand, 'SQL_SONG_Delete')]
+  ISongDeleteByIdCommand = interface(IVirtualStatement)
+    ['{37BF07AF-09C0-4ED5-A61B-6940ABE62377}']
+
+    function Execute(const Id: Integer): Integer;
   end;
 
 implementation

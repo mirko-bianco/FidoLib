@@ -10,12 +10,11 @@ object SongView: TSongView
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnClose = FormClose
+  PixelsPerInch = 96
   DesignSize = (
     623
     123)
-  PixelsPerInch = 96
   TextHeight = 13
   object edTitle: TLabeledEdit
     Left = 24
@@ -27,15 +26,16 @@ object SongView: TSongView
     EditLabel.Height = 13
     EditLabel.Caption = 'Title'
     TabOrder = 0
+    Text = ''
   end
-  object btnOk: TBitBtn
+  object btnSave: TBitBtn
     Left = 518
     Top = 88
     Width = 75
     Height = 25
     Action = actClose
     Anchors = [akRight, akBottom]
-    Caption = 'Ok'
+    Caption = 'Close'
     Kind = bkOK
     NumGlyphs = 2
     TabOrder = 1

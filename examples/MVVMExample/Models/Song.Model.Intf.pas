@@ -18,6 +18,8 @@ type
     function Get(const Id: Integer): ISong;
 
     procedure Save(const Song: ISong);
+
+    procedure Delete(const Id: Integer);
   end;
 
 implementation
