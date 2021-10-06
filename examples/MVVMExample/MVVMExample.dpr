@@ -49,9 +49,9 @@ begin
 
   //Add some random data to the database
   Connections := Container.Value.Resolve<TFireDacConnections>;
-  Connections.GetCurrent.ExecSQL('create table songs (id integer not null, title text not null);');
-  Connections.GetCurrent.ExecSQL('insert into songs (id, title) values (1, "Carmina burana");');
-  Connections.GetCurrent.ExecSQL('insert into songs (id, title) values (2, "Happy birthday");');
+  Connections.GetCurrent.ExecSQL('create table songs (title text not null);');
+  Connections.GetCurrent.ExecSQL('insert into songs (title) values ("Carmina burana");');
+  Connections.GetCurrent.ExecSQL('insert into songs (title) values ("Happy birthday");');
 
   MainView := Container.Value.Resolve<TMainView>([TNamedValue.From<TComponent>(Application, 'Owner')]);
 
