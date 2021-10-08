@@ -719,15 +719,15 @@ begin
     if Attribute is BaseUrlAttribute then
       ResourcePath := (Attribute as BaseUrlAttribute).BaseUrl
     else if Attribute is ConsumesAttribute then
-      begin
-        SetLength(Consumes, Length(Consumes) + 1);
-        Consumes[High(Consumes)] := (Attribute as ConsumesAttribute).MimeType
-      end
-      else if Attribute is ProducesAttribute then
-      begin
-        SetLength(Produces, Length(Produces) + 1);
-        Produces[High(Produces)] := (Attribute as ProducesAttribute).MimeType
-      end;
+    begin
+      SetLength(Consumes, Length(Consumes) + 1);
+      Consumes[High(Consumes)] := (Attribute as ConsumesAttribute).MimeType
+    end
+    else if Attribute is ProducesAttribute then
+    begin
+      SetLength(Produces, Length(Produces) + 1);
+      Produces[High(Produces)] := (Attribute as ProducesAttribute).MimeType
+    end;
 
   if not ResourcePath.StartsWith('/') then
     ResourcePath := '/' + ResourcePath;
@@ -860,7 +860,10 @@ begin
   RttiType := Context.GetType(WebSocketClass);
   for Attribute in RttiType.GetAttributes do
     if Attribute is WebSocketPathAttribute then
+    begin
       Path := (Attribute as WebSocketPathAttribute).Path;
+      Break;
+    end;
 
   FLock.BeginWrite;
   try

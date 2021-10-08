@@ -200,10 +200,9 @@ begin
   with Dictionary.Keys.GetEnumerator do
     while MoveNext do
     begin
-      if SameText(Current, ParamName) then
-        Exit(True)
-      else if Dictionary.TryGetValue(Current, ApiName) and
-              SameText(ApiName, ParamName) then
+      if SameText(Current, ParamName) or
+         (Dictionary.TryGetValue(Current, ApiName) and
+          SameText(ApiName, ParamName)) then
         Exit(True);
     end;
 end;
@@ -233,10 +232,9 @@ end;
 
 class function TAbstractClientVirtualApi<T, IConfiguration>.GetAcceptHeaderWithApiVersion(const AcceptHeader: string): string;
 begin
-  if ApiVersion.IsEmpty then
-    Result := AcceptHeader
-  else
-    Result := AcceptHeader + ';version=' + ApiVersion;
+  Result := AcceptHeader;
+  if not ApiVersion.IsEmpty then
+    Result := Result + ';version=' + ApiVersion;
 end;
 
 class procedure TAbstractClientVirtualApi<T, IConfiguration>.ValidateMethods;
@@ -595,7 +593,10 @@ var
 begin
   for Attribute in ApiInterface.GetAttributes do
     if Attribute is ApiVersionAttribute then
+    begin
       FApiVersion := ApiVersionAttribute(Attribute).Version;
+      Break;
+    end;
 end;
 
 class function TAbstractClientVirtualApi<T, IConfiguration>.InspectMethod(const Method: TRttiMethod): TClientVirtualApiEndPointInfo;

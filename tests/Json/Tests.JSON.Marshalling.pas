@@ -1,6 +1,7 @@
 unit Tests.JSON.Marshalling;
 
 interface
+
 uses
   DUnitX.TestFramework,
   System.Json,
@@ -13,6 +14,7 @@ uses
   Spring.Collections,
 
   Fido.Testing.Mock.Utils,
+  Fido.JSON.Mapping,
   Fido.JSON.Marshalling;
 
 type
@@ -27,7 +29,6 @@ type
     property Id: Integer read FId write FId;
     property Name: Nullable<string> read FName write FName;
   end;
-  {$M-}
 
   ISinger = interface(IInvokable)
     ['{DC5320BB-1338-4745-B958-8A0BBD74DAB5}']
@@ -62,6 +63,27 @@ type
   end;
 
   ISongReadOnlyList = IReadOnlyList<ISong>;
+
+  ITest = interface(IInvokable)
+    ['{29988C55-C564-47E6-8066-C6E19FB6DBAD}']
+
+    function Id: Integer;
+    function Name: string;
+  end;
+
+  TTest = class(TInterfacedObject, ITest)
+  strict private
+    FId: Integer;
+    FName: string;
+  public
+    constructor Create(const Id: Integer; const Name: string);
+
+    function Id: Integer;
+    function Name: string;
+  end;
+
+  ITestReadOnlyList = IReadOnlyList<ITest>;
+  {$M-}
 
   [TestFixture]
   TJSONMarshallingTests = class(TObject)
@@ -148,13 +170,31 @@ type
     procedure JSONUnmarshallingToObject;
 
     [Test]
+    procedure JSONMarshallingFromObject;
+
+    [Test]
     procedure JSONUnmarshallingToInterface;
+
+    [Test]
+    procedure JSONMarshallingFromInterface;
 
     [Test]
     procedure JSONUnmarshallingToIntegerReadonlyList;
 
     [Test]
+    procedure JSONMarshallingFromIntegerReadonlyList;
+
+    [Test]
     procedure JSONUnmarshallingToInterfaceReadonlyList;
+
+    [Test]
+    procedure JSONMarshallingFromInterfaceReadonlyList;
+
+    [Test]
+    procedure TestCustomConfigurations;
+
+    [Test]
+    procedure WithNoCustomConfigurationItRevertsToDefault;
   end;
 
 implementation
@@ -177,13 +217,22 @@ begin
   Assert.AreEqual('2147483647', JSONMarshaller.From<Integer>(2147483647));
 end;
 
+procedure TJSONMarshallingTests.JSONMarshallingFromIntegerReadonlyList;
+var
+  List: IList<Integer>;
+begin
+  List := TCollections.CreateList<Integer>([1, 2, 3, 4]);
+
+  Assert.AreEqual('[1,2,3,4]', JSONMarshaller.From<IReadOnlyList<Integer>>(List.AsReadOnlyList));
+end;
+
 procedure TJSONMarshallingTests.JSONMarshallingFromNullableInt64;
 var
   NullableNull: Nullable<Int64>;
 begin
   Assert.AreEqual('9223372036854775807', JSONMarshaller.From<Nullable<Int64>>(9223372036854775807));
 
-  Assert.AreEqual('Null', JSONMarshaller.From<Nullable<Int64>>(NullableNull));
+  Assert.AreEqual('', JSONMarshaller.From<Nullable<Int64>>(NullableNull));
 end;
 
 procedure TJSONMarshallingTests.JSONMarshallingFromNullableInteger;
@@ -192,7 +241,7 @@ var
 begin
   Assert.AreEqual('2147483647', JSONMarshaller.From<Nullable<Integer>>(2147483647));
 
-  Assert.AreEqual('Null', JSONMarshaller.From<Nullable<Integer>>(NullableNull));
+  Assert.AreEqual('', JSONMarshaller.From<Nullable<Integer>>(NullableNull));
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToBoolean;
@@ -289,6 +338,30 @@ begin
   Assert.AreEqual(2001, song.Years[0]);
   Assert.AreEqual(2002, song.Years[1]);
   Assert.AreEqual(mtCD, song.Media);
+end;
+
+procedure TJSONMarshallingTests.JSONMarshallingFromInterface;
+const
+  JSON = '{"Id":2,"Name":"Author name"}';
+var
+  Author: IAuthor;
+  ResultJson: string;
+begin
+  Author := JSONUnmarshaller.&To<IAuthor>(JSON);
+  ResultJson := JSONMarshaller.From(Author);
+
+  Assert.AreEqual(JSON, ResultJson);
+end;
+
+procedure TJSONMarshallingTests.JSONMarshallingFromInterfaceReadonlyList;
+var
+  List: IList<ITest>;
+begin
+  List := TCollections.CreateList<ITest>([
+    TTest.Create(1, 'name 1'),
+    TTest.Create(2, 'name 2')]);
+
+  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"}]', JSONMarshaller.From<IReadOnlyList<ITest>>(List.AsReadOnlyList));
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToInterfaceReadonlyList;
@@ -396,11 +469,21 @@ begin
   Assert.AreEqual(False, JSONUnmarshaller.&To<Nullable<string>>('Null').HasValue);
 end;
 
+procedure TJSONMarshallingTests.JSONMarshallingFromObject;
+var
+  Obj: Shared<TMyObject>;
+begin
+  Obj := TMyObject.Create;
+  Obj.Value.Id := 100;
+
+  Assert.AreEqual('{"Id":100,"Name":null}', JSONMarshaller.From<TMyObject>(Obj));
+end;
+
 procedure TJSONMarshallingTests.JSONUnmarshallingToObject;
 var
   Obj: Shared<TMyObject>;
 begin
-  Obj := JSONUnmarshaller.&To<TMyObject>('{"Id":"1","Name":"Null"}');
+  Obj := JSONUnmarshaller.&To<TMyObject>('{"Id":1}');
   Assert.AreEqual(1, Obj.Value.Id);
   Assert.AreEqual(False, Obj.Value.Name.HasValue);
 end;
@@ -413,6 +496,48 @@ end;
 procedure TJSONMarshallingTests.JSONUnmarshallingToString;
 begin
   Assert.AreEqual('a string', JSONUnmarshaller.&To<string>('a string'));
+end;
+
+procedure TJSONMarshallingTests.TestCustomConfigurations;
+begin
+  MappingsUtilities.RegisterPrimitive<string>(
+    function(const Value: string): string
+    begin
+      Result := Value.ToUpper;
+    end,
+    function(const Value: string): string
+    begin
+      Result := Value.ToLower;
+    end,
+    'MyConfiguration');
+
+  Assert.AreEqual('"THISISUPPER"', JSONMarshaller.From<string>('ThisIsUpper', 'MyConfiguration'), False);
+  Assert.AreEqual('thisislower', JSONUnmarshaller.&To<string>('ThisIsLower', 'MyConfiguration'), False);
+  Assert.AreEqual('ThisIsDefault', JSONUnmarshaller.&To<string>('ThisIsDefault'), False);
+end;
+
+procedure TJSONMarshallingTests.WithNoCustomConfigurationItRevertsToDefault;
+begin
+  Assert.AreEqual('ThisIsDefault', JSONUnmarshaller.&To<string>('ThisIsDefault', 'AConfigurationThatDoesNotExists'), False);
+end;
+
+{ TTest }
+
+constructor TTest.Create(const Id: Integer; const Name: string);
+begin
+  inherited Create;
+  FId := Id;
+  FName := Name;
+end;
+
+function TTest.Id: Integer;
+begin
+  Result := FId;
+end;
+
+function TTest.Name: string;
+begin
+  Result := FName;
 end;
 
 initialization

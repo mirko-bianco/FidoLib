@@ -274,6 +274,56 @@ begin
 end;  
 ```
 
+##### Multiple mapping configurations
+
+FidoLib registers for you standard primitive type conversions rules, but you could have the need for supporting multiple configurations. 
+
+Let's say you connect to two separate APIs and each of them have a different date and time format. In this case it is enough to register mappings with the  configuration name, for example:
+
+```pascal
+  uses
+    Fido.JSON.Mapping;
+    
+  MappingsUtilities.RegisterEnumeratives(
+    function(const Value: TValue): string
+    begin
+      // Whatever implementation you like
+    end,
+    function(const Value: string; const TypInfo: pTypeInfo): TValue
+    begin
+      // whatever implementation you like
+    end,
+    'MySpecialConfiguration');
+```
+
+
+
+ And the usage is again straight forward, to convert from JSON to type:
+
+```pascal
+procedure UnmarshallSong(const SongJson: string);
+var
+  Song: ISong;
+begin
+  Song := JSONUnmarshaller.&To<ISong>(SongJson, 'MySpecialConfiguration');
+  
+  ...
+end;
+```
+
+And to convert from type to JSON:
+
+```pascal
+procedure MarshallSong(const Song: ISong);
+var
+  SongJson: string;
+begin
+  SongJson := JSONMarshaller.From<ISong>(Song, 'MySpecialConfiguration');
+  
+  ...
+end;  
+```
+
 ## Virtual database features
 
 The virtual database clients are interfaces that represent database statements (query, commands, sequences, stored procedures) and are enriched by means of attributes in order to allow the Fido library to work properly.

@@ -14,6 +14,7 @@ uses
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
   Fido.Registration,
+  Fido.JSON.Mapping,
   Fido.Environment.Test in 'Environment\Fido.Environment.Test.pas',
   Fido.Environment.Vault.Test in 'Environment\Fido.Environment.Vault.Test.pas',
   Tests.VirtualDTO.JSON in 'Json\Tests.VirtualDTO.JSON.pas',
