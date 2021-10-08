@@ -148,7 +148,7 @@ begin
   Assert.AreEqual(DateToISO8601(SomeDateTime), Api.Value.ExposedConvertTValueToString(SomeDateTime));
 
   Obj := TMyObject.Create;
-  Assert.AreEqual('{"Id":"1","Name":"Null"}', Api.Value.ExposedConvertTValueToString(TValue.From<TMyObject>(Obj)));
+  Assert.AreEqual('{"Id":1,"Name":null}', Api.Value.ExposedConvertTValueToString(TValue.From<TMyObject>(Obj)));
 end;
 
 { TTestConfiguration }
