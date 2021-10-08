@@ -127,7 +127,7 @@ end;
 function TJSONClientVirtualApi<T, IConfiguration>.ConvertTValueToString(const Value: TValue): string;
 begin
   inherited;
-  Result := JSONMarshaller.From(Value, Value.TypeInfo);
+  Result := JSONMarshaller.From(Value, Value.TypeInfo).DeQuotedString('"');
 end;
 
 end.

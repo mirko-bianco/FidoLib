@@ -23,7 +23,7 @@ Help is always welcome and appreciated, and I will embrace any good idea that co
 But remember that this library was born because I couldn't find anything around that was working the way I wanted, so I won't accept PRs that try to change the nature of the library, that is:
 
 - Describe behaviour instead of coding it, whenever is possible.
-- User composition as much as possible and avoid class hierarchies. Anyone should be able to start with the library without the need to change and rewrite their own codebase.
+- Use composition as much as possible and avoid class hierarchies. Anyone should be able to start with the library without the need to change and rewrite their own codebase.
 - Think (as a library designer) about your user (the developer). Clear and elegant interfaces and, if possible, one single way to achieve a result.
 
 If you are willing to play by the rules then let's have fun togheter. 

@@ -25,6 +25,12 @@ unit Fido.JSON.Mapping;
 interface
 
 uses
+  {$ifdef MSWINDOWS}
+  Windows,
+  {$endif}
+  {$ifdef POSIX}
+  Posix.Pthread,
+  {$endif}
   System.Rtti,
   System.TypInfo,
   System.SysUtils,
@@ -37,64 +43,193 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Exceptions,
   Fido.Json.Utilities;
 
 type
-  TJSONMarhallingFromFunc = reference to function(const Value: TValue): string;
+  TJSONMarhallingFromFunc = reference to function(const Value: TValue): Nullable<string>;
   TJSONUnmarhallingToFunc = reference to function(const Value: string; const TypInfo: pTypeInfo): TValue;
 
   TJSONConvertingFromFunc<T> = reference to function(const Value: T): string;
   TJSONConvertingToFunc<T> = reference to function(const Value: string): T;
 
-  TJSONMarshallingMapping = record
-  strict private
-    FFrom: TJSONMarhallingFromFunc;
-    FTo: TJSONUnmarhallingToFunc;
-  public
-    constructor Create(const From: TJSONMarhallingFromFunc; const &To: TJSONUnmarhallingToFunc);
-
-    property From: TJSONMarhallingFromFunc read FFrom;
-    property &To: TJSONUnmarhallingToFunc read FTo;
-  end;
-
   MappingsUtilities = class
+  public type
+    TJSONMarshallingMapping = record
+    strict private
+      FFrom: TJSONMarhallingFromFunc;
+      FTo: TJSONUnmarhallingToFunc;
+    public
+      constructor Create(const From: TJSONMarhallingFromFunc; const &To: TJSONUnmarhallingToFunc);
+
+      property From: TJSONMarhallingFromFunc read FFrom;
+      property &To: TJSONUnmarhallingToFunc read FTo;
+    end;
+
+  private type
+    TJsonTypeMappingsDictionary = class
+    strict private
+      FLock: IReadWriteSync;
+      FItems: IDictionary<string, IDictionary<pTypeInfo, TJSONMarshallingMapping>>;
+    public
+      constructor Create;
+
+      procedure AddOrSet(const TInfo: pTypeInfo; const Mapping: TJSONMarshallingMapping; const ConfigurationName: string);
+      function TryGet(const TInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean;
+    end;
+
+    TJsonEnumerativeMappingsDictionary = class
+    strict private
+      FLock: IReadWriteSync;
+      FItems: IDictionary<string, TJSONMarshallingMapping>;
+    public
+      constructor Create;
+
+      procedure AddOrSet(const Mapping: TJSONMarshallingMapping; const ConfigurationName: string);
+      function TryGet(out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean;
+    end;
+
+  public const
+    DefaultConfigurationName: string = 'Default';
   strict private
+    class procedure RegisterJSONMapping(
+      const TypInfo: pTypeInfo;
+      const From: TJSONMarhallingFromFunc;
+      const &To: TJSONUnmarhallingToFunc;
+      const ConfigurationName: string); static;
+
     class procedure RegisterType<T>(
       const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>); static;
+      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
+      const ConfigurationName: string); static;
 
     class procedure RegisterNullableType<T>(
       const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>); static;
+      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
+      const ConfigurationName: string); static;
+
+    class function SanitizeConfigurationName(const ConfigurationName: string): string; static;
   public
     class procedure RegisterPrimitive<T>(
       const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>); static;
+      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
+      const ConfigurationName: string = ''); static;
 
     class procedure RegisterEnumeratives(
       const JSONMarhallingFromFunc: TJSONMarhallingFromFunc;
-      const JSONUnmarhallingToFunc: TJSONUnmarhallingToFunc); static;
+      const JSONUnmarhallingToFunc: TJSONUnmarhallingToFunc;
+      const ConfigurationName: string = ''); static;
 
-    class function TryGetPrimitiveType(const TypInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping): boolean; static;
-    class function GetEnumeratives: TJSONMarshallingMapping; static;
+    class function TryGetPrimitiveType(
+      const TypInfo: pTypeInfo;
+      out Mapping: TJSONMarshallingMapping;
+      const ConfigurationName: string): boolean; static;
+
+    class function TryGetEnumeratives(out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean; static;
   end;
-
-procedure RegisterJSONMapping(const TypInfo: pTypeInfo; const From: TJSONMarhallingFromFunc; const &To: TJSONUnmarhallingToFunc);
 
 implementation
 
 var
-  JSONMappings: IDictionary<pTypeInfo, TJSONMarshallingMapping>;
-  JSONEnumerativesMapping: TJSONMarshallingMapping;
+  JSONMappings: MappingsUtilities.TJsonTypeMappingsDictionary;
+  JSONEnumerativesMappings: MappingsUtilities.TJsonEnumerativeMappingsDictionary;
+  Comparer: TOrdinalIStringComparer;
 
-procedure RegisterJSONMapping(const TypInfo: pTypeInfo; const From: TJSONMarhallingFromFunc; const &To: TJSONUnmarhallingToFunc);
+{ TJsonTypeMappingsDictionary }
+
+constructor MappingsUtilities.TJsonTypeMappingsDictionary.Create;
 begin
-  JSONMappings.AddOrSetValue(TypInfo, TJSONMarshallingMapping.Create(From, &To));
+  inherited Create;
+  FLock := TMREWSync.Create;
+  FItems := Spring.Collections.TCollections.CreateDictionary<string, IDictionary<pTypeInfo, TJSONMarshallingMapping>>(Comparer);
+end;
+
+function MappingsUtilities.TJsonTypeMappingsDictionary.TryGet(const TInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean;
+var
+  Mappings: IDictionary<pTypeInfo, TJSONMarshallingMapping>;
+  Found: Boolean;
+begin
+  FLock.BeginRead;
+  try
+     Found := FItems.TryGetValue(ConfigurationName, Mappings);
+  finally
+    FLock.EndRead;
+  end;
+  if not Found then
+    Exit(False);
+
+  FLock.BeginRead;
+  try
+     Result := Mappings.TryGetValue(TInfo, Mapping);
+  finally
+    FLock.EndRead;
+  end;
+end;
+
+procedure MappingsUtilities.TJsonTypeMappingsDictionary.AddOrSet(const TInfo: pTypeInfo; const Mapping: TJSONMarshallingMapping; const ConfigurationName: string);
+var
+  Mappings: IDictionary<pTypeInfo, TJSONMarshallingMapping>;
+  Found: Boolean;
+begin
+  FLock.BeginWrite;
+  try
+    Found := FItems.TryGetValue(ConfigurationName, Mappings);
+    if not Found then
+    begin
+      Mappings := Spring.Collections.TCollections.CreateDictionary<pTypeInfo, TJSONMarshallingMapping>(
+        TEqualityComparer<pTypeInfo>.Construct(
+          function(const Left, Right: pTypeInfo): Boolean
+          begin
+            Result := SameText(Left.RttiType.QualifiedName, Right.RttiType.QualifiedName);
+          end,
+          function(const Value: pTypeInfo): Integer
+          var
+            S: string;
+          begin
+            S := AnsiLowerCase(Value.RttiType.QualifiedName);
+            Result := THashBobJenkins.GetHashValue(PChar(S)^, SizeOf(Char) * Length(S), 0);
+          end));
+
+      FItems[ConfigurationName] := Mappings;
+    end;
+    Mappings[TInfo] := Mapping;
+  finally
+    FLock.EndWrite;
+  end;
+end;
+
+{ TJsonEnumerativeMappingsDictionary }
+
+procedure MappingsUtilities.TJsonEnumerativeMappingsDictionary.AddOrSet(const Mapping: TJSONMarshallingMapping; const ConfigurationName: string);
+begin
+  FLock.BeginWrite;
+  try
+    FItems[ConfigurationName] := Mapping;
+  finally
+    FLock.EndWrite;
+  end;
+end;
+
+constructor MappingsUtilities.TJsonEnumerativeMappingsDictionary.Create;
+begin
+  inherited Create;
+  FLock := TMREWSync.Create;
+  FItems := Spring.Collections.TCollections.CreateDictionary<string, TJSONMarshallingMapping>(Comparer);
+end;
+
+function MappingsUtilities.TJsonEnumerativeMappingsDictionary.TryGet(out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean;
+begin
+  FLock.BeginRead;
+  try
+     Result := FItems.TryGetValue(ConfigurationName, Mapping);
+  finally
+    FLock.EndRead;
+  end;
 end;
 
 { TJSONMarshallingMapping }
 
-constructor TJSONMarshallingMapping.Create(
+constructor MappingsUtilities.TJSONMarshallingMapping.Create(
   const From: TJSONMarhallingFromFunc;
   const &To: TJSONUnmarhallingToFunc);
 begin
@@ -104,34 +239,44 @@ end;
 
 { MappingsUtilities }
 
-class function MappingsUtilities.GetEnumeratives: TJSONMarshallingMapping;
+class procedure MappingsUtilities.RegisterJSONMapping(
+  const TypInfo: pTypeInfo;
+  const From: TJSONMarhallingFromFunc;
+  const &To: TJSONUnmarhallingToFunc;
+  const ConfigurationName: string);
 begin
-  Result := JSONEnumerativesMapping;
+  JSONMappings.AddOrSet(TypInfo, TJSONMarshallingMapping.Create(From, &To), ConfigurationName);
+end;
+
+class function MappingsUtilities.TryGetEnumeratives(out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean;
+var
+  Config: string;
+begin
+  Config := SanitizeConfigurationName(ConfigurationName);
+  Result := JSONEnumerativesMappings.TryGet(Mapping, Config);
+  if not Result and not Config.ToLower.Equals(MappingsUtilities.DefaultConfigurationName.ToLower) then
+    Result := JSONEnumerativesMappings.TryGet(Mapping, MappingsUtilities.DefaultConfigurationName);
 end;
 
 class procedure MappingsUtilities.RegisterEnumeratives(
   const JSONMarhallingFromFunc: TJSONMarhallingFromFunc;
-  const JSONUnmarhallingToFunc: TJSONUnmarhallingToFunc);
+  const JSONUnmarhallingToFunc: TJSONUnmarhallingToFunc;
+  const ConfigurationName: string);
 begin
-  JSONEnumerativesMapping := TJSONMarshallingMapping.Create(JSONMarhallingFromFunc, JSONUnmarhallingToFunc);
+  JSONEnumerativesMappings.AddOrSet(TJSONMarshallingMapping.Create(JSONMarhallingFromFunc, JSONUnmarhallingToFunc), SanitizeConfigurationName(ConfigurationName));
 end;
 
 class procedure MappingsUtilities.RegisterNullableType<T>(
   const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-  const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>);
+  const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
+  const ConfigurationName: string);
 begin
   RegisterJSONMapping(
     TypeInfo(Nullable<T>),
-    function(const Value: TValue): string
-    var
-      JSONNull: Shared<TJSONNull>;
+    function(const Value: TValue): Nullable<string>
     begin
-      JSONNull := TJSONNull.Create;
-
       if Value.AsType<Nullable<T>>.HasValue then
-        Result := JSONMarhallingFromFunc(Value.AsType<Nullable<T>>)
-      else
-        Result := JSONNull.Value.ToJSON;
+        Result := JSONMarhallingFromFunc(Value.AsType<Nullable<T>>);
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TValue
     var
@@ -143,59 +288,71 @@ begin
         Result := TValue.From<Nullable<T>>(nil)
       else
         Result := TValue.From<Nullable<T>>(Nullable<T>.Create(JSONUnmarhallingToFunc(Value)));
-    end);
+    end,
+    ConfigurationName);
 end;
 
 class procedure MappingsUtilities.RegisterPrimitive<T>(
   const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-  const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>);
+  const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
+  const ConfigurationName: string);
 begin
-  MappingsUtilities.RegisterType<T>(JSONMarhallingFromFunc, JSONUnmarhallingToFunc);
-  MappingsUtilities.RegisterNullableType<T>(JSONMarhallingFromFunc, JSONUnmarhallingToFunc);
+  MappingsUtilities.RegisterType<T>(JSONMarhallingFromFunc, JSONUnmarhallingToFunc, SanitizeConfigurationName(ConfigurationName));
+  MappingsUtilities.RegisterNullableType<T>(JSONMarhallingFromFunc, JSONUnmarhallingToFunc, SanitizeConfigurationName(ConfigurationName));
 end;
 
 class procedure MappingsUtilities.RegisterType<T>(
   const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-  const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>);
+  const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
+  const ConfigurationName: string);
+var
+  Config: string;
 begin
+  Config := ConfigurationName;
+  if Config.IsEmpty then
+    Config := DefaultConfigurationName;
+
   RegisterJSONMapping(
     TypeInfo(T),
-    function(const Value: TValue): string
+    function(const Value: TValue): Nullable<string>
     begin
       Result := JSONMarhallingFromFunc(Value.AsType<T>);
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TValue
     begin
       Result := TValue.From<T>(JSONUnmarhallingToFunc(Value));
-    end);
+    end,
+    ConfigurationName);
+end;
+
+class function MappingsUtilities.SanitizeConfigurationName(const ConfigurationName: string): string;
+begin
+  Result := ConfigurationName;
+  if Result.IsEmpty then
+    Result := DefaultConfigurationName;
 end;
 
 class function MappingsUtilities.TryGetPrimitiveType(
   const TypInfo: pTypeInfo;
-  out Mapping: TJSONMarshallingMapping): boolean;
+  out Mapping: TJSONMarshallingMapping;
+  const ConfigurationName: string): boolean;
+var
+  Config: string;
 begin
-  Result := JSONMappings.TryGetValue(TypInfo, Mapping)
+  Config := SanitizeConfigurationName(ConfigurationName);
+  Result := JSONMappings.TryGet(TypInfo, Mapping, Config);
+  if not Result and not Config.ToLower.Equals(MappingsUtilities.DefaultConfigurationName.ToLower) then
+    Result := JSONMappings.TryGet(TypInfo, Mapping, MappingsUtilities.DefaultConfigurationName);
 end;
 
 initialization
-  JSONMappings := TCollections.CreateDictionary<pTypeInfo, TJSONMarshallingMapping>(
-    TEqualityComparer<pTypeInfo>.Construct(
-      function(const Left, Right: pTypeInfo): Boolean
-      begin
-        Result := SameText(Left.RttiType.QualifiedName, Right.RttiType.QualifiedName);
-      end,
-      function(const Value: pTypeInfo): Integer
-      var
-        S: string;
-      begin
-        S := AnsiLowerCase(Value.RttiType.QualifiedName);
-        Result := THashBobJenkins.GetHashValue(PChar(S)^, SizeOf(Char) * Length(S), 0);
-      end)
-  );
+  Comparer := TOrdinalIStringComparer.Create;
+  JSONMappings := MappingsUtilities.TJsonTypeMappingsDictionary.Create;
+  JSONEnumerativesMappings := MappingsUtilities.TJsonEnumerativeMappingsDictionary.Create;
 
   //Register the default enumeratives mapping
   MappingsUtilities.RegisterEnumeratives(
-    function(const Value: TValue): string
+    function(const Value: TValue): Nullable<string>
     var
       JSONNumber: Shared<TJSONNumber>;
     begin
@@ -378,4 +535,9 @@ initialization
       if JsonUtilities.TryStringToTGuid(Value, GuidValue) then
         Result := GuidValue;
     end);
+
+finalization
+  JSONMappings.Free;
+  JSONEnumerativesMappings.Free;
+  Comparer.Free;
 end.
