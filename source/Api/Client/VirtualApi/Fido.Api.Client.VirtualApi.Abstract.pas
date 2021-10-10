@@ -149,6 +149,10 @@ type
 
     function ProcessPath(const Call: TClientVirtualApiCall; const EndPoint: string; const Arguments: IDictionary<string, TPair<string, TValue>>): string;
     procedure MapArgumentsAndParameters(const Parameters: TArray<TRttiParameter>; const Args: TArray<TValue>; const Arguments: IDictionary<string, TPair<string, TValue>>);
+    class procedure FindApiParamAttribute(
+      const MethodName: string;
+      const Attributes: TArray<TCustomAttribute>;
+      const ConfigurationParams: IDictionary<string, string>); static;
     procedure ParamNamesToParamNameValues(
       const Arguments: IDictionary<string, TPair<string, TValue>>;
       const Params: IDictionary<string, string>;
@@ -237,6 +241,22 @@ begin
     Result := Result + ';version=' + ApiVersion;
 end;
 
+class procedure TAbstractClientVirtualApi<T, IConfiguration>.FindApiParamAttribute(const MethodName: string; const Attributes: TArray<TCustomAttribute>; const ConfigurationParams: IDictionary<string, string>);
+var
+  ApiName: string;
+  RttiAttribute: TCustomAttribute;
+begin
+  ApiName := '';
+  for RttiAttribute in Attributes do
+    if RttiAttribute is ApiParamAttribute then
+    begin
+      ApiName := ApiParamAttribute(RttiAttribute).ParamName;
+      Break
+    end;
+
+  ConfigurationParams.AddOrSetValue(MethodName, ApiName);
+end;
+
 class procedure TAbstractClientVirtualApi<T, IConfiguration>.ValidateMethods;
 var
   Context: TRttiContext;
@@ -269,15 +289,7 @@ begin
         MethodName := RttiMethod.Name;
         if MethodName.ToUpper.StartsWith('GET') then
           MethodName := Copy(MethodName, 4, Length(MethodName));
-        ApiName := '';
-        for RttiAttribute in RttiMethod.GetAttributes do
-          if RttiAttribute is ApiParamAttribute then
-          begin
-            ApiName := ApiParamAttribute(RttiAttribute).ParamName;
-            Break
-          end;
-
-        ConfigurationParams.AddOrSetValue(MethodName, ApiName);
+          FindApiParamAttribute(MethodName, RttiMethod.GetAttributes, ConfigurationParams);
       end;
 
   // Validate the methods
@@ -294,18 +306,7 @@ begin
 
       // Retrieve exposed parameters
       for RttiParameter in RttiMethod.GetParameters do
-      begin
-        MethodName := RttiParameter.Name;
-        ApiName := '';
-        for RttiAttribute in RttiParameter.GetAttributes do
-          if RttiAttribute is ApiParamAttribute then
-          begin
-            ApiName := ApiParamAttribute(RttiAttribute).ParamName;
-            Break
-          end;
-
-        MethodParams.AddOrSetValue(MethodName, ApiName);
-      end;
+        FindApiParamAttribute(RttiParameter.Name, RttiMethod.GetAttributes, MethodParams);
 
       // Validate endpoint parameters
       EndPoint := StringReplace(EndPointInfo.EndPoint, FORMAT_PARAM, DEFAULT_FORMAT, [rfReplaceAll]);
