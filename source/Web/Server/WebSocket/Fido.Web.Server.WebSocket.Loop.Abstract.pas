@@ -47,9 +47,7 @@ type
       function DataSize: Int64;
       function Ping: Boolean;
       function Pong: TWSBytes;
-      function GetData(
-        var AData: TBytes;
-        var IsText: Boolean): Boolean;
+      function GetData(var AData: TBytes; var IsText: Boolean): Boolean;
       procedure Consume;
       function Close: Boolean;
       procedure CloseMessage;

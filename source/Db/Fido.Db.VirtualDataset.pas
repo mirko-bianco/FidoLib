@@ -594,8 +594,7 @@ begin
   PInteger(Data)^ := PArrayRecInfo(Buffer)^.Index;
 end;
 
-function TCustomVirtualDataset.GetBookmarkFlag(Buffer: TRecordBuffer)
-  : TBookmarkFlag;
+function TCustomVirtualDataset.GetBookmarkFlag(Buffer: TRecordBuffer): TBookmarkFlag;
 begin
   Result := PArrayRecInfo(Buffer)^.BookmarkFlag;
 end;
@@ -871,7 +870,6 @@ end;
 function TCustomVirtualDataset.GetRecNo: Integer;
 var
   RecBuf: TRecordBuffer;
-
 begin
   CheckActive;
   Result := -1;
@@ -887,7 +885,6 @@ function TCustomVirtualDataset.GetRecord(
 var
   Accept: Boolean;
   SaveState: TDataSetState;
-
 begin
   if Filtered and Assigned(OnFilterRecord) then
   begin

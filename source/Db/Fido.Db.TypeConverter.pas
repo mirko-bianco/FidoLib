@@ -194,28 +194,17 @@ begin
   end
   else
     case BaseType of
-      btInteger:
-        Exit(V.AsType<Nullable<integer>>.ToVariant);
-      btString:
-        Exit(V.AsType<Nullable<string>>.ToVariant);
-      btDouble:
-        Exit(V.AsType<Nullable<double>>.ToVariant);
-      btDate:
-        Exit(V.AsType<Nullable<TDate>>.ToVariant);
-      btDateTime:
-        Exit(V.AsType<Nullable<TDateTime>>.ToVariant);
-      btCurrency:
-        Exit(V.AsType<Nullable<Currency>>.ToVariant);
-      btExtended:
-        Exit(V.AsType<Nullable<Extended>>.ToVariant);
-      btInt64:
-        Exit(V.AsType<Nullable<Int64>>.ToVariant);
-      btBoolean:
-        Exit(V.AsType<Nullable<Boolean>>.ToVariant);
-      btGuid:
-        Exit(V.AsType<Nullable<TGuid>>.ToVariant);
-      btSmallint:
-        Exit(V.AsType<Nullable<Smallint>>.ToVariant);
+      btInteger: Exit(V.AsType<Nullable<integer>>.ToVariant);
+      btString: Exit(V.AsType<Nullable<string>>.ToVariant);
+      btDouble: Exit(V.AsType<Nullable<double>>.ToVariant);
+      btDate: Exit(V.AsType<Nullable<TDate>>.ToVariant);
+      btDateTime: Exit(V.AsType<Nullable<TDateTime>>.ToVariant);
+      btCurrency: Exit(V.AsType<Nullable<Currency>>.ToVariant);
+      btExtended: Exit(V.AsType<Nullable<Extended>>.ToVariant);
+      btInt64: Exit(V.AsType<Nullable<Int64>>.ToVariant);
+      btBoolean: Exit(V.AsType<Nullable<Boolean>>.ToVariant);
+      btGuid: Exit(V.AsType<Nullable<TGuid>>.ToVariant);
+      btSmallint: Exit(V.AsType<Nullable<Smallint>>.ToVariant);
       else
         Assert(false, 'Unsupported nullable type');
     end;
@@ -239,26 +228,16 @@ begin
   end
   else
     case BaseType of
-      btInteger:
-        Exit(TValue.From<Nullable<Integer>>(Nullable<Integer>.Create(V)));
-      btString:
-        Exit(TValue.From<Nullable<string>>(Nullable<string>.Create(V)));
-      btDouble:
-        Exit(TValue.From<Nullable<double>>(Nullable<double>.Create(V)));
-      btDate:
-        Exit(TValue.From<Nullable<TDate>>(Nullable<TDate>.Create(V)));
-      btDateTime:
-        Exit(TValue.From<Nullable<TDateTime>>(Nullable<TDateTime>.Create(V)));
-      btCurrency:
-        Exit(TValue.From<Nullable<Currency>>(Nullable<Currency>.Create(V)));
-      btExtended:
-        Exit(TValue.From<Nullable<Extended>>(Nullable<Extended>.Create(V)));
-      btInt64:
-        Exit(TValue.From<Nullable<Int64>>(Nullable<Int64>.Create(V)));
-      btBoolean:
-        Exit(TValue.From<Nullable<Boolean>>(Nullable<Boolean>.Create(V)));
-      btSmallint:
-        Exit(TValue.From<Nullable<Smallint>>(Nullable<Smallint>.Create(V)));
+      btInteger: Exit(TValue.From<Nullable<Integer>>(Nullable<Integer>.Create(V)));
+      btString: Exit(TValue.From<Nullable<string>>(Nullable<string>.Create(V)));
+      btDouble: Exit(TValue.From<Nullable<double>>(Nullable<double>.Create(V)));
+      btDate: Exit(TValue.From<Nullable<TDate>>(Nullable<TDate>.Create(V)));
+      btDateTime: Exit(TValue.From<Nullable<TDateTime>>(Nullable<TDateTime>.Create(V)));
+      btCurrency: Exit(TValue.From<Nullable<Currency>>(Nullable<Currency>.Create(V)));
+      btExtended: Exit(TValue.From<Nullable<Extended>>(Nullable<Extended>.Create(V)));
+      btInt64: Exit(TValue.From<Nullable<Int64>>(Nullable<Int64>.Create(V)));
+      btBoolean: Exit(TValue.From<Nullable<Boolean>>(Nullable<Boolean>.Create(V)));
+      btSmallint: Exit(TValue.From<Nullable<Smallint>>(Nullable<Smallint>.Create(V)));
       btGuid:
         if V = null then
           Exit(TValue.From<Nullable<TGuid>>(Nullable<TGuid>.Create(V)))

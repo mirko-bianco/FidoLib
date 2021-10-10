@@ -77,16 +77,15 @@ begin
 end;
 
 procedure TDatabaseVirtualDto<T>.CacheColumns(const Dataset: TDataSet);
-var
-  D: TPair<string, TMethodDescriptor>;
-  TableField: TField;
 begin
-  for D in FRecordMethods do
-  begin
-    TableField := Dataset.FindField(D.Value.MappedName);
-    if Assigned(TableField) then
-      D.Value.FieldValue := TableField.Value;
-  end;
+  FRecordMethods.Values.ForEach(procedure(const Value: TMethodDescriptor)
+    var
+      TableField: TField;
+    begin
+      TableField := Dataset.FindField(Value.MappedName);
+      if Assigned(TableField) then
+        Value.FieldValue := TableField.Value;
+    end);
 end;
 
 constructor TDatabaseVirtualDto<T>.Create(const Dataset: TDataSet);
@@ -118,9 +117,6 @@ procedure TDatabaseVirtualDto<T>.ProcessDtoAttributes;
 var
   Context: TRttiContext;
   RttiType: TRttiType;
-  Attribute: TCustomAttribute;
-  Method: TRttiMethod;
-  Pair: TPair<string, TMethodDescriptor>;
 begin
   inherited;
 
@@ -129,14 +125,21 @@ begin
   RttiType := Context.GetType(TypeInfo(T));
 
   // process all methods (and their attributes)
-  for Method in RttiType.GetMethods do
-    ProcessMethod(Method);
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(procedure(const Method: TRttiMethod)
+    begin
+      ProcessMethod(Method);
+    end);
 
   // set remaining methods to rows affected or colgetters
-  for Pair in FRecordMethods do
-    with Pair.Value do
-      if Category = mcNone then
-        Category := mcColGetter;
+  FRecordMethods.Values
+    .Where(function(const Value: TMethodDescriptor): Boolean
+      begin
+        Result := Value.Category = mcNone;
+      end)
+    .ForEach(procedure(const Value: TMethodDescriptor)
+      begin
+        Value.Category := mcColGetter
+      end)
 end;
 
 procedure TDatabaseVirtualDto<T>.ProcessMethod(const Method: TRttiMethod);
@@ -164,9 +167,15 @@ begin
   end;
 
   // auto describe based in attributes
-  for Attribute in Method.GetAttributes do
-    if (Attribute is ColumnAttribute) then
-      MethodDesc.MappedName := ColumnAttribute(Attribute).Line;
+  TCollections.CreateList<TCustomAttribute>(Method.GetAttributes)
+    .Where(function(const Attribute: TCustomAttribute): Boolean
+      begin
+        Result := Attribute is ColumnAttribute;
+      end)
+    .ForEach(procedure(const Attribute: TCustomAttribute)
+      begin
+        MethodDesc.MappedName := ColumnAttribute(Attribute).Line;
+      end);
 end;
 
 { DatabaseVirtualDto<T> }

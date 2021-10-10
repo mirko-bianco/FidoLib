@@ -153,8 +153,8 @@ procedure TJSONVirtualDto.CacheColumns(
   const JSONObject: TJSONObject;
   const ConfigurationName: string);
 var
-  D: TPair<string, TJSONDTOMethodDescriptor>;
-  ObjectValue: TJsonValue;
+//  D: TPair<string, TJSONDTOMethodDescriptor>;
+
   LJSONObject: Shared<TJSONObject>;
 begin
   LJSONObject := TJSONObject.Create;
@@ -165,21 +165,24 @@ begin
     Free;
   end;
 
-  for D in FRecordMethods do
-  begin
-    ObjectValue := LJSONObject.Value.GetValue(D.Value.MappedName);
-    if Assigned(ObjectValue) then
+  FRecordMethods.Values.ForEach(
+    procedure(const Value: TJSONDTOMethodDescriptor)
+    var
+      ObjectValue: TJsonValue;
     begin
-      if D.Value.IsInterface then
-        D.Value.Value := (ObjectValue as TJSONObject).ToString
-      else if D.Value.IsArray then
-        D.Value.Value := (ObjectValue as TJSONArray).ToString
-      else if D.Value.IsEnumeration then
-        D.Value.Value := ObjectValue.Value
+      ObjectValue := LJSONObject.Value.GetValue(Value.MappedName);
+      if not Assigned(ObjectValue) then
+        Exit;
+
+      if Value.IsInterface then
+        Value.Value := (ObjectValue as TJSONObject).ToString
+      else if Value.IsArray then
+        Value.Value := (ObjectValue as TJSONArray).ToString
+      else if Value.IsEnumeration then
+        Value.Value := ObjectValue.Value
       else
-        D.Value.Value := JSONUnmarshaller.&To(ObjectValue.Value, D.Value.TypeInfo, ConfigurationName)
-    end;
-  end;
+        Value.Value := JSONUnmarshaller.&To(ObjectValue.Value, Value.TypeInfo, ConfigurationName)
+    end);
 end;
 
 constructor TJSONVirtualDto.Create(
@@ -260,8 +263,6 @@ procedure TJSONVirtualDto.ProcessDtoAttributes(const PIID: PTypeInfo);
 var
   Context: TRttiContext;
   RttiType: TRttiType;
-  Method: TRttiMethod;
-  Pair: TPair<string, TJSONDTOMethodDescriptor>;
 begin
   inherited;
 
@@ -270,19 +271,28 @@ begin
   RttiType := Context.GetType(PIID);
 
   // process all methods (and their attributes)
-  for Method in RttiType.GetMethods do
-    ProcessMethod(Method);
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+    procedure(const Method: TRttiMethod)
+    begin
+      ProcessMethod(Method);
+    end);
 
   // set remaining methods to rows affected or colgetters
-  for Pair in FRecordMethods do
-    with Pair.Value do
-      if Category = mcNone then
-        Category := mcColGetter;
+  FRecordMethods.Values
+    .Where(
+      function(const Value: TJSONDTOMethodDescriptor): Boolean
+      begin
+        Result := Value.Category = mcNone;
+      end)
+    .ForEach(
+      procedure(const Value: TJSONDTOMethodDescriptor)
+      begin
+        Value.Category := mcColGetter;
+      end);
 end;
 
 procedure TJSONVirtualDto.ProcessMethod(const Method: TRttiMethod);
 var
-  Attribute : TCustomAttribute;
   MethodDesc: TJSONDTOMethodDescriptor;
 begin
   inherited;
@@ -314,9 +324,15 @@ begin
   end;
 
   // auto describe based in attributes
-  for Attribute in Method.GetAttributes do
-    if (Attribute is ColumnAttribute) then
-      MethodDesc.MappedName := ColumnAttribute(Attribute).Line;
+  TCollections.CreateList<TCustomAttribute>(Method.GetAttributes)
+    .Where(function(const Attribute: TCustomAttribute): Boolean
+      begin
+        Result := Attribute is ColumnAttribute;
+      end)
+    .ForEach(procedure(const Attribute: TCustomAttribute)
+      begin
+        MethodDesc.MappedName := ColumnAttribute(Attribute).Line;
+      end);
 end;
 
 { JSONVirtualDto }
@@ -614,51 +630,54 @@ class function JSONMarshaller.FromInterface(
 var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
-  Method: TRttiMethod;
-  Prop: TRttiProperty;
-  ReturnValue: TValue;
   JSONObject: Shared<TJSONObject>;
-  MarshalledValue: TJSONValue;
 begin
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypInfo);
 
   JSONObject := TJSONObject.Create;
 
-  for Method in RttiType.GetMethods do
-  begin
-    if (Method.Visibility in [mvPublic]) and
-       (Method.MethodKind = mkFunction) and
-       (Length(Method.GetParameters) = 0) then
-    begin
-      ReturnValue := Method.Invoke(Value, []);
-      try
-        MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
-        if Assigned(MarshalledValue) then
-          JSONObject.Value.AddPair(Method.Name, MarshalledValue)
-        else
-          JSONObject.Value.AddPair(Method.Name, TJSONNull.Create);
-      except
-      end;
-    end;
-  end;
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+    .Where(function(const Method: TRttiMethod): Boolean
+      begin
+        Result := (Method.Visibility in [mvPublic]) and (Method.MethodKind = mkFunction) and (Length(Method.GetParameters) = 0);
+      end)
+    .ForEach(procedure(const Method: TRttiMethod)
+      var
+        ReturnValue: TValue;
+        MarshalledValue: TJSONValue;
+      begin
+        ReturnValue := Method.Invoke(Value, []);
+        try
+          MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
+          if Assigned(MarshalledValue) then
+            JSONObject.Value.AddPair(Method.Name, MarshalledValue)
+          else
+            JSONObject.Value.AddPair(Method.Name, TJSONNull.Create);
+        except
+        end;
+      end);
 
-  for Prop in RttiType.GetProperties do
-  begin
-    if (Prop.Visibility in [mvPublic]) and
-       Prop.IsReadable then
-    begin
-      ReturnValue := Prop.GetValue(Value.AsInterface);
-      try
-        MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
-        if Assigned(MarshalledValue) then
-          JSONObject.Value.AddPair(Prop.Name, MarshalledValue)
-        else
-          JSONObject.Value.AddPair(Prop.Name, TJSONNull.Create);
-      except
-      end;
-    end;
-  end;
+  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+    .Where(function(const Prop: TRttiProperty): Boolean
+      begin
+        Result := (Prop.Visibility in [mvPublic]) and Prop.IsReadable;
+      end)
+    .ForEach(procedure(const Prop: TRttiProperty)
+      var
+        ReturnValue: TValue;
+        MarshalledValue: TJSONValue;
+      begin
+        ReturnValue := Prop.GetValue(Value.AsInterface);
+        try
+          MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
+          if Assigned(MarshalledValue) then
+            JSONObject.Value.AddPair(Prop.Name, MarshalledValue)
+          else
+            JSONObject.Value.AddPair(Prop.Name, TJSONNull.Create);
+        except
+        end;
+      end);
 
   Result := JSONObject.Value.ToJson;
 end;
@@ -670,51 +689,54 @@ class function JSONMarshaller.FromObject(
 var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
-  Method: TRttiMethod;
-  Prop: TRttiProperty;
-  ReturnValue: TValue;
   JSONObject: Shared<TJSONObject>;
-  MarshalledValue: TJSONValue;
 begin
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypInfo);
 
   JSONObject := TJSONObject.Create;
 
-  for Method in RttiType.GetMethods do
-  begin
-    if (Method.Visibility in [mvPublished]) and
-       (Method.MethodKind = mkFunction) and
-       (Length(Method.GetParameters) = 0) then
-    begin
-      ReturnValue := Method.Invoke(Value, []);
-      try
-        MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
-        if Assigned(MarshalledValue) then
-          JSONObject.Value.AddPair(Method.Name, MarshalledValue)
-        else
-          JSONObject.Value.AddPair(Method.Name, TJSONNull.Create);
-      except
-      end;
-    end;
-  end;
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+    .Where(function(const Method: TRttiMethod): Boolean
+      begin
+        Result := (Method.Visibility in [mvPublished]) and (Method.MethodKind = mkFunction) and (Length(Method.GetParameters) = 0);
+      end)
+    .ForEach(procedure(const Method: TRttiMethod)
+      var
+        ReturnValue: TValue;
+        MarshalledValue: TJSONValue;
+      begin
+        ReturnValue := Method.Invoke(Value, []);
+        try
+          MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
+          if Assigned(MarshalledValue) then
+            JSONObject.Value.AddPair(Method.Name, MarshalledValue)
+          else
+            JSONObject.Value.AddPair(Method.Name, TJSONNull.Create);
+        except
+        end;
+      end);
 
-  for Prop in RttiType.GetProperties do
-  begin
-    if (Prop.Visibility in [mvPublished]) and
-       Prop.IsReadable then
-    begin
-      ReturnValue := Prop.GetValue(Value);
-      try
-        MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
-        if Assigned(MarshalledValue) then
-          JSONObject.Value.AddPair(Prop.Name, MarshalledValue)
-        else
-          JSONObject.Value.AddPair(Prop.Name, TJSONNull.Create);
-      except
-      end;
-    end;
-  end;
+  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+    .Where(function(const Prop: TRttiProperty): Boolean
+      begin
+        Result := (Prop.Visibility in [mvPublished]) and Prop.IsReadable;
+      end)
+    .ForEach(procedure(const Prop: TRttiProperty)
+      var
+        ReturnValue: TValue;
+        MarshalledValue: TJSONValue;
+      begin
+        ReturnValue := Prop.GetValue(Value);
+        try
+          MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
+          if Assigned(MarshalledValue) then
+            JSONObject.Value.AddPair(Prop.Name, MarshalledValue)
+          else
+            JSONObject.Value.AddPair(Prop.Name, TJSONNull.Create);
+        except
+        end;
+      end);
 
   Result := JSONObject.Value.ToJson;
 end;

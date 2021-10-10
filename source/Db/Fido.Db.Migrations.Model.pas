@@ -71,7 +71,6 @@ var
   AlreadyRunMigrations: ISet<string>;
   FoundMigrations: IList<string>;
   ToRunMigrations: IList<string>;
-  Migration: string;
   FileName: string;
   Script: Shared<TStringList>;
 begin
@@ -80,20 +79,20 @@ begin
   FoundMigrations.InsertRange(0, TDirectory.GetFiles(FScriptsFolder, '*.sql', TSearchOption.soTopDirectoryOnly));
   ToRunMigrations := TCollections.CreateList<string>(TStringComparer.OrdinalIgnoreCase);
 
-  for Migration in FoundMigrations do
-  begin
-    FileName := ExtractFileName(Migration);
-    if not AlreadyRunMigrations.Contains(FileName) then
-      ToRunMigrations.Add(Migration);
-  end;
+  FoundMigrations.ForEach(procedure(const Migration: string)
+    begin
+      FileName := ExtractFileName(Migration);
+      if not AlreadyRunMigrations.Contains(FileName) then
+        ToRunMigrations.Add(Migration);
+    end);
 
-  for Migration in ToRunMigrations do
-  begin
-    Script := TStringList.Create;
-    Script.Value.LoadFromFile(Migration);
-    FScriptRunner.Execute(Script);
-    FDatabaseMigrationsRepository.SaveDBMigration(ExtractFileName(Migration));
-  end;
+  ToRunMigrations.ForEach(procedure(const Migration: string)
+    begin
+      Script := TStringList.Create;
+      Script.Value.LoadFromFile(Migration);
+      FScriptRunner.Execute(Script);
+      FDatabaseMigrationsRepository.SaveDBMigration(ExtractFileName(Migration));
+    end);
 end;
 
 end.

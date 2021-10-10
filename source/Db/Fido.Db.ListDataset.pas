@@ -216,61 +216,74 @@ var
   Context: TRttiContext;
   LType: TRttiType;
   LMethod: TRttiMethod;
-  LProp: TRttiProperty;
-  LVar: TValue;
-  LField: TField;
-  LMethodInfo: TMethodInfo;
-  DataTypeDescriptor: TDataTypeDescriptor;
+  LResult: Boolean;
+  LValue: Variant;
 begin
-  Result := False;
-  Value := Null;
+  LResult := False;
+  LValue := Null;
   Context := TRttiContext.Create;
 
   LType := Context.GetType(Entity.TypeInfo);
   if Length(LType.GetDeclaredProperties) <> 0 then
-    for LProp in LType.GetProperties do
-    begin
-      if LProp.PropertyType.TypeKind = tkClass then
+    Spring.Collections.TCollections.CreateList<TRttiProperty>(LType.GetDeclaredProperties).ForEach(
+      Procedure(const LProp: TRttiProperty)
+      var
+        LVar: TValue;
+        LField: TField;
+        DataTypeDescriptor: TDataTypeDescriptor;
       begin
-        if ContainsText(FieldName, Prefix + LProp.Name + '.') then
+        if LProp.PropertyType.TypeKind = tkClass then
         begin
-          LVar := LProp.GetValue(Entity.AsPointer);
-          if not LVar.IsEmpty then
-            Result := GetEntityFieldValue(LVar, Prefix + LProp.Name + '.', FieldName, Value);
-        end;
-      end
-      else
-      begin
-        LField := Fields.FindField(Prefix + LProp.Name);
-        if (LField <> nil) and SameText(FieldName, Prefix + LProp.Name) then
+          if ContainsText(FieldName, Prefix + LProp.Name + '.') then
+          begin
+            LVar := LProp.GetValue(Entity.AsPointer);
+            if not LVar.IsEmpty then
+              LResult := GetEntityFieldValue(LVar, Prefix + LProp.Name + '.', FieldName, LValue);
+          end;
+        end
+        else
         begin
-          Result := True;
-          if DataTypeConverter.GotDescriptor(LProp.PropertyType, DataTypeDescriptor) then
-            Value := DataTypeDescriptor.GetAsVariant(LProp.GetValue(Entity.AsObject))
-          else
-            Value := LProp.GetValue(Entity.AsObject).AsVariant;
+          LField := Fields.FindField(Prefix + LProp.Name);
+          if (LField <> nil) and SameText(FieldName, Prefix + LProp.Name) then
+          begin
+            LResult := True;
+            if DataTypeConverter.GotDescriptor(LProp.PropertyType, DataTypeDescriptor) then
+              LValue := DataTypeDescriptor.GetAsVariant(LProp.GetValue(Entity.AsObject))
+            else
+              LValue := LProp.GetValue(Entity.AsObject).AsVariant;
+          end;
         end;
-      end;
-    end
+      end)
   else
-    for LMethod in LType.GetDeclaredMethods do
-      if TryGetGetterMethodInfo(LMethod, LMethodInfo) then
+    Spring.Collections.TCollections.CreateList<TRttiMethod>(LType.GetDeclaredMethods).ForEach(
+      procedure(const LMethod: TRttiMethod)
+      var
+        LVar: TValue;
+        LField: TField;
+        LMethodInfo: TMethodInfo;
+        DataTypeDescriptor: TDataTypeDescriptor;
       begin
-        LField := Fields.FindField(Prefix + LMethodInfo.FieldName);
-        LVar := LMethod.Invoke(Entity, []);
-        if LVar.IsInterface and
-           ContainsText(FieldName, Prefix + LMethodInfo.FieldName + '.') and
-           not LVar.IsEmpty then
-          Result := GetEntityFieldValue(LVar, Prefix + LMethodInfo.FieldName + '.', FieldName, Value)
-        else if (LField <> nil) and SameText(FieldName, Prefix + LMethodInfo.FieldName) then
+        if TryGetGetterMethodInfo(LMethod, LMethodInfo) then
         begin
-          Result := True;
-          if DataTypeConverter.GotDescriptor(LMethodInfo.VariableTypeName, DataTypeDescriptor) then
-            Value := DataTypeDescriptor.GetAsVariant(LVar)
-          else
-            Value := LVar.AsVariant;
+          LField := Fields.FindField(Prefix + LMethodInfo.FieldName);
+          LVar := LMethod.Invoke(Entity, []);
+          if LVar.IsInterface and
+             ContainsText(FieldName, Prefix + LMethodInfo.FieldName + '.') and
+             not LVar.IsEmpty then
+            LResult := GetEntityFieldValue(LVar, Prefix + LMethodInfo.FieldName + '.', FieldName, LValue)
+          else if (LField <> nil) and SameText(FieldName, Prefix + LMethodInfo.FieldName) then
+          begin
+            LResult := True;
+            if DataTypeConverter.GotDescriptor(LMethodInfo.VariableTypeName, DataTypeDescriptor) then
+              LValue := DataTypeDescriptor.GetAsVariant(LVar)
+            else
+              LValue := LVar.AsVariant;
+          end;
         end;
-      end;
+      end);
+
+  Result := LResult;
+  Value := LValue;
 end;
 
 procedure TListDataSet<T>.InternalInitFieldDefsObjectClass(
@@ -279,66 +292,67 @@ procedure TListDataSet<T>.InternalInitFieldDefsObjectClass(
 var
   Context: TRttiContext;
   LRttiType: TRttiType;
-  LRttiMeth: TRttiMethod;
-  LRttiProp: TRttiProperty;
-  LMethodInfo: TMethodInfo;
-  LTraverseCount: Integer;
-  DataTypeDescriptor: TDataTypeDescriptor;
 begin
   Context := TRttiContext.Create();
 
   LRttiType := Context.GetType(TypInfo);
 
   if Length(LRttiType.GetDeclaredProperties) <> 0 then
-
-    for LRttiProp in LRttiType.GetProperties do
-    begin
-
-      //Ensures the fields are added just once
-      if (FieldDefs.IndexOf(Prefix + LRttiProp.Name) <> -1) then
-        continue;
-
-      // 1. process nested classes
-      if LRttiProp.PropertyType.TypeKind = tkClass then
+    Spring.Collections.TCollections.CreateList<TRttiProperty>(LRttiType.GetDeclaredProperties).ForEach(
+      procedure(const LRttiProp: TRttiProperty)
+      var
+        LTraverseCount: Integer;
+        DataTypeDescriptor: TDataTypeDescriptor;
       begin
-        LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LRttiProp.PropertyType.AsInstance.Handle);
-        if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
-        begin
-          FTraversedTypeInfoMap.AddOrSetValue(LRttiProp.PropertyType.AsInstance.Handle, LTraverseCount + 1);
-          InternalInitFieldDefsObjectClass(LRttiProp.PropertyType.AsInstance.Handle,
-                                           Prefix + LRttiProp.Name + '.');
-        end;
-      end
-      // 2. try framework-approved basic datatypes handled by DataTypeConverter
-      else if DataTypeConverter.GotDescriptor(LRttiProp.PropertyType, DataTypeDescriptor) then
-        AddFieldDef(Prefix + LRttiProp.Name, DataTypeDescriptor.FieldType);
-    end
+        //Ensures the fields are added just once
+        if (FieldDefs.IndexOf(Prefix + LRttiProp.Name) <> -1) then
+          Exit;
 
+        // 1. process nested classes
+        if LRttiProp.PropertyType.TypeKind = tkClass then
+        begin
+          LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LRttiProp.PropertyType.AsInstance.Handle);
+          if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
+          begin
+            FTraversedTypeInfoMap.AddOrSetValue(LRttiProp.PropertyType.AsInstance.Handle, LTraverseCount + 1);
+            InternalInitFieldDefsObjectClass(LRttiProp.PropertyType.AsInstance.Handle,
+                                             Prefix + LRttiProp.Name + '.');
+          end;
+        end
+        // 2. try framework-approved basic datatypes handled by DataTypeConverter
+        else if DataTypeConverter.GotDescriptor(LRttiProp.PropertyType, DataTypeDescriptor) then
+          AddFieldDef(Prefix + LRttiProp.Name, DataTypeDescriptor.FieldType);
+      end)
   else
-    for LRttiMeth in LRttiType.GetDeclaredMethods do
-    begin
-      // don't even try to analyse if field already done or doesn't have a getter or setter
-      if not (TryGetGetterMethodInfo(LRttiMeth, LMethodInfo) or
-        TryGetSetterMethodInfo(LRttiMeth, LMethodInfo)) or
-        (FieldDefs.IndexOf(Prefix + LMethodInfo.FieldName) <> -1) then
-        Continue;
-
-      if LMethodInfo.IsList then
-        Continue
-      // process nested interfaces
-      else if LMethodInfo.TypeKind = tkInterface then
+    Spring.Collections.TCollections.CreateList<TRttiMethod>(LRttiType.GetDeclaredMethods).ForEach(
+      procedure(const LRttiMeth: TRttiMethod)
+      var
+        LMethodInfo: TMethodInfo;
+        LTraverseCount: Integer;
+        DataTypeDescriptor: TDataTypeDescriptor;
       begin
-        LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
-        if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
+        // don't even try to analyse if field already done or doesn't have a getter or setter
+        if not (TryGetGetterMethodInfo(LRttiMeth, LMethodInfo) or
+          TryGetSetterMethodInfo(LRttiMeth, LMethodInfo)) or
+          (FieldDefs.IndexOf(Prefix + LMethodInfo.FieldName) <> -1) then
+          Exit;
+
+        if LMethodInfo.IsList then
+          Exit
+        // process nested interfaces
+        else if LMethodInfo.TypeKind = tkInterface then
         begin
-          FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
-          InternalInitFieldDefsObjectClass(LMethodInfo.Handle, Prefix + LMethodInfo.FieldName + '.');
-        end;
-      end
-      // else try standard, supported types
-      else if DataTypeConverter.GotDescriptor(LMethodInfo.VariableTypeName, DataTypeDescriptor) then
-        AddFieldDef(Prefix + LMethodInfo.FieldName, DataTypeDescriptor.FieldType);
-    end;
+          LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
+          if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
+          begin
+            FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
+            InternalInitFieldDefsObjectClass(LMethodInfo.Handle, Prefix + LMethodInfo.FieldName + '.');
+          end;
+        end
+        // else try standard, supported types
+        else if DataTypeConverter.GotDescriptor(LMethodInfo.VariableTypeName, DataTypeDescriptor) then
+          AddFieldDef(Prefix + LMethodInfo.FieldName, DataTypeDescriptor.FieldType);
+      end);
 end;
 
 function TListDataSet<T>.IsFiltered: Boolean;
@@ -425,84 +439,105 @@ procedure TListDataSet<T>.RecordToEntity(
 var
   Context: TRttiContext;
   LTypes: TRttiType;
-  LMethod: TRttiMethod;
-  LProp: TRttiProperty;
-  Field: TField;
-  LVal: TValue;
-  LSetterMethod: TRttiMethod;
-  LMethodInfo: TMethodInfo;
-  LFieldName: string;
-  LTraverseCount: Integer;
-  DataTypeDescriptor: TDataTypeDescriptor;
+//  LMethod: TRttiMethod;
+//  LProp: TRttiProperty;
+//  Field: TField;
+//  LVal: TValue;
+//  LSetterMethod: TRttiMethod;
+//  LMethodInfo: TMethodInfo;
+//  LFieldName: string;
+//  LTraverseCount: Integer;
+//  DataTypeDescriptor: TDataTypeDescriptor;
 begin
   Context := TRttiContext.Create;
 
   LTypes := Context.GetType(Entity.TypeInfo);
   if Length(LTypes.GetDeclaredProperties) <> 0 then
-    for LProp in LTypes.GetProperties do
-    begin
-      Field := Fields.FindField(Prefix + LProp.Name);
-      if (LProp.PropertyType.TypeKind = tkClass) then
+    Spring.Collections.TCollections.CreateList<TRttiProperty>(LTypes.GetDeclaredProperties).ForEach(
+      procedure(const LProp: TRttiProperty)
+      var
+        Field: TField;
+        LVal: TValue;
+        LTraverseCount: Integer;
+        LMethodInfo: TMethodInfo;
+        DataTypeDescriptor: TDataTypeDescriptor;
       begin
-        LVal := LProp.GetValue(Entity.AsPointer);
-        if LVal.IsEmpty then
-          LVal := FEntityFactoryFunc(LProp.PropertyType.Handle);
-        LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
-        if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
+        Field := Fields.FindField(Prefix + LProp.Name);
+        if (LProp.PropertyType.TypeKind = tkClass) then
         begin
-          FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
-          RecordToEntity(LVal, Prefix + LProp.Name + '.');
-        end;
-      end
-      else if (Field <> nil) and LProp.IsWritable then
-      begin
-        if DataTypeConverter.GotDescriptor(LProp.PropertyType, DataTypeDescriptor) then
-          LProp.SetValue(Entity.AsObject, DataTypeDescriptor.GetFromVariant(Field.AsVariant))
-        else
-          LProp.SetValue(Entity.AsObject, TValue.From<variant>(Field.Value));
-      end;
-    end
-  else
-    for LMethod in LTypes.GetDeclaredMethods do
-      if TryGetSetterMethodInfo(LMethod, LMethodInfo) and
-         (LMethodInfo.TypeKind <> tkInterface) then
-      begin
-        Field := Fields.FindField(Prefix + LMethodInfo.FieldName);
-
-        if (Field <> nil) then
-        begin
-          if DataTypeConverter.GotDescriptor(LMethodInfo.VariableTypeName, DataTypeDescriptor) then
-            LMethod.Invoke(Entity, [DataTypeDescriptor.GetFromVariant(Field.AsVariant)])
-          else
-            LMethod.Invoke(Entity, [TValue.From<variant>(Field.Value)]);
-        end;
-      end
-      else if TryGetGetterMethodInfo(LMethod, LMethodInfo) and
-              (LMethodInfo.TypeKind = tkInterface) then
-      begin
-        if LMethodInfo.IsList then
-          Continue
-        else
-        begin
-          LVal := LMethod.Invoke(Entity, []);
+          LVal := LProp.GetValue(Entity.AsPointer);
           if LVal.IsEmpty then
-          begin
-            LVal := FEntityFactoryFunc(LMethodInfo.Handle);
-            LFieldName := LMethodInfo.FieldName;
-            for LSetterMethod in LTypes.GetMethods do
-              if TryGetSetterMethodInfo(LSetterMethod, LMethodInfo) and
-                 (LMethodInfo.TypeKind = tkInterface) and
-                 (LMethodInfo.FieldName = LFieldName) then
-                LSetterMethod.Invoke(Entity, [LVal]);
-          end;
+            LVal := FEntityFactoryFunc(LProp.PropertyType.Handle);
           LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
           if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
           begin
             FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
-            RecordToEntity(LVal, Prefix + LMethodInfo.FieldName + '.');
+            RecordToEntity(LVal, Prefix + LProp.Name + '.');
+          end;
+        end
+        else if (Field <> nil) and LProp.IsWritable then
+        begin
+          if DataTypeConverter.GotDescriptor(LProp.PropertyType, DataTypeDescriptor) then
+            LProp.SetValue(Entity.AsObject, DataTypeDescriptor.GetFromVariant(Field.AsVariant))
+          else
+            LProp.SetValue(Entity.AsObject, TValue.From<variant>(Field.Value));
+        end;
+      end)
+  else
+    Spring.Collections.TCollections.CreateList<TRttiMethod>(LTypes.GetDeclaredMethods).ForEach(
+      procedure(const LMethod: TRttiMethod)
+      var
+        LMethodInfo: TMethodInfo;
+        Field: TField;
+        DataTypeDescriptor: TDataTypeDescriptor;
+        LVal: TValue;
+        LFieldName: string;
+        LTraverseCount: Integer;
+      begin
+        if TryGetSetterMethodInfo(LMethod, LMethodInfo) and
+           (LMethodInfo.TypeKind <> tkInterface) then
+        begin
+          Field := Fields.FindField(Prefix + LMethodInfo.FieldName);
+
+          if (Field <> nil) then
+          begin
+            if DataTypeConverter.GotDescriptor(LMethodInfo.VariableTypeName, DataTypeDescriptor) then
+              LMethod.Invoke(Entity, [DataTypeDescriptor.GetFromVariant(Field.AsVariant)])
+            else
+              LMethod.Invoke(Entity, [TValue.From<variant>(Field.Value)]);
+          end;
+        end
+        else if TryGetGetterMethodInfo(LMethod, LMethodInfo) and
+                (LMethodInfo.TypeKind = tkInterface) then
+        begin
+          if LMethodInfo.IsList then
+            Exit
+          else
+          begin
+            LVal := LMethod.Invoke(Entity, []);
+            if LVal.IsEmpty then
+            begin
+              LVal := FEntityFactoryFunc(LMethodInfo.Handle);
+              LFieldName := LMethodInfo.FieldName;
+
+              Spring.Collections.TCollections.CreateList<TRttiMethod>(LTypes.GetDeclaredMethods).ForEach(
+                procedure(const LSetterMethod: TRttiMethod)
+                begin
+                  if TryGetSetterMethodInfo(LSetterMethod, LMethodInfo) and
+                     (LMethodInfo.TypeKind = tkInterface) and
+                     (LMethodInfo.FieldName = LFieldName) then
+                    LSetterMethod.Invoke(Entity, [LVal]);
+                end);
+            end;
+            LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
+            if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
+            begin
+              FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
+              RecordToEntity(LVal, Prefix + LMethodInfo.FieldName + '.');
+            end;
           end;
         end;
-      end;
+      end);
 end;
 
 procedure TListDataSet<T>._OnDeleteRecord(

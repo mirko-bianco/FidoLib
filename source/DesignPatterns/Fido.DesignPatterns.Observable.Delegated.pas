@@ -207,14 +207,19 @@ begin
 end;
 
 procedure TDelegatedObservable.RegisterObserver(const Observer: IObserver);
+var
+  FoundObserver: Weak<IObserver>;
 begin
   FLock.BeginWrite;
   try
     // cannot use direct IndexOf because we hold Weaks
-    with FObservers.GetEnumerator do
-      while MoveNext do
-        if Current.Target = Observer then
-          Exit;
+    if FObservers.TryGetFirst(
+        FoundObserver,
+        function(const Item: Weak<IObserver>): Boolean
+        begin
+          Result := Item.Target = Observer;
+        end) then
+      Exit;
 
     FObservers.Add(Weak<IObserver>.Create(Observer));
     FNeedsSync := FNeedsSync or Supports(Observer, IGUIObserver);
@@ -245,12 +250,18 @@ begin
 
   ProcEnum :=
     procedure
-    var
-      Observer: Weak<IObserver>;
     begin
-      for Observer in List do
-        if Observer.IsAlive then
-          Observer.Target.Notify(Sender, Notification);
+      TCollections.CreateList<Weak<IObserver>>(List)
+        .Where(
+          function(const Observer: Weak<IObserver>): Boolean
+          begin
+            Result := Observer.IsAlive;
+          end)
+        .ForEach(
+          procedure(const Observer: Weak<IObserver>)
+          begin
+            Observer.Target.Notify(Sender, Notification);
+          end);
     end;
 
   if FNeedsSync then

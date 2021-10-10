@@ -289,13 +289,16 @@ end;
 function TIndyApiServer.TryGetEndPoint(
   const ApiRequest: IHttpRequest;
   out EndPoint: TEndPoint): Boolean;
+var
+  Uri: string;
 begin
-  Result := False;
-  with FEndPoints.Keys.GetEnumerator do
-    while MoveNext do
-      if TRegEx.IsMatch(ApiRequest.URI.ToUpper, Current.ToUpper) then
-        if FEndPoints.Items[Current].TryGetValue(ApiRequest.Method, EndPoint) then
-          Exit(True);
+  Result := FEndPoints.Keys.TryGetFirst(
+      Uri,
+      function(const Item: string): Boolean
+      begin
+        Result := TRegEx.IsMatch(ApiRequest.URI.ToUpper, Item.ToUpper)
+      end) and
+    FEndPoints.Items[Uri].TryGetValue(ApiRequest.Method, EndPoint);
 end;
 
 function TIndyApiServer.TrySetPathParams(
@@ -303,18 +306,21 @@ function TIndyApiServer.TrySetPathParams(
   const URI: string;
   const PathParams: IDictionary<string, string>): Boolean;
 var
-  EndPointParamenter: TEndPointParameter;
-  RegExpPath: string;
-  Path: string;
-  ParameterIndex: Integer;
-  ParameterValue: string;
+  LResult: Boolean;
 begin
-  Result := True;
-  with EndPoint.Parameters.GetEnumerator do
-    while MoveNext do
-    begin
-      EndPointParamenter := Current;
-      if EndPointParamenter.&Type = mptPath then
+  EndPoint.Parameters
+    .Where(
+      function(const EndPointParameter: TEndPointParameter): Boolean
+      begin
+        Result := EndPointParameter.&Type = mptPath;
+      end)
+    .ForEach(
+      procedure(const EndPointParameter: TEndPointParameter)
+      var
+        RegExpPath: string;
+        Path: string;
+        ParameterIndex: Integer;
+        ParameterValue: string;
       begin
         RegExpPath := StringReplace(EndPoint.Path, '/', '\/', [rfReplaceAll]);
 
@@ -323,7 +329,7 @@ begin
         with TRegEx.Matches(RegExpPath, '{[\s\S][^{]+}').GetEnumerator do
         begin
           while MoveNext do
-            if ('{' + EndPointParamenter.Name.ToUpper + '}') = GetCurrent.Value.ToUpper then
+            if ('{' + EndPointParameter.Name.ToUpper + '}') = GetCurrent.Value.ToUpper then
             begin
               ParameterIndex := GetCurrent.Index;
               with PathParams.GetEnumerator do
@@ -331,7 +337,7 @@ begin
                 begin
                   Path := StringReplace(Path, '{' + Current.Key + '}', Current.Value, [rfIgnoreCase]);
                 end;
-              ParameterValue := StringReplace(URI, Copy(Path, 1, Pos('{' + EndPointParamenter.Name.ToUpper + '}', Path.ToUpper) - 1), '', [rfIgnoreCase]);
+              ParameterValue := StringReplace(URI, Copy(Path, 1, Pos('{' + EndPointParameter.Name.ToUpper + '}', Path.ToUpper) - 1), '', [rfIgnoreCase]);
               if Pos('/', ParameterValue) > 0 then
                 ParameterValue := Copy(ParameterValue, 1, Pos('/', ParameterValue) - 1);
             end;
@@ -339,11 +345,13 @@ begin
         end;
 
         if ParameterIndex = -1 then
-          Exit(False);
+          Exit;
 
-        PathParams[EndPointParamenter.Name] := ParameterValue;
-      end;
-    end;
+        LResult := True;
+        PathParams[EndPointParameter.Name] := ParameterValue;
+      end);
+
+  Result := LResult;
 end;
 
 procedure TIndyApiServer.ConvertFromStringToTValue(
@@ -361,87 +369,107 @@ function TIndyApiServer.TrySetMethodParams(
   var Params: TArray<TValue>): Boolean;
 var
   ParameterIndex: Integer;
-  ParameterValue: string;
-  Value: TValue;
+  LParams: TArray<TValue>;
+  LResult: Boolean;
 begin
-  Result := True;
+  LResult := True;
   SetLength(Params, EndPoint.Parameters.Count);
-  ParameterIndex := 0;
-  with EndPoint.Parameters.GetEnumerator do
-    while MoveNext do
-    begin
-      if not GetCurrent.IsOut then
-      begin
-        case GetCurrent.&Type of
-          mptPath: begin
-            if not PathParams.TryGetValue(GetCurrent.Name, ParameterValue) then
-            begin
-              if not GetCurrent.IsNullable then
-                Exit(False);
 
-              ConvertFromStringToTValue('', GetCurrent.TypeInfo, Value);
-              Params[ParameterIndex] := Value;
+  ParameterIndex := 0;
+  EndPoint.Parameters.ForEach(
+    procedure(const Item: TEndPointParameter)
+    var
+      Value: TValue;
+      ParameterValue: string;
+    begin
+      if not Item.IsOut then
+      begin
+        case Item.&Type of
+          mptPath: begin
+            if not PathParams.TryGetValue(Item.Name, ParameterValue) then
+            begin
+              if not Item.IsNullable then
+              begin
+                LResult := False;
+                Exit;
+              end;
+
+              ConvertFromStringToTValue('', Item.TypeInfo, Value);
+              LParams[ParameterIndex] := Value;
             end
             else
             begin
-              ConvertFromStringToTValue(ParameterValue, GetCurrent.TypeInfo, Value);
-              Params[ParameterIndex] := Value;
+              ConvertFromStringToTValue(ParameterValue, Item.TypeInfo, Value);
+              LParams[ParameterIndex] := Value;
             end;
           end;
           mptForm: begin
-            if not ApiRequest.FormParams.TryGetValue(GetCurrent.Name, ParameterValue) then
+            if not ApiRequest.FormParams.TryGetValue(Item.Name, ParameterValue) then
             begin
-              if not GetCurrent.IsNullable then
-                Exit(False);
+              if not Item.IsNullable then
+              begin
+                LResult := False;
+                Exit;
+              end;
 
-              ConvertFromStringToTValue('', GetCurrent.TypeInfo, Value);
-              Params[ParameterIndex] := Value;
+              ConvertFromStringToTValue('', Item.TypeInfo, Value);
+              LParams[ParameterIndex] := Value;
             end
             else
-              ConvertFromStringToTValue(ParameterValue, GetCurrent.TypeInfo, Value);
-            Params[ParameterIndex] := Value;
+              ConvertFromStringToTValue(ParameterValue, Item.TypeInfo, Value);
+            LParams[ParameterIndex] := Value;
           end;
           mptHeader: begin
-            if not ApiRequest.HeaderParams.TryGetValue(GetCurrent.Name, ParameterValue) then
+            if not ApiRequest.HeaderParams.TryGetValue(Item.Name, ParameterValue) then
             begin
-              if not GetCurrent.IsNullable then
-                Exit(False);
+              if not Item.IsNullable then
+              begin
+                LResult := False;
+                Exit;
+              end;
 
-              ConvertFromStringToTValue('', GetCurrent.TypeInfo, Value);
-              Params[ParameterIndex] := Value;
+              ConvertFromStringToTValue('', Item.TypeInfo, Value);
+              LParams[ParameterIndex] := Value;
             end
             else
-              ConvertFromStringToTValue(ParameterValue, GetCurrent.TypeInfo, Value);
-            Params[ParameterIndex] := Value;
+              ConvertFromStringToTValue(ParameterValue, Item.TypeInfo, Value);
+            LParams[ParameterIndex] := Value;
           end;
           mptQuery: begin
-            if not ApiRequest.QueryParams.TryGetValue(GetCurrent.Name, ParameterValue) then
+            if not ApiRequest.QueryParams.TryGetValue(Item.Name, ParameterValue) then
             begin
-              if not GetCurrent.IsNullable then
-                Exit(False);
+              if not Item.IsNullable then
+              begin
+                LResult := False;
+                Exit;
+              end;
 
-              ConvertFromStringToTValue('', GetCurrent.TypeInfo, Value);
-              Params[ParameterIndex] := Value;
+
+              ConvertFromStringToTValue('', Item.TypeInfo, Value);
+              LParams[ParameterIndex] := Value;
             end
             else
-              ConvertFromStringToTValue(ParameterValue, GetCurrent.TypeInfo, Value);
-            Params[ParameterIndex] := Value;
+              ConvertFromStringToTValue(ParameterValue, Item.TypeInfo, Value);
+            LParams[ParameterIndex] := Value;
           end;
           mptBody: begin
-            if Assigned(GetCurrent.ClassType) then
-              Params[ParameterIndex] := ConvertRequestToDto(ApiRequest.MimeType, ApiRequest.Body, GetCurrent.TypeInfo);
+            if Assigned(Item.ClassType) then
+              LParams[ParameterIndex] := ConvertRequestToDto(ApiRequest.MimeType, ApiRequest.Body, Item.TypeInfo);
           end;
         end
       end
       else
       begin
-        if Assigned(GetCurrent.ClassType) then
-          Params[ParameterIndex] := ConvertRequestToDto(ApiRequest.MimeType, '', GetCurrent.TypeInfo)
+        if Assigned(Item.ClassType) then
+          LParams[ParameterIndex] := ConvertRequestToDto(ApiRequest.MimeType, '', Item.TypeInfo)
         else
-          Params[ParameterIndex] := ConvertTValueToString('');
+          LParams[ParameterIndex] := ConvertTValueToString('');
       end;
       Inc(ParameterIndex);
-    end;
+    end);
+
+    Result := LResult;
+    Params := LParams;
 end;
 
 procedure TIndyApiServer.UpdateResponse(
@@ -452,22 +480,28 @@ procedure TIndyApiServer.UpdateResponse(
   const Params: array of TValue);
 var
   ParameterIndex: Integer;
+  LParams: IList<TValue>;
 begin
   ParameterIndex := 0;
-  with EndPoint.Parameters.GetEnumerator do
-    while MoveNext do
-    begin
-      if GetCurrent.IsOut then
-        case GetCurrent.&Type of
+  LParams := TCollections.CreateList<TValue>(Params);
+
+  EndPoint.Parameters
+    .Where(function(const Item: TEndPointParameter): Boolean
+      begin
+        Result := Item.IsOut;
+      end)
+    .ForEach(procedure(const Item: TEndPointParameter)
+      begin
+        case Item.&Type of
           mptBody:
-            if not Assigned(GetCurrent.ClassType) then
-              ApiResponse.SetBody(ConvertTValueToString(Params[ParameterIndex]))
+            if not Assigned(Item.ClassType) then
+              ApiResponse.SetBody(ConvertTValueToString(LParams[ParameterIndex]))
             else
-              ApiResponse.SetBody(ConvertResponseDtoToString(ApiResponse.MimeType, Params[ParameterIndex]));
-          mptHeader: ApiResponse.HeaderParams[GetCurrent.Name] := ConvertTValueToString(Params[ParameterIndex]);
+              ApiResponse.SetBody(ConvertResponseDtoToString(ApiResponse.MimeType, LParams[ParameterIndex]));
+          mptHeader: ApiResponse.HeaderParams[Item.Name] := ConvertTValueToString(LParams[ParameterIndex]);
         end;
-      Inc(ParameterIndex);
-    end;
+        Inc(ParameterIndex);
+      end);
 
   if Method.MethodKind = mkFunction then
     if MethodResult.IsObject or MethodResult.IsArray then
@@ -482,18 +516,9 @@ procedure TIndyApiServer.ProcessCommand(
   const ApiResponse: IHttpResponse);
 var
   EndPoint: TEndPoint;
-  Result: TValue;
   RttiContext: TRttiContext;
   RttiType: TRttiType;
-  Method: TRttiMethod;
   PathParams: IDictionary<string, string>;
-  Params: TArray<TValue>;
-  Param: TValue;
-  Step: string;
-  PApiepFunc: TRequestMiddlewareFunc;
-  PostStepProc: TResponseMiddlewareProc;
-  ResponseCode: Integer;
-  ResponseText: string;
   WebSocket: ILoopServerWebSocket;
 begin
   PathParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
@@ -537,67 +562,80 @@ begin
   if (ApiResponse.MimeType = mtAll) and (High(EndPoint.Produces)>=0) then
     ApiResponse.SetMimeType(EndPoint.Produces[0]);
   RttiType := RttiContext.GetType(EndPoint.Instance.AsObject.ClassType);
-  for Method in RttiType.GetMethods do
-    if UpperCase(Method.Name) = UpperCase(EndPoint.MethodName) then
-    begin
 
-      if not TrySetPathParams(EndPoint, ApiRequest.URI, PathParams) then
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+    .Where(function(const Method: TRttiMethod): Boolean
       begin
-        ApiResponse.SetResponseCode(400, 'Bad number or type of path parameters.');
-        Exit;
-      end;
-
-      if not TrySetMethodParams(ApiRequest, PathParams, EndPoint, Params) then
+        Result := UpperCase(Method.Name) = UpperCase(EndPoint.MethodName);
+      end)
+    .ForEach(procedure(const Method: TRttiMethod)
+      var
+        Params: TArray<TValue>;
+        Param: TValue;
+        Step: string;
+        PApiepFunc: TRequestMiddlewareFunc;
+        PostStepProc: TResponseMiddlewareProc;
+        ResponseCode: Integer;
+        ResponseText: string;
+        Result: TValue;
       begin
-        ApiResponse.SetResponseCode(400, 'Bad number or type of parameters.');
-        Exit;
-      end;
-
-      try
-        for Step in Endpoint.PreProcessPipelineSteps do
-          if not FRequestMiddlewares.TryGetValue(Step, PApiepFunc) then
-            raise EFidoApiException.Create('RequestMiddleware ' + Step + ' not found.')
-          else if not PApiepFunc(ApiRequest, ResponseCode, ResponseText) then
-          begin
-            ApiResponse.SetResponseCode(ResponseCode, ResponseText);
-            Exit;
-          end;
-
-        Result := Method.Invoke(EndPoint.Instance, Params);
-        UpdateResponse(Method, Result, ApiResponse, EndPoint, Params);
-
-        for Step in Endpoint.PostProcessPipelineSteps do
+        if not TrySetPathParams(EndPoint, ApiRequest.URI, PathParams) then
         begin
-          if not FResponseMiddlewares.TryGetValue(Step, PostStepProc) then
-            raise EFidoApiException.Create('ResponseMiddleware ' + Step + ' not found.');
-          PostStepProc(ApiRequest, ApiResponse)
+          ApiResponse.SetResponseCode(400, 'Bad number or type of path parameters.');
+          Exit;
         end;
 
-      except
-        on E: EApiServer400 do
-          ApiResponse.SetResponseCode(400, 'Bad request.');
-        on E: EApiServer401 do
-          ApiResponse.SetResponseCode(401, 'Unhautorized.');
-        on E: EApiServer403 do
-          ApiResponse.SetResponseCode(403, 'Forbidden.');
-        on E: EApiServer404 do
-          ApiResponse.SetResponseCode(404, 'Not found.');
-        on E: EApiServer409 do
-          ApiResponse.SetResponseCode(409, 'Conflict.');
-        on E: EApiServer500 do
-          ApiResponse.SetResponseCode(500, 'Internal server error.');
-        else
-          raise;
-        Exit;
-      end;
+        if not TrySetMethodParams(ApiRequest, PathParams, EndPoint, Params) then
+        begin
+          ApiResponse.SetResponseCode(400, 'Bad number or type of parameters.');
+          Exit;
+        end;
 
-      if Result.IsObject then
-        Result.AsObject.Free;
-      for Param in Params do
-        if Param.IsObject then
-          Param.AsObject.Free;
-      Exit;
-    end;
+        try
+          for Step in Endpoint.PreProcessPipelineSteps do
+            if not FRequestMiddlewares.TryGetValue(Step, PApiepFunc) then
+              raise EFidoApiException.Create('RequestMiddleware ' + Step + ' not found.')
+            else if not PApiepFunc(ApiRequest, ResponseCode, ResponseText) then
+            begin
+              ApiResponse.SetResponseCode(ResponseCode, ResponseText);
+              Exit;
+            end;
+
+          Result := Method.Invoke(EndPoint.Instance, Params);
+          UpdateResponse(Method, Result, ApiResponse, EndPoint, Params);
+
+          for Step in Endpoint.PostProcessPipelineSteps do
+          begin
+            if not FResponseMiddlewares.TryGetValue(Step, PostStepProc) then
+              raise EFidoApiException.Create('ResponseMiddleware ' + Step + ' not found.');
+            PostStepProc(ApiRequest, ApiResponse)
+          end;
+
+        except
+          on E: EApiServer400 do
+            ApiResponse.SetResponseCode(400, 'Bad request.');
+          on E: EApiServer401 do
+            ApiResponse.SetResponseCode(401, 'Unhautorized.');
+          on E: EApiServer403 do
+            ApiResponse.SetResponseCode(403, 'Forbidden.');
+          on E: EApiServer404 do
+            ApiResponse.SetResponseCode(404, 'Not found.');
+          on E: EApiServer409 do
+            ApiResponse.SetResponseCode(409, 'Conflict.');
+          on E: EApiServer500 do
+            ApiResponse.SetResponseCode(500, 'Internal server error.');
+          else
+            raise;
+          Exit;
+        end;
+
+        if Result.IsObject then
+          Result.AsObject.Free;
+        for Param in Params do
+          if Param.IsObject then
+            Param.AsObject.Free;
+        Exit;
+      end);
 end;
 
 procedure TIndyApiServer.OnHTTPCommandEvent(
@@ -647,27 +685,15 @@ procedure TIndyApiServer.RegisterResource(const Resource: TObject);
 var
   Context: TRttiContext;
   RttiType: TRttiType;
-  Attribute: TCustomAttribute;
-  Method: TRttiMethod;
   ResourcePath: string;
   MethodPath: string;
   ApiMethod: THttpMethod;
-  Parameter: TRttiParameter;
-  OutParameter: Boolean;
-  ParameterType: TMethodParameterType;
-  ApiParameterName: string;
   RegExpPath: string;
-  ClassType: TClass;
-  Parameters: IList<TEndPointParameter>;
   SubDictionary: IDictionary<THttpMethod, TEndPoint>;
   Consumes: TArray<TMimeType>;
   Produces: TArray<TMimeType>;
   ResponseCode: Integer;
   ResponseText: string;
-  PreProcessPipelineSteps: IList<string>;
-  PostProcessPipelineSteps: IList<string>;
-  IsNullable: Boolean;
-  TypeQualifiedName: string;
 begin
   FResources.Add(Resource);
 
@@ -675,135 +701,159 @@ begin
   Produces := [];
 
   RttiType := Context.GetType(Resource.ClassType);
-  for Attribute in RttiType.GetAttributes do
-    if Attribute is BaseUrlAttribute then
-      ResourcePath := (Attribute as BaseUrlAttribute).BaseUrl
-    else if Attribute is ConsumesAttribute then
+
+  TCollections.CreateList<TCustomAttribute>(RttiType.GetAttributes).ForEach(
+    procedure(const Attribute: TCustomAttribute)
     begin
-      SetLength(Consumes, Length(Consumes) + 1);
-      Consumes[High(Consumes)] := (Attribute as ConsumesAttribute).MimeType
-    end
-    else if Attribute is ProducesAttribute then
-    begin
-      SetLength(Produces, Length(Produces) + 1);
-      Produces[High(Produces)] := (Attribute as ProducesAttribute).MimeType
-    end;
+      if Attribute is BaseUrlAttribute then
+        ResourcePath := (Attribute as BaseUrlAttribute).BaseUrl
+      else if Attribute is ConsumesAttribute then
+      begin
+        SetLength(Consumes, Length(Consumes) + 1);
+        Consumes[High(Consumes)] := (Attribute as ConsumesAttribute).MimeType
+      end
+      else if Attribute is ProducesAttribute then
+      begin
+        SetLength(Produces, Length(Produces) + 1);
+        Produces[High(Produces)] := (Attribute as ProducesAttribute).MimeType
+      end;
+    end);
 
   if not ResourcePath.StartsWith('/') then
     ResourcePath := '/' + ResourcePath;
 
-  for Method in RttiType.GetMethods do
-  begin
-    ResponseCode := 200;
-    ResponseText := 'OK';
-
-    ApiMethod := rmUnknown;
-    MethodPath := '';
-    Parameters := TCollections.CreateList<TEndPointParameter>;
-    PreProcessPipelineSteps := TCollections.CreateList<string>;
-    PostProcessPipelineSteps := TCollections.CreateList<string>;
-
-    for Attribute in Method.GetAttributes do
-      if Attribute is PathAttribute then
-      begin
-        MethodPath := (Attribute as PathAttribute).Path;
-        ApiMethod := (Attribute as PathAttribute).Method;
-      end
-      else if Attribute is ResponseCodeAttribute then
-      begin
-        ResponseCode := (Attribute as ResponseCodeAttribute).ResponseCode;
-	      ResponseText := (Attribute as ResponseCodeAttribute).ResponseText;
-      end
-      else if Attribute is RequestMiddlewareAttribute then
-        PreProcessPipelineSteps.Add((Attribute as RequestMiddlewareAttribute).StepName)
-      else if Attribute is ResponseMiddlewareAttribute then
-        PostProcessPipelineSteps.Add((Attribute as ResponseMiddlewareAttribute).StepName);
-
-    if (MethodPath.IsEmpty) and
-       (ApiMethod = rmUnknown) then
-      Continue;
-
-    for Parameter in Method.GetParameters do
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+    procedure(const Method: TRttiMethod)
+    var
+      Parameters: IList<TEndPointParameter>;
+      PreProcessPipelineSteps: IList<string>;
+      PostProcessPipelineSteps: IList<string>;
     begin
-      ClassType := nil;
-      if Parameter.ParamType.IsInstance then
-        ClassType := Parameter.ParamType.AsInstance.MetaclassType;
-      IsNullable := Parameter.ParamType.ToString.ToUpper.Contains('NULLABLE<');
+      ResponseCode := 200;
+      ResponseText := 'OK';
 
-      TypeQualifiedName := Parameter.QualifiedClassName;
+      ApiMethod := rmUnknown;
+      MethodPath := '';
+      Parameters := TCollections.CreateList<TEndPointParameter>;
+      PreProcessPipelineSteps := TCollections.CreateList<string>;
+      PostProcessPipelineSteps := TCollections.CreateList<string>;
 
-      OutParameter := (pfVar in Parameter.Flags) or
-                      (pfOut in Parameter.Flags);
-      ParameterType := mptUnknown;
-      for Attribute in Parameter.GetAttributes do
-        if Attribute is PathParamAttribute then
+      TCollections.CreateList<TCustomAttribute>(Method.GetAttributes).ForEach(
+        procedure(const Attribute: TCustomAttribute)
         begin
-          ParameterType := mptPath;
-           ApiParameterName := (Attribute as ParamAttribute).ParamName;
-        end
-        else if Attribute is FormParamAttribute then
+          if Attribute is PathAttribute then
+          begin
+            MethodPath := (Attribute as PathAttribute).Path;
+            ApiMethod := (Attribute as PathAttribute).Method;
+          end
+          else if Attribute is ResponseCodeAttribute then
+          begin
+            ResponseCode := (Attribute as ResponseCodeAttribute).ResponseCode;
+            ResponseText := (Attribute as ResponseCodeAttribute).ResponseText;
+          end
+          else if Attribute is RequestMiddlewareAttribute then
+            PreProcessPipelineSteps.Add((Attribute as RequestMiddlewareAttribute).StepName)
+          else if Attribute is ResponseMiddlewareAttribute then
+            PostProcessPipelineSteps.Add((Attribute as ResponseMiddlewareAttribute).StepName);
+        end);
+
+      if (MethodPath.IsEmpty) and
+         (ApiMethod = rmUnknown) then
+        Exit;
+
+      TCollections.CreateList<TRttiParameter>(Method.GetParameters).ForEach(
+        procedure(const Parameter: TRttiParameter)
+        var
+          ClassType: TClass;
+          IsNullable: Boolean;
+          OutParameter: Boolean;
+          ParameterType: TMethodParameterType;
+          TypeQualifiedName: string;
+          ApiParameterName: string;
         begin
-           ParameterType := mptForm;
-          ApiParameterName := (Attribute as ParamAttribute).ParamName;
-        end
-        else if Attribute is BodyParamAttribute then
+          ClassType := nil;
+          if Parameter.ParamType.IsInstance then
+            ClassType := Parameter.ParamType.AsInstance.MetaclassType;
+          IsNullable := Parameter.ParamType.ToString.ToUpper.Contains('NULLABLE<');
+
+          TypeQualifiedName := Parameter.QualifiedClassName;
+
+          OutParameter := (pfVar in Parameter.Flags) or
+                          (pfOut in Parameter.Flags);
+          ParameterType := mptUnknown;
+
+          TCollections.CreateList<TCustomAttribute>(Parameter.GetAttributes).ForEach(
+            Procedure(const Attribute: TCustomAttribute)
+            begin
+              if Attribute is PathParamAttribute then
+              begin
+                ParameterType := mptPath;
+                 ApiParameterName := (Attribute as ParamAttribute).ParamName;
+              end
+              else if Attribute is FormParamAttribute then
+              begin
+                 ParameterType := mptForm;
+                ApiParameterName := (Attribute as ParamAttribute).ParamName;
+              end
+              else if Attribute is BodyParamAttribute then
+              begin
+                ParameterType := mptBody;
+                ApiParameterName := (Attribute as ParamAttribute).ParamName;
+              end
+              else if Attribute is HeaderParamAttribute then
+              begin
+                ParameterType := mptHeader;
+                ApiParameterName := (Attribute as ParamAttribute).ParamName;
+              end
+              else if Attribute is QueryParamAttribute then
+              begin
+                ParameterType := mptQuery;
+                ApiParameterName := (Attribute as ParamAttribute).ParamName;
+              end;
+            end);
+
+          if ApiParameterName.IsEmpty then
+            ApiParameterName := Parameter.Name;
+
+          Parameters.Add(
+            TEndPointParameter.Create(
+              OutParameter,
+              Parameter.Name,
+              ApiParameterName,
+              ClassType,
+              ParameterType,
+              Parameter.ParamType.Handle,
+              IsNullable,
+              TypeQualifiedName));
+        end);
+
+      MethodPath := ResourcePath + MethodPath;
+      RegExpPath := TranslatePathToRegEx(MethodPath);
+
+      if (not MethodPath.IsEmpty) and
+         (ApiMethod <> rmUnknown) then
+      begin
+        if not FEndPoints.TryGetValue(RegExpPath, SubDictionary) then
         begin
-          ParameterType := mptBody;
-          ApiParameterName := (Attribute as ParamAttribute).ParamName;
-        end
-        else if Attribute is HeaderParamAttribute then
-        begin
-          ParameterType := mptHeader;
-          ApiParameterName := (Attribute as ParamAttribute).ParamName;
-        end
-        else if Attribute is QueryParamAttribute then
-        begin
-          ParameterType := mptQuery;
-          ApiParameterName := (Attribute as ParamAttribute).ParamName;
+          SubDictionary := TCollections.CreateDictionary<THttpMethod, TEndPoint>;
+          FEndPoints.Add(RegExpPath, SubDictionary);
         end;
 
-      if ApiParameterName.IsEmpty then
-        ApiParameterName := Parameter.Name;
-
-      Parameters.Add(
-        TEndPointParameter.Create(
-          OutParameter,
-          Parameter.Name,
-          ApiParameterName,
-          ClassType,
-          ParameterType,
-          Parameter.ParamType.Handle,
-          IsNullable,
-          TypeQualifiedName));
-    end;
-
-    MethodPath := ResourcePath + MethodPath;
-    RegExpPath := TranslatePathToRegEx(MethodPath);
-
-    if (not MethodPath.IsEmpty) and
-       (ApiMethod <> rmUnknown) then
-    begin
-      if not FEndPoints.TryGetValue(RegExpPath, SubDictionary) then
-      begin
-        SubDictionary := TCollections.CreateDictionary<THttpMethod, TEndPoint>;
-        FEndPoints.Add(RegExpPath, SubDictionary);
+        SubDictionary[ApiMethod] :=
+          TEndPoint.Create(
+            Resource,
+            Method.Name,
+            MethodPath,
+            ApiMethod,
+            Parameters,
+            Consumes,
+            Produces,
+            ResponseCode,
+            ResponseText,
+            PreProcessPipelineSteps,
+            PostProcessPipelineSteps);
       end;
-
-      SubDictionary[ApiMethod] :=
-        TEndPoint.Create(
-          Resource,
-          Method.Name,
-          MethodPath,
-          ApiMethod,
-          Parameters,
-          Consumes,
-          Produces,
-          ResponseCode,
-          ResponseText,
-          PreProcessPipelineSteps,
-          PostProcessPipelineSteps);
-    end;
-  end;
+    end);
 end;
 
 procedure TIndyApiServer.RegisterWebSocket(const WebSocketClass: TClass);
@@ -817,12 +867,14 @@ begin
     Exit;
   Context := TRttiContext.Create;
   RttiType := Context.GetType(WebSocketClass);
-  for Attribute in RttiType.GetAttributes do
-    if Attribute is WebSocketPathAttribute then
-    begin
-      Path := (Attribute as WebSocketPathAttribute).Path;
-      Break;
-    end;
+
+  if TCollections.CreateList<TCustomAttribute>(RttiType.GetAttributes).TryGetFirst(
+      Attribute,
+      function(const Attribute: TCustomAttribute): Boolean
+      begin
+        Result := Attribute is WebSocketPathAttribute;
+      end) then
+    Path := (Attribute as WebSocketPathAttribute).Path;
 
   FLock.BeginWrite;
   try

@@ -139,27 +139,37 @@ function Mappers.TMappers.GetInstanceValues<TA>(const Instance: TA): IDictionary
 var
   Context: Shared<TRttiContext>;
   RttiType: TRttiType;
-  RttiMeth: TRttiMethod;
-  RttiProp: TRttiProperty;
-  PropertyName: string;
   InstanceValue: TValue;
+  LResult: IDictionary<string, TValue>;
 begin
   InstanceValue := TValue.From<TA>(Instance);
-  Result := TCollections.CreateDictionary<string, TValue>;
+  LResult := TCollections.CreateDictionary<string, TValue>;
   Context := TRttiContext.Create;
   RttiType := Context.Value.GetType(TypeInfo(TA));
 
-  for RttiProp in RttiType.GetProperties do
-    if (RttiProp.Visibility = mvPublished) and
-       RttiProp.IsReadable then
-      Result[RttiProp.Name.ToUpper] := RttiProp.GetValue(InstanceValue.AsPointer);
+  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+    .Where(function(const RttiProp: TRttiProperty): Boolean
+      begin
+        Result := (RttiProp.Visibility = mvPublished) and RttiProp.IsReadable;
+      end)
+    .ForEach(procedure(const RttiProp: TRttiProperty)
+      begin
+        LResult[RttiProp.Name.ToUpper] := RttiProp.GetValue(InstanceValue.AsPointer);
+      end);
 
-  for RttiMeth in RttiType.GetMethods do
-    if (RttiMeth.Visibility = mvPublished) and
-       (RttiMeth.MethodKind = mkFunction) and
-       (Length(RttiMeth.GetParameters) = 0) and
-       TryGetGetterMethodPropName(RttiMeth, PropertyName) then
-      Result[PropertyName] := RttiMeth.Invoke(InstanceValue, []);
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+    procedure(const RttiMeth: TRttiMethod)
+    var
+      PropertyName: string;
+    begin
+      if (RttiMeth.Visibility = mvPublished) and
+         (RttiMeth.MethodKind = mkFunction) and
+         (Length(RttiMeth.GetParameters) = 0) and
+         TryGetGetterMethodPropName(RttiMeth, PropertyName) then
+        LResult[PropertyName] := RttiMeth.Invoke(InstanceValue, []);
+    end);
+
+  Result := LResult;
 end;
 
 function Mappers.TMappers.SetInstanceValues<TB>(
@@ -168,10 +178,6 @@ function Mappers.TMappers.SetInstanceValues<TB>(
 var
   Context: TRttiContext;
   RttiType: TRttiType;
-  RttiMeth: TRttiMethod;
-  RttiProp: TRttiProperty;
-  PropertyName: string;
-  Value: TValue;
   InstanceValue: TValue;
 begin
   InstanceValue := TValue.From<TB>(Instance);
@@ -180,19 +186,30 @@ begin
   try
     RttiType := Context.GetType(TypeInfo(TB));
 
-    for RttiProp in RttiType.GetProperties do
-      if (RttiProp.Visibility = mvPublished) and
-         RttiProp.IsWritable and
-         Values.TryGetValue(RttiProp.Name.ToUpper, Value) then
-        RttiProp.SetValue(InstanceValue.AsPointer, Value);
+    TCollections.CreateList<TRttiProperty>(RttiType.GetProperties).ForEach(
+      procedure(const RttiProp: TRttiProperty)
+      var
+        Value: TValue;
+      begin
+        if (RttiProp.Visibility = mvPublished) and
+           RttiProp.IsWritable and
+           Values.TryGetValue(RttiProp.Name.ToUpper, Value) then
+          RttiProp.SetValue(InstanceValue.AsPointer, Value);
+      end);
 
-    for RttiMeth in RttiType.GetMethods do
-      if (RttiMeth.Visibility = mvPublished) and
-         (RttiMeth.MethodKind = mkProcedure) and
-         (Length(RttiMeth.GetParameters) = 1) and
-         TryGetSetterMethodPropName(RttiMeth, PropertyName) and
-         Values.TryGetValue(PropertyName, Value) then
-        RttiMeth.Invoke(InstanceValue, [Value]);
+    TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+      procedure(const RttiMeth: TRttiMethod)
+      var
+        PropertyName: string;
+        Value: TValue;
+      begin
+        if (RttiMeth.Visibility = mvPublished) and
+           (RttiMeth.MethodKind = mkProcedure) and
+           (Length(RttiMeth.GetParameters) = 1) and
+           TryGetSetterMethodPropName(RttiMeth, PropertyName) and
+           Values.TryGetValue(PropertyName, Value) then
+          RttiMeth.Invoke(InstanceValue, [Value]);
+      end);
 
     Result := True;
   except
