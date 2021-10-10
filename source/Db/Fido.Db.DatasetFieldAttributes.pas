@@ -73,15 +73,14 @@ procedure TDatasetFieldAttributes.SetAttribute(
   const Visible: Boolean;
   const Precision: Integer = 0);
 begin
-  FMap.AddOrSetValue(
-    FieldName,
+  FMap[FieldName] :=
     TDatasetFieldAttribute.Create(
       Width,
       Title,
       ReadOnly,
       EditMask,
       Visible,
-      Precision));
+      Precision);
 end;
 
 function TDatasetFieldAttributes.TryGetAttribute(

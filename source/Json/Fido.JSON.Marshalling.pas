@@ -51,22 +51,22 @@ uses
   Fido.VirtualDto.Abstract;
 
 type
-  TJSONDTOMethodDescriptor = class
-    OriginalName: string;     // original name of method
-    MappedName: string;       // mapped name of column or parameter of a method itself (not its pareameters)
-    Converter: TDataTypeDescriptor;
-    Category: TMethodCategory;
-    IsInterface: Boolean;
-    IsEnumeration: Boolean;
-    TypeInfo: PTypeInfo;
-    Value: TValue;
-
-    function IsArray: Boolean;
-  end;
-
   EJSONVirtualDto = class(EFidoException);
 
   TJSONVirtualDto = class(TVirtualInterface)
+  strict private type
+    TJSONDTOMethodDescriptor = class
+      OriginalName: string;     // original name of method
+      MappedName: string;       // mapped name of column or parameter of a method itself (not its pareameters)
+      Converter: TDataTypeDescriptor;
+      Category: TMethodCategory;
+      IsInterface: Boolean;
+      IsEnumeration: Boolean;
+      TypeInfo: PTypeInfo;
+      Value: TValue;
+
+      function IsArray: Boolean;
+    end;
   strict private const
     GetterPrefix = 'GET';
   strict private
@@ -786,12 +786,14 @@ class function JSONMarshaller.FromReadonlyListOfInterfaces(
   const ConfigurationName: string): string;
 var
   JsonArray: Shared<TJSONArray>;
-  Item: TValue;
+  Enum: IEnumerable;
 begin
   JsonArray := TJSONArray.Create;
 
-  for Item in Value.Convert(TypInfo).AsType<IEnumerable> do
-    JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromInterface(Item, ElementTypeInfo, ConfigurationName)));
+  Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
+  with Enum.GetEnumerator do
+    while MoveNext do
+      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromInterface(Current, ElementTypeInfo, ConfigurationName)));
 
   Result := JsonArray.Value.ToJSON;
 end;
@@ -803,14 +805,14 @@ class function JSONMarshaller.FromReadonlyListOfPrimitives(
   const ConfigurationName: string): string;
 var
   JsonArray: Shared<TJSONArray>;
-  Intf: IReadonlyList;
+  Enum: IEnumerable;
 begin
   JsonArray := TJSONArray.Create;
 
-  if Supports(Value.Convert(TypInfo).AsInterface, GetTypeData(TypInfo).GUID, Intf) then
-    with Intf.GetEnumerator do
-      while MoveNext do
-        JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromPrimitive(Current, ElementTypeInfo, ConfigurationName)));
+  Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
+  with Enum.GetEnumerator do
+    while MoveNext do
+      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromPrimitive(Current, ElementTypeInfo, ConfigurationName)));
 
   Result := JsonArray.Value.ToJSON;
 end;
@@ -906,7 +908,7 @@ end;
 
 { TJSONDTOMethodDescriptor }
 
-function TJSONDTOMethodDescriptor.IsArray: Boolean;
+function TJSONVirtualDto.TJSONDTOMethodDescriptor.IsArray: Boolean;
 var
   RttiContext: TRttiContext;
   RttiType: TRttiType;

@@ -144,9 +144,9 @@ begin
   FLock := TMREWSync.Create;
   FObservers := TCollections.CreateList<Weak<IObserver>>;
   if not Assigned(Observable) then
-    FObservable := Weak<IInterface>.Create(Self)
+    FObservable := Self
   else
-    FObservable := Weak<IInterface>.Create(Observable);
+    FObservable := Observable;
   FIdentity := Identity;
 
   // don't try to generate identity if 1) we already got one, 2) it could only be based on Self
@@ -221,7 +221,7 @@ begin
         end) then
       Exit;
 
-    FObservers.Add(Weak<IObserver>.Create(Observer));
+    FObservers.Add(Observer);
     FNeedsSync := FNeedsSync or Supports(Observer, IGUIObserver);
   finally
     FLock.EndWrite;
