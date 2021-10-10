@@ -38,6 +38,7 @@ type
     FVersion: string;
   public
     constructor Create(const Version: string);
+
     property Version: string read FVersion;
   end;
 
@@ -52,6 +53,7 @@ type
     FEndPoint: string;
   public
     constructor Create(const Method: TRestRequestMethod; const EndPoint: string);
+
     property EndPoint: string read FEndPoint;
     property Method: TRestRequestMethod read FMethod;
   end;
@@ -136,6 +138,7 @@ type
     FParamName: string;
   public
     constructor Create(const ErrorCode: integer; const ParamName: string);
+
     property ErrorCode: integer read FErrorCode;
     property ParamName: string read FParamName;
   end;
@@ -152,7 +155,9 @@ end;
 
 { EndpointAttribute }
 
-constructor EndpointAttribute.Create(const Method: TRestRequestMethod; const EndPoint: string);
+constructor EndpointAttribute.Create(
+  const Method: TRestRequestMethod;
+  const EndPoint: string);
 begin
   inherited Create;
   FMethod := Method;
@@ -161,7 +166,9 @@ end;
 
 { ParamsAttribute }
 
-constructor ParamAttribute.Create(const MethodParam: string; const ApiParam: string);
+constructor ParamAttribute.Create(
+  const MethodParam: string;
+  const ApiParam: string);
 begin
   inherited Create;
   FMethodParam := MethodParam;
@@ -186,7 +193,9 @@ end;
 
 { ResponseHeaderParamAttribute }
 
-constructor ResponseHeaderParamAttribute.Create(const ResponseCode: Integer; const HeaderParam, ParamName: string);
+constructor ResponseHeaderParamAttribute.Create(
+  const ResponseCode: Integer;
+  const HeaderParam, ParamName: string);
 begin
   inherited Create;
   FResponseCode := ResponseCode;
@@ -198,7 +207,9 @@ end;
 
 { ConvertResponseForErrorCodeAttribute }
 
-constructor ConvertResponseForErrorCodeAttribute.Create(const ErrorCode: integer; const ParamName: string);
+constructor ConvertResponseForErrorCodeAttribute.Create(
+  const ErrorCode: integer;
+  const ParamName: string);
 begin
   inherited Create;
   FErrorCode := ErrorCode;

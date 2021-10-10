@@ -30,6 +30,7 @@ uses
 type
   IClientVirtualApiConfiguration = interface(IInvokable)
     ['{07ACEF78-09D9-4711-95BA-34CB44274DB5}']
+
     function BaseUrl: string;
     function Active: Boolean;
     function LiveEnvironment: Boolean;
@@ -37,6 +38,7 @@ type
 
   IActiveClientVirtualApiConfiguration = interface(IClientVirtualApiConfiguration)
     ['{B5A2A1A5-741B-48D2-8FEF-8A41461192D4}']
+
     procedure CallBegins(const Call: TClientVirtualApiCall);
     procedure CallEnded(const Call: TClientVirtualApiCall);
   end;

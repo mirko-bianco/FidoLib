@@ -67,24 +67,21 @@ type
     FList: Weak<IReadonlyList<TRecord>>;
     FParams: IDictionary<string, TParamDescriptor>;
     FMethods: IDictionary<string, TMethodDescriptor>;
-    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType;
-      const Direction: TParamType; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+
+    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType; const Direction: TParamType; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
     procedure ProcessAllAttributes;
     function ExtractSQLString(const ResString: string): string;
     function GetSQLData: string;
     function GetIsDefined: boolean;
-
     function GetIsGetterName(const Name: string): boolean;
     function GetMappedName(const Name: string): string;
     procedure SetEnumeratorValue(out Result: TValue);
     procedure Execute(const Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
-    procedure ProcessAttribute(const Attribute : TCustomAttribute;
-      const Method: TRttiMethod = nil; const MethDesc: TMethodDescriptor = nil);
+    procedure ProcessAttribute(const Attribute: TCustomAttribute; const Method: TRttiMethod = nil; const MethDesc: TMethodDescriptor = nil);
     procedure ProcessMethod(const Method: TRttiMethod; const Collection: IDictionary<string, TMethodDescriptor>);
     procedure RaiseError(const Msg: string; const Args: array of const);
     procedure TestDatasetOpen(const MethodToBeCalled: string);
     procedure SetExecMethod(const Value: TMethodDescriptor);
-
     procedure DefineStatement(const Method: TRttiMethod);
     procedure ValidateStatement;
   private
@@ -93,12 +90,9 @@ type
     property Executor: IStatementExecutor read FExecutor;
     property ExecMethod: TMethodDescriptor read FExecMethod write SetExecMethod;
   public
-    constructor Create(
-      const ResReader: IStringResourceReader;
-      const StatementExecutor: IStatementExecutor);
+    constructor Create(const ResReader: IStringResourceReader; const StatementExecutor: IStatementExecutor);
 
     class function GetInstance(const Container: TContainer): TVirtualQuery<TRecord, T>; static;
-
     // IVirtualQueryMetadata
     function GetDescription: string;
     function GetSQLResource: string;
@@ -115,8 +109,12 @@ uses
 
 { TVirtualStatement<TRecord, T> }
 
-function TVirtualQuery<TRecord, T>.AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType;
-  const Direction: TParamType; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+function TVirtualQuery<TRecord, T>.AddOrUpdateDescriptor(
+  const OriginalName: string;
+  const RttiType: TRttiType;
+  const Direction: TParamType;
+  const IsPagingLimit: Boolean;
+  const IsPagingOffset: Boolean): TParamDescriptor;
 var
   MappedName: string;
 begin
@@ -209,7 +207,10 @@ begin
   Executor.Prepare;
 end;
 
-procedure TVirtualQuery<TRecord, T>.DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TVirtualQuery<TRecord, T>.DoInvoke(
+  Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   MethodDesc: TMethodDescriptor;
 begin
@@ -240,7 +241,10 @@ begin
   end;
 end;
 
-procedure TVirtualQuery<TRecord, T>.Execute(const Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TVirtualQuery<TRecord, T>.Execute(
+  const Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   Arg : TRttiParameter;
   Entry: TPair<string, TParamDescriptor>;
@@ -383,7 +387,9 @@ begin
 end;
 
 procedure TVirtualQuery<TRecord, T>.ProcessAttribute(
-  const Attribute: TCustomAttribute; const Method: TRttiMethod; const MethDesc: TMethodDescriptor);
+  const Attribute: TCustomAttribute;
+  const Method: TRttiMethod;
+  const MethDesc: TMethodDescriptor);
 begin
   // process interface-level attributes (Statement, Description and Map )
   if not Assigned(Method) then
@@ -413,7 +419,9 @@ begin
   end;
 end;
 
-procedure TVirtualQuery<TRecord, T>.ProcessMethod(const Method: TRttiMethod; const Collection: IDictionary<string, TMethodDescriptor>);
+procedure TVirtualQuery<TRecord, T>.ProcessMethod(
+  const Method: TRttiMethod;
+  const Collection: IDictionary<string, TMethodDescriptor>);
 var
   Attribute : TCustomAttribute;
   MethodDesc: TMethodDescriptor;
@@ -466,7 +474,9 @@ begin
     end;
 end;
 
-procedure TVirtualQuery<TRecord, T>.RaiseError(const Msg: string; const Args: array of const);
+procedure TVirtualQuery<TRecord, T>.RaiseError(
+  const Msg: string;
+  const Args: array of const);
 begin
   raise EFidoVirtualQueryError.CreateFmt(Msg, Args);
 end;

@@ -30,6 +30,7 @@ uses
 type
   IObserver = interface(IInvokable)
     ['{60A5C49F-8C57-4103-B9FE-893496AFF427}']
+
     procedure Notify(const Sender: IInterface; const Notification: INotification);
   end;
 

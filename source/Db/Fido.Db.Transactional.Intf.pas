@@ -32,6 +32,7 @@ uses
 type
   ITransactional = interface(IInvokable)
     ['{571DAD15-6E0B-4CDA-9784-39B84083EA54}']
+
     function StartTransaction: ITransaction;
     procedure ResetNestedTransactionRollbackedStatus;
     function NestedTransactionRollbacked: Boolean;

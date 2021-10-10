@@ -30,6 +30,7 @@ uses
 type
   IStringResourceReader = interface
     ['{978E12E1-8C19-4B00-AD4E-03BCB4AD212D}']
+
     function GetStringResource(const ResName: string): string;
   end;
 

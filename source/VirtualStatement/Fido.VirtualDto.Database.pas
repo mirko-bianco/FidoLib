@@ -98,8 +98,10 @@ begin
   FRecordMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([doOwnsValues]);
 end;
 
-procedure TDatabaseVirtualDto<T>.DoInvoke(Method: TRttiMethod;
-  const Args: TArray<TValue>; out Result: TValue);
+procedure TDatabaseVirtualDto<T>.DoInvoke(
+  Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   MethodDesc: TMethodDescriptor;
 begin

@@ -89,7 +89,9 @@ begin
   FMappersMap := Spring.Collections.TCollections.CreateDictionary<PTypeInfo, IDictionary<PTypeInfo, TValueMapProc>>;
 end;
 
-procedure Mappers.TMappers.Map<TA, TB>(const Source: TA; const Dest: TB);
+procedure Mappers.TMappers.Map<TA, TB>(
+  const Source: TA;
+  const Dest: TB);
 var
   SourceTypeInfo: PTypeInfo;
   DestTypeInfo: PTypeInfo;
@@ -111,8 +113,9 @@ begin
   end;
 end;
 
-function Mappers.TMappers.TryGetGetterMethodPropName(const RttiMeth: TRttiMethod;
-                                 out PropertyName: string): Boolean;
+function Mappers.TMappers.TryGetGetterMethodPropName(
+  const RttiMeth: TRttiMethod;
+  out PropertyName: string): Boolean;
 begin
   PropertyName := RttiMeth.Name.ToUpper;
   if RttiMeth.Name.ToUpper.StartsWith(GETTER_PREFIX) then
@@ -121,8 +124,9 @@ begin
   Result := not PropertyName.IsEmpty;
 end;
 
-function Mappers.TMappers.TryGetSetterMethodPropName(const RttiMeth: TRttiMethod;
-                                 out PropertyName: string): Boolean;
+function Mappers.TMappers.TryGetSetterMethodPropName(
+  const RttiMeth: TRttiMethod;
+  out PropertyName: string): Boolean;
 begin
   PropertyName := RttiMeth.Name;
   if RttiMeth.Name.ToUpper.StartsWith(SETTER_PREFIX) then
@@ -158,7 +162,9 @@ begin
       Result.AddOrSetValue(PropertyName, RttiMeth.Invoke(InstanceValue, []));
 end;
 
-function Mappers.TMappers.SetInstanceValues<TB>(const Instance: TB; const Values: IDictionary<string, TValue>): Boolean;
+function Mappers.TMappers.SetInstanceValues<TB>(
+  const Instance: TB;
+  const Values: IDictionary<string, TValue>): Boolean;
 var
   Context: TRttiContext;
   RttiType: TRttiType;
@@ -194,7 +200,9 @@ begin
   end;
 end;
 
-function Mappers.TMappers.TryAutoMap<TA, TB>(const Source: TA; const Dest: TB): Boolean;
+function Mappers.TMappers.TryAutoMap<TA, TB>(
+  const Source: TA;
+  const Dest: TB): Boolean;
 begin
   Result := SetInstanceValues<TB>(Dest, GetInstanceValues<TA>(Source));
 end;
@@ -212,16 +220,16 @@ end;
 function Mappers.TMappers.ConvertMapProc<TA, TB>(const MapProc: TProc<TA, TB>): TValueMapProc;
 begin
   Result := procedure(SourceValue: TValue; DestValue: TValue)
-            var
-              GenericSource: TA;
-              GenericDest: TB;
-            begin
-               if not SourceValue.TryAsType<TA>(GenericSource) then
-                 raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [SourceValue.TypeInfo.Name]);
-               if not DestValue.TryAsType<TB>(GenericDest) then
-                 raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [DestValue.TypeInfo.Name]);
-              MapProc(GenericSource, GenericDest);
-            end;
+    var
+      GenericSource: TA;
+      GenericDest: TB;
+    begin
+       if not SourceValue.TryAsType<TA>(GenericSource) then
+         raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [SourceValue.TypeInfo.Name]);
+       if not DestValue.TryAsType<TB>(GenericDest) then
+         raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [DestValue.TypeInfo.Name]);
+      MapProc(GenericSource, GenericDest);
+    end;
 end;
 
 procedure Mappers.TMappers.RegisterMapper<TA, TB>(const MapProc: TProc<TA, TB>);
@@ -269,7 +277,9 @@ begin
   Result := FMappers;
 end;
 
-class procedure Mappers.Map<TA, TB>(const Source: TA; const Dest: TB);
+class procedure Mappers.Map<TA, TB>(
+  const Source: TA;
+  const Dest: TB);
 begin
   GetMappers.Map<TA, TB>(Source, Dest);
 end;

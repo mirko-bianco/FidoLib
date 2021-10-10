@@ -61,7 +61,7 @@ type
   end;
 
   TConvertResponseForErrorCodeInfo = record
-  private
+  strict private
     FErrorCode: Integer;
     FParamName: string;
   public
@@ -87,15 +87,9 @@ type
     FConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>;
     FHandleRedirects: boolean;
   public
-    constructor Create(const ApiName: string; const Method: TRESTRequestMethod;
-      const EndPoint: string; const QueryParams: IDictionary<string, string>;
-      const HeaderParams: IDictionary<string, string>;
-      const FormParams: IDictionary<string, string>;
-      const FileParams: IDictionary<string, string>;
-      const RequestParam: string; const Content: string;
-      const ResponseHeaderParamInfo: Nullable<TResponseHeaderParamInfo>;
-      const ConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>;
-      const HandleRedirects: boolean);
+    constructor Create(const ApiName: string; const Method: TRESTRequestMethod; const EndPoint: string; const QueryParams: IDictionary<string, string>; const HeaderParams: IDictionary<string, string>;
+      const FormParams: IDictionary<string, string>; const FileParams: IDictionary<string, string>; const RequestParam: string; const Content: string;
+      const ResponseHeaderParamInfo: Nullable<TResponseHeaderParamInfo>; const ConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>; const HandleRedirects: boolean);
 
     property ApiName: string read FApiName;
     property Method: TRESTRequestMethod read FMethod;
@@ -112,7 +106,7 @@ type
   end;
 
   TClientVirtualApiMisconfiguration = record
-  private
+  strict private
     FApiName: string;
     FApiMethod: string;
     FParameterName: string;
@@ -126,54 +120,47 @@ type
 
   {$M+}
   TAbstractClientVirtualApi<T: IClientVirtualApi; IConfiguration: IClientVirtualApiConfiguration> = class(TVirtualInterface<T>)
-  private
-  const
+  strict private const
     MUSTACHE_REGEXPR = '{\s*[\w\.\-]+\s*}';
     FORMAT_PARAM = '{format}';
     DEFAULT_FORMAT = 'json';
-  class var
+  strict private class var
     FEndPointInfo: IDictionary<string, TClientVirtualApiEndPointInfo>;
     FMisconfigurations: IList<TClientVirtualApiMisconfiguration>;
     FShortApiName: string;
     FApiVersion: string;
-  var
+  strict private var
     FConfiguration: IConfiguration;
     FLastStatusCode: integer;
-
+  strict private
     class function InspectMethod(const Method: TRttiMethod): TClientVirtualApiEndPointInfo;
     class procedure InspectInterface(const ApiInterface: TRttiType);
     class function CheckParameterCoverage(const ParamName: string; const MethodParams: IDictionary<string, string>; const ConfigurationParams: IDictionary<string, string>): Boolean;
-    class function CheckParametersCoverage(const ApiName: string; const MethodName: string; const Params: IDictionary<string, string>; const MethodParams: IDictionary<string, string>; const ConfigurationParams: IDictionary<string, string>; out Misconfigurations: TArray<TClientVirtualApiMisconfiguration>): Boolean;
+    class function CheckParametersCoverage(const ApiName: string; const MethodName: string; const Params: IDictionary<string, string>; const MethodParams: IDictionary<string, string>;
+      const ConfigurationParams: IDictionary<string, string>; out Misconfigurations: TArray<TClientVirtualApiMisconfiguration>): Boolean;
     class function CheckParameterAgainstDictionary(const ParamName: string; const Dictionary: IDictionary<string, string>): Boolean;
     class procedure ValidateMethods;
-
+    class procedure FindApiParamAttribute(const MethodName: string; const Attributes: TArray<TCustomAttribute>; const ConfigurationParams: IDictionary<string, string>); static;
     function ProcessPath(const Call: TClientVirtualApiCall; const EndPoint: string; const Arguments: IDictionary<string, TPair<string, TValue>>): string;
     procedure MapArgumentsAndParameters(const Parameters: TArray<TRttiParameter>; const Args: TArray<TValue>; const Arguments: IDictionary<string, TPair<string, TValue>>);
-    class procedure FindApiParamAttribute(
-      const MethodName: string;
-      const Attributes: TArray<TCustomAttribute>;
-      const ConfigurationParams: IDictionary<string, string>); static;
-    procedure ParamNamesToParamNameValues(
-      const Arguments: IDictionary<string, TPair<string, TValue>>;
-      const Params: IDictionary<string, string>;
-      const Kind: TClientVirtualApiCallParameterKind;
+    procedure ParamNamesToParamNameValues(const Arguments: IDictionary<string, TPair<string, TValue>>; const Params: IDictionary<string, string>; const Kind: TClientVirtualApiCallParameterKind;
       const Call: TClientVirtualApiCall);
     procedure MapArgumentAndConfiguration(const Arguments: IDictionary<string, TPair<string, TValue>>);
     procedure DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
-  protected
-  const
+  protected const
     CONTENT = 'application/json';
-
+  protected
+    class function GetAcceptHeaderWithApiVersion(const AcceptHeader: string): string;
     function ConvertTValueToString(const Value: TValue): string; virtual; abstract;
     function ConvertResponseToDto(const Response: string; const TypeInfo: PTypeInfo): TValue; virtual; abstract;
     function ConvertRequestDtoToString(const Value: TValue): string; virtual; abstract;
     procedure CallApi(const Call: TClientVirtualApiCall); virtual; abstract;
+
     class property ApiVersion: string read FApiVersion;
-    class function GetAcceptHeaderWithApiVersion(const AcceptHeader: string): string;
   public
-    constructor Create(const Configuration: IConfiguration); overload;
     class constructor Create;
     class destructor Destroy;
+    constructor Create(const Configuration: IConfiguration); overload;
 
     function IsActive: Boolean;
   end;
@@ -196,7 +183,9 @@ begin
   inherited;
 end;
 
-class function TAbstractClientVirtualApi<T, IConfiguration>.CheckParameterAgainstDictionary(const ParamName: string; const Dictionary: IDictionary<string, string>): Boolean;
+class function TAbstractClientVirtualApi<T, IConfiguration>.CheckParameterAgainstDictionary(
+  const ParamName: string;
+  const Dictionary: IDictionary<string, string>): Boolean;
 var
   ApiName: string;
 begin
@@ -211,7 +200,10 @@ begin
     end;
 end;
 
-class function TAbstractClientVirtualApi<T, IConfiguration>.CheckParameterCoverage(const ParamName: string; const MethodParams: IDictionary<string, string>; const ConfigurationParams: IDictionary<string, string>): Boolean;
+class function TAbstractClientVirtualApi<T, IConfiguration>.CheckParameterCoverage(
+  const ParamName: string;
+  const MethodParams: IDictionary<string, string>;
+  const ConfigurationParams: IDictionary<string, string>): Boolean;
 var
   ApiName: string;
 begin
@@ -220,7 +212,13 @@ begin
     Result := CheckParameterAgainstDictionary(ParamName, ConfigurationParams);
 end;
 
-class function TAbstractClientVirtualApi<T, IConfiguration>.CheckParametersCoverage(const ApiName: string; const MethodName: string; const Params: IDictionary<string, string>; const MethodParams: IDictionary<string, string>; const ConfigurationParams: IDictionary<string, string>; out Misconfigurations: TArray<TClientVirtualApiMisconfiguration>): Boolean;
+class function TAbstractClientVirtualApi<T, IConfiguration>.CheckParametersCoverage(
+  const ApiName: string;
+  const MethodName: string;
+  const Params: IDictionary<string, string>;
+  const MethodParams: IDictionary<string, string>;
+  const ConfigurationParams: IDictionary<string, string>;
+  out Misconfigurations: TArray<TClientVirtualApiMisconfiguration>): Boolean;
 begin
   Result := True;
   SetLength(Misconfigurations, 0);
@@ -241,7 +239,10 @@ begin
     Result := Result + ';version=' + ApiVersion;
 end;
 
-class procedure TAbstractClientVirtualApi<T, IConfiguration>.FindApiParamAttribute(const MethodName: string; const Attributes: TArray<TCustomAttribute>; const ConfigurationParams: IDictionary<string, string>);
+class procedure TAbstractClientVirtualApi<T, IConfiguration>.FindApiParamAttribute(
+  const MethodName: string;
+  const Attributes: TArray<TCustomAttribute>;
+  const ConfigurationParams: IDictionary<string, string>);
 var
   ApiName: string;
   RttiAttribute: TCustomAttribute;
@@ -399,7 +400,8 @@ begin
 end;
 
 function TAbstractClientVirtualApi<T, IConfiguration>.ProcessPath(
-  const Call: TClientVirtualApiCall; const EndPoint: string;
+  const Call: TClientVirtualApiCall;
+  const EndPoint: string;
   const Arguments: IDictionary<string, TPair<string, TValue>>): string;
 var
   ParamName: string;
@@ -427,7 +429,10 @@ begin
   Result := StringReplace(Result, FORMAT_PARAM, DEFAULT_FORMAT, [rfReplaceAll]);
 end;
 
-procedure TAbstractClientVirtualApi<T, IConfiguration>.MapArgumentsAndParameters(const Parameters: TArray<TRttiParameter>; const Args: TArray<TValue>; const Arguments: IDictionary<string, TPair<string, TValue>>);
+procedure TAbstractClientVirtualApi<T, IConfiguration>.MapArgumentsAndParameters(
+  const Parameters: TArray<TRttiParameter>;
+  const Args: TArray<TValue>;
+  const Arguments: IDictionary<string, TPair<string, TValue>>);
 var
   Index: Integer;
   RttiParameter: TRttiParameter;
@@ -481,7 +486,10 @@ begin
       end;
 end;
 
-procedure TAbstractClientVirtualApi<T, IConfiguration>.DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TAbstractClientVirtualApi<T, IConfiguration>.DoInvoke(
+  Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   EndPointInfo: TClientVirtualApiEndPointInfo;
   Arguments: IDictionary<string, TPair<string, TValue>>;
@@ -650,13 +658,29 @@ begin
       else if Attribute is ContentAttribute then
         Content := ContentAttribute(Attribute).Content
       else if Attribute is ResponseHeaderParamAttribute then
-        ResponseHeaderParamInfo := TResponseHeaderParamInfo.Create(ResponseHeaderParamAttribute(Attribute).ResponseCode, ResponseHeaderParamAttribute(Attribute).HeaderParam, ResponseHeaderParamAttribute(Attribute).ParamName)
+        ResponseHeaderParamInfo := TResponseHeaderParamInfo.Create(
+          ResponseHeaderParamAttribute(Attribute).ResponseCode,
+          ResponseHeaderParamAttribute(Attribute).HeaderParam,
+          ResponseHeaderParamAttribute(Attribute).ParamName)
       else if Attribute is ConvertResponseForErrorCodeAttribute then
-        ConvertResponseForErrorCodeInfo := TConvertResponseForErrorCodeInfo.Create(ConvertResponseForErrorCodeAttribute(Attribute).ErrorCode, ConvertResponseForErrorCodeAttribute(Attribute).ParamName)
+        ConvertResponseForErrorCodeInfo :=
+          TConvertResponseForErrorCodeInfo.Create(ConvertResponseForErrorCodeAttribute(Attribute).ErrorCode, ConvertResponseForErrorCodeAttribute(Attribute).ParamName)
       else if Attribute is DisableRedirectsAttribute then
         HandleRedirects := false;
 
-  Result := TClientVirtualApiEndPointInfo.Create(Method.Parent.QualifiedName, RequestMethod, EndPoint, QueryParams, HeaderParams, FormParams, FileParams, RequestParam, Content, ResponseHeaderParamInfo, ConvertResponseForErrorCodeInfo, HandleRedirects);
+  Result := TClientVirtualApiEndPointInfo.Create(
+    Method.Parent.QualifiedName,
+    RequestMethod,
+    EndPoint,
+    QueryParams,
+    HeaderParams,
+    FormParams,
+    FileParams,
+    RequestParam,
+    Content,
+    ResponseHeaderParamInfo,
+    ConvertResponseForErrorCodeInfo,
+    HandleRedirects);
   FEndPointInfo.AddOrSetValue(Method.Name, Result);
 end;
 
@@ -675,7 +699,8 @@ constructor TClientVirtualApiEndPointInfo.Create(
   const HeaderParams: IDictionary<string, string>;
   const FormParams: IDictionary<string, string>;
   const FileParams: IDictionary<string, string>;
-  const RequestParam: string; const Content: string;
+  const RequestParam: string;
+  const Content: string;
   const ResponseHeaderParamInfo: Nullable<TResponseHeaderParamInfo>;
   const ConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>;
   const HandleRedirects: boolean);
@@ -696,7 +721,10 @@ end;
 
 { TVirtualApiMisconfiguration }
 
-constructor TClientVirtualApiMisconfiguration.Create(const ApiName: string; const ApiMethod: string; const ParameterName: string);
+constructor TClientVirtualApiMisconfiguration.Create(
+  const ApiName: string;
+  const ApiMethod: string;
+  const ParameterName: string);
 begin
   FApiName := ApiName;
   FApiMethod := ApiMethod;
@@ -705,7 +733,10 @@ end;
 
 { TResponseHeaderParamInfo }
 
-constructor TResponseHeaderParamInfo.Create(const ResponseCode: Integer; const HeaderParam: string; const ParamName: string);
+constructor TResponseHeaderParamInfo.Create(
+  const ResponseCode: Integer;
+  const HeaderParam: string;
+  const ParamName: string);
 begin
   FResponseCode := ResponseCode;
   FHeaderParam := HeaderParam;
@@ -714,7 +745,9 @@ end;
 
 { TConvertResponseForErrorCodeInfo }
 
-constructor TConvertResponseForErrorCodeInfo.Create(const ErrorCode: Integer; const ParamName: string);
+constructor TConvertResponseForErrorCodeInfo.Create(
+  const ErrorCode: Integer;
+  const ParamName: string);
 begin
   FErrorCode := ErrorCode;
   FParamName := ParamName;

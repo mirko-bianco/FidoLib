@@ -57,17 +57,16 @@ type
   end;
 
   DataTypeConverter = class
-  strict private
-    const
-      SpringNullableTemplate = 'SPRING.NULLABLE<%s>';
-      BaseTypeNames : array[TBaseType] of string = (
-        'SYSTEM.VARIANT', 'SYSTEM.INTEGER', 'SYSTEM.STRING', 'SYSTEM.DOUBLE',
-        'SYSTEM.TDATE', 'SYSTEM.TDATETIME', 'SYSTEM.INT64', 'SYSTEM.BOOLEAN',
-        'SYSTEM.CURRENCY', 'SYSTEM.EXTENDED', 'SYSTEM.TGUID', 'SYSTEM.SMALLINT');
-    class var
+  strict private const
+    SpringNullableTemplate = 'SPRING.NULLABLE<%s>';
+    BaseTypeNames : array[TBaseType] of string = (
+      'SYSTEM.VARIANT', 'SYSTEM.INTEGER', 'SYSTEM.STRING', 'SYSTEM.DOUBLE',
+      'SYSTEM.TDATE', 'SYSTEM.TDATETIME', 'SYSTEM.INT64', 'SYSTEM.BOOLEAN',
+      'SYSTEM.CURRENCY', 'SYSTEM.EXTENDED', 'SYSTEM.TGUID', 'SYSTEM.SMALLINT');
+  strict private class var
       FTypeCache: IDictionary<string, TDataTypeDescriptor>;
-    class procedure AddTypeDescriptor(const BaseType: TBaseType; const IsNullable: boolean;
-      const TypeKind: TTypeKind; const FieldType: TFieldType; const TypeName: string = '');
+  strict private
+    class procedure AddTypeDescriptor(const BaseType: TBaseType; const IsNullable: boolean; const TypeKind: TTypeKind; const FieldType: TFieldType; const TypeName: string = '');
   public
     class constructor Create;
     class function GotDescriptor(const RttiType: TRttiType; out Descriptor: TDataTypeDescriptor): boolean; overload;
@@ -82,8 +81,12 @@ uses
 
 { DataTypesConverter }
 
-class procedure DataTypeConverter.AddTypeDescriptor(const BaseType: TBaseType; const IsNullable: boolean;
-  const TypeKind: TTypeKind; const FieldType: TFieldType; const TypeName: string = '');
+class procedure DataTypeConverter.AddTypeDescriptor(
+  const BaseType: TBaseType;
+  const IsNullable: boolean;
+  const TypeKind: TTypeKind;
+  const FieldType: TFieldType;
+  const TypeName: string = '');
 var
   D: TDataTypeDescriptor;
 begin
@@ -159,12 +162,16 @@ begin
     raise EFidoUnsupportedTypeError.CreateFmt('Type %s is not supported by Fido Framework', [RttiType.QualifiedName]);
 end;
 
-class function DataTypeConverter.GotDescriptor(const QualifiedTypeName: string; out Descriptor: TDataTypeDescriptor): boolean;
+class function DataTypeConverter.GotDescriptor(
+  const QualifiedTypeName: string;
+  out Descriptor: TDataTypeDescriptor): boolean;
 begin
   Result := FTypeCache.TryGetValue(QualifiedTypeName.ToUpper, Descriptor);
 end;
 
-class function DataTypeConverter.GotDescriptor(const RttiType: TRttiType; out Descriptor: TDataTypeDescriptor): boolean;
+class function DataTypeConverter.GotDescriptor(
+  const RttiType: TRttiType;
+  out Descriptor: TDataTypeDescriptor): boolean;
 begin
   Result := GotDescriptor(RttiType.QualifiedName, Descriptor);
 end;

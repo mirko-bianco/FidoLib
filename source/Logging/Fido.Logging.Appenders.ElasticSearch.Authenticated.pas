@@ -48,11 +48,7 @@ type
   protected
     procedure DoSend(const Event: TLogEvent); override;
   public
-    constructor Create(
-      const Api: IElasticsearchAuthenticatedLoggingApi;
-      const Index: string;
-      const TypeName: string;
-      const ApiKey: string);
+    constructor Create(const Api: IElasticsearchAuthenticatedLoggingApi; const Index: string; const TypeName: string; const ApiKey: string);
   end;
 
 implementation
@@ -60,8 +56,10 @@ implementation
 { TElasticsearchAuthenticatedAppender }
 
 constructor TElasticsearchAuthenticatedAppender.Create(
-  const Api: IElasticsearchAuthenticatedLoggingApi; const Index, TypeName,
-  ApiKey: string);
+  const Api: IElasticsearchAuthenticatedLoggingApi;
+  const Index: string;
+  const TypeName: string;
+  const ApiKey: string);
 begin
   inherited Create;
   Guard.CheckNotNull(Api, 'Api');

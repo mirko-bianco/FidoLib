@@ -54,13 +54,7 @@ type
     FVisible: Boolean;
     FPrecision: Integer;
   public
-    constructor Create(
-      const Width: Integer;
-      const Title: string;
-      const &ReadOnly: Boolean;
-      const EditMask: string;
-      const Visible: Boolean;
-      const Precision: Integer = 0);
+    constructor Create(const Width: Integer; const Title: string; const &ReadOnly: Boolean; const EditMask: string; const Visible: Boolean; const Precision: Integer = 0);
 
     property Width: Integer read FWidth;
     property Title: string read FTitle;
@@ -174,7 +168,9 @@ end;
 
 { TResult }
 
-constructor TResult.Create(const Success: Boolean; const ErrorMessage: string);
+constructor TResult.Create(
+  const Success: Boolean;
+  const ErrorMessage: string);
 begin
   SetSuccess(Success);
   FErrorMessage := ErrorMessage;
@@ -207,19 +203,26 @@ end;
 
 { TResult<T> }
 
-constructor TResult<T>.Create(const Success: Boolean; const ErrorMessage: string; Value: T);
+constructor TResult<T>.Create(
+  const Success: Boolean;
+  const ErrorMessage: string;
+  Value: T);
 begin
   Self.FResult := TResult.Create(Success, ErrorMessage);
   Self.FValue := Value;
 end;
 
-constructor TResult<T>.Create(const Result: TResult; Value: T);
+constructor TResult<T>.Create(
+  const Result: TResult;
+  Value: T);
 begin
   Self.FResult := Result;
   Self.FValue := Value;
 end;
 
-constructor TResult<T>.CreateSuccess(const Value: T; const Dummy: Integer = 0);
+constructor TResult<T>.CreateSuccess(
+  const Value: T;
+  const Dummy: Integer = 0);
 begin
   Create(TResult.Create(True, ''), Value);
 end;

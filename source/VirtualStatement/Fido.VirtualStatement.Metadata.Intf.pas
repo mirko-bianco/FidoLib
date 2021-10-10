@@ -35,6 +35,7 @@ type
 
   IVirtualStatementMetadata = interface(IInvokable)
     ['{9956E843-1FDC-4403-9441-4D34E4852662}']
+
     function GetDescription: string;
     function GetIsScalar: boolean;
     function GetStatementType: TStatementType;

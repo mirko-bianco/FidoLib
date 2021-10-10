@@ -66,7 +66,6 @@ type
     FClassName: string;
     FMethodName: string;
     FDuration: TTime;
-
     FIsCancelled: Boolean;
   public
     constructor Create(const Logger: ILogger; const ClassName: string; const MethodName: string);

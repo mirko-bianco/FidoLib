@@ -39,11 +39,7 @@ uses
 
 type
   ServerWebSocket = class
-    class function DetectLoop(
-      const WebSockets: IDictionary<string, TClass>;
-      const HttpRequest: IHttpRequest;
-      const HttpResponse: IHttpResponse;
-      out WebSocket: ILoopServerWebSocket): Boolean;
+    class function DetectLoop(const WebSockets: IDictionary<string, TClass>; const HttpRequest: IHttpRequest; const HttpResponse: IHttpResponse; out WebSocket: ILoopServerWebSocket): Boolean;
   end;
 
 implementation

@@ -35,7 +35,7 @@ type
     FErrorMessage: string;
     FErrorCode: Integer;
   public
-    constructor Create(ErrorCode: Integer; ErrorMessage: string);
+    constructor Create(const ErrorCode: Integer; const ErrorMessage: string);
 
     property ErrorCode: Integer read FErrorCode;
     property ErrorMessage: string read FErrorMessage;
@@ -45,7 +45,9 @@ implementation
 
 { EFidoClientApiException }
 
-constructor EFidoClientApiException.Create(ErrorCode: Integer; ErrorMessage: string);
+constructor EFidoClientApiException.Create(
+  const ErrorCode: Integer;
+  const ErrorMessage: string);
 begin
   inherited Create(Format('[Code %d] %s', [ErrorCode, ErrorMessage]));
   FErrorMessage := ErrorMessage;

@@ -1,5 +1,4 @@
-(*
- * Copyright 2021 Mirko Bianco (email: writetomirko@gmail.com)
+(*             * Copyright 2021 Mirko Bianco (email: writetomirko@gmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,43 +45,41 @@ type
   TClassOfMockUtils = class of MockUtils;
 
   MockUtils = class
+  strict private class var
+    FNullChance: Extended;
+    FStringPrefix: string;
+    FStringLengthLow: Integer;
+    FStringLengthHigh: Integer;
+    FLowInteger: Integer;
+    FHighInteger: Integer;
+    FLowExtended: Extended;
+    FHighExtended: Extended;
+    FMaxDecimalDigits: Integer;
+    FLowDateTime: TDateTime;
+    FHighDateTime: TDateTime;
+    FLowDate: TDate;
+    FHighDate: TDate;
+    FLowTime: TTime;
+    FHighTime: TTime;
+    FLowInt64: Int64;
+    FHighInt64: Int64;
+    FLowNativeInt: NativeInt;
+    FHighNativeInt: NativeInt;
+    FLowSmallint: SmallInt;
+    FHighSmallint: SmallInt;
   strict private
-    class var FNullChance: Extended;
-    class var FStringPrefix: string;
-    class var FStringLengthLow: integer;
-    class var FStringLengthHigh: integer;
-    class var FLowInteger: integer;
-    class var FHighInteger: integer;
-    class var FLowExtended: Extended;
-    class var FHighExtended: Extended;
-    class var FMaxDecimalDigits: Integer;
-    class var FLowDateTime: TDateTime;
-    class var FHighDateTime: TDateTime;
-    class var FLowDate: TDate;
-    class var FHighDate: TDate;
-    class var FLowTime: TTime;
-    class var FHighTime: TTime;
-    class var FLowInt64: Int64;
-    class var FHighInt64: Int64;
-    class var FLowNativeInt: NativeInt;
-    class var FHighNativeInt: NativeInt;
-    class var FLowSmallint: SmallInt;
-    class var FHighSmallint: SmallInt;
-
     class function RandomBoolean: boolean;
     class function RandomNull(const NullChance: Extended): boolean;
     class function CleanGuidString: string;
-
     class function SomeEnumValue<T: record>(TypeInfo: PTypeInfo): T; overload;
     class function SomeEnumValue(TypeInfo: PTypeInfo): TValue; overload;
-
     class procedure SetupSomeObject<T: class>(AObject: TObject);
   private
     class procedure Initialize;
   public
-    class function SomeInteger: integer;
+    class function SomeInteger: Integer;
     class function SomeString: string;
-    class function SomeExtended: double;
+    class function SomeExtended: Double;
     class function SomeBoolean: boolean;
     class function SomeDateTime: TDateTime;
     class function SomeDate: TDate;
@@ -110,10 +107,10 @@ type
     class function WithNullChance(const NullChance: Extended): TClassOfMockUtils;
 
     class function WithStringPrefix(const StringPrefix: string): TClassOfMockUtils;
-    class function WithStringLength(const LowLength, HighLength: integer): TClassOfMockUtils;
+    class function WithStringLength(const LowLength, HighLength: Integer): TClassOfMockUtils;
 
-    class function WithIntegerRange(const LowInteger, HighInteger: integer): TClassOfMockUtils;
-    class function WithExtendedRange(const LowExtended, HighExtended: double): TClassOfMockUtils;
+    class function WithIntegerRange(const LowInteger, HighInteger: Integer): TClassOfMockUtils;
+    class function WithExtendedRange(const LowExtended, HighExtended: Double): TClassOfMockUtils;
     class function WithDateTimeRange(const LowDateTime, HighDateTime: TDateTime): TClassOfMockUtils;
     class function WithDateRange(const LowDate, HighDate: TDate): TClassOfMockUtils;
     class function WithTimeRange(const LowTime, HighTime: TTime): TClassOfMockUtils;
@@ -121,8 +118,8 @@ type
     class function WithNativeIntRange(const LowNativeInt, HighNativeInt: NativeInt): TClassOfMockUtils;
     class function WithSmallintRange(const LowSmallint, HighSmallint: Smallint): TClassOfMockUtils;
 
-    class function WithIntegerFrom(const LowInteger: integer): TClassOfMockUtils;
-    class function WithExtendedFrom(const LowExtended: double): TClassOfMockUtils;
+    class function WithIntegerFrom(const LowInteger: Integer): TClassOfMockUtils;
+    class function WithExtendedFrom(const LowExtended: Double): TClassOfMockUtils;
     class function WithDateTimeFrom(const LowDateTime: TDateTime): TClassOfMockUtils;
     class function WithDateFrom(const LowDate: TDate): TClassOfMockUtils;
     class function WithTimeFrom(const LowTime: TTime): TClassOfMockUtils;
@@ -131,13 +128,8 @@ type
 
     class function WithExtendedDecimalsUpTo(const MaxDecimalDigits: Integer): TClassOfMockUtils;
 
-    class function WithRanges(const LowInteger, HighInteger: integer;
-      const LowExtended, HighExtended: Extended;
-      const LowDateTime, HighDateTime: TDateTime;
-      const LowDate, HighDate: TDate;
-      const LowTime, HighTime: TTime;
-      const LowInt64, HighInt64: Int64;
-      const LowNativeInt, HighNativeInt: NativeInt): TClassOfMockUtils;
+    class function WithRanges(const LowInteger, HighInteger: Integer; const LowExtended, HighExtended: Extended; const LowDateTime, HighDateTime: TDateTime; const LowDate, HighDate: TDate;
+      const LowTime, HighTime: TTime; const LowInt64, HighInt64: Int64; const LowNativeInt, HighNativeInt: NativeInt): TClassOfMockUtils;
 
   end;
 
@@ -161,7 +153,7 @@ end;
 class function MockUtils.SomeEnumValue<T>(TypeInfo: PTypeInfo): T;
 var
   EnumerationType: TRttiEnumerationType;
-  Value: integer;
+  Value: Integer;
 begin
   EnumerationType := TypeInfo.RttiType as TRttiEnumerationType;
   Value := Random(EnumerationType.MaxValue);
@@ -185,7 +177,7 @@ begin
   Value := TValue.FromOrdinal(TypeInfo, Random(EnumerationType.MaxValue + 1));
 end;
 
-class function MockUtils.SomeInteger: integer;
+class function MockUtils.SomeInteger: Integer;
 begin
   Result := FLowInteger + Random(FHighInteger - FLowInteger);
   Initialize;
@@ -199,7 +191,7 @@ end;
 
 class function MockUtils.SomeString: string;
 var
-  NewStringLength: integer;
+  NewStringLength: Integer;
 begin
   if (FStringLengthLow = 0) and (FStringLengthHigh = 0) then
     Exit(FStringPrefix + CleanGuidString);
@@ -215,7 +207,7 @@ begin
   Initialize;
 end;
 
-class function MockUtils.SomeExtended: double;
+class function MockUtils.SomeExtended: Double;
 begin
   Result := RoundTo(FLowExtended + (Random * (FHighExtended - FLowExtended)), -FMaxDecimalDigits);
   Initialize;
@@ -229,10 +221,10 @@ end;
 
 class function MockUtils.SomeDateTime: TDateTime;
 var
-  LeadMilliSeconds: integer;
-  TrailMilliSeconds: integer;
-  MilliSecondRange: integer;
-  MilliSecondsToAdd: integer;
+  LeadMilliSeconds: Integer;
+  TrailMilliSeconds: Integer;
+  MilliSecondRange: Integer;
+  MilliSecondsToAdd: Integer;
 begin
   if Trunc(FLowDateTime) = Trunc(FHighDateTime) then
   begin
@@ -265,8 +257,8 @@ end;
 
 class function MockUtils.SomeTime: TTime;
 var
-  MilliSeconds: integer;
-  MilliSecondsToAdd: integer;
+  MilliSeconds: Integer;
+  MilliSecondsToAdd: Integer;
 begin
   MilliSeconds := MilliSecondsBetween(FLowTime, FHighTime);
   MilliSecondsToAdd := Random(MilliSeconds);
@@ -391,8 +383,8 @@ var
   ValueInt64: TNullableInt64;
   ValueGuid: TGuid;
   NullChance: Extended;
-  LowInteger: integer;
-  HighInteger: integer;
+  LowInteger: Integer;
+  HighInteger: Integer;
   LowExtended: Extended;
   HighExtended: Extended;
   LowDateTime: TDateTime;
@@ -406,8 +398,8 @@ var
   LowNativeInt: NativeInt;
   HighNativeInt: NativeInt;
   StringPrefix: string;
-  StringLengthLow: integer;
-  StringLengthHigh: integer;
+  StringLengthLow: Integer;
+  StringLengthHigh: Integer;
 begin
   NullChance := FNullChance;
   StringPrefix := FStringPrefix;
@@ -562,8 +554,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithSmallintRange(const LowSmallint,
-  HighSmallint: Smallint): TClassOfMockUtils;
+class function MockUtils.WithSmallintRange(
+  const LowSmallint: Smallint;
+  const HighSmallint: Smallint): TClassOfMockUtils;
 begin
   if LowSmallint < 0 then
     raise EFidoMockUtilsException.Create('Smallint range invalid, low must be zero or higher');
@@ -580,7 +573,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithStringLength(const LowLength, HighLength: integer): TClassOfMockUtils;
+class function MockUtils.WithStringLength(
+  const LowLength: Integer;
+  const HighLength: Integer): TClassOfMockUtils;
 begin
   if LowLength < 0 then
     raise EFidoMockUtilsException.Create('String length range invalid, low must be zero or higher');
@@ -597,7 +592,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithIntegerRange(const LowInteger, HighInteger: integer): TClassOfMockUtils;
+class function MockUtils.WithIntegerRange(
+  const LowInteger: Integer;
+  const HighInteger: Integer): TClassOfMockUtils;
 begin
   if LowInteger > HighInteger then
     raise EFidoMockUtilsException.Create('Integer range invalid, low must be lower or equal to high');
@@ -607,7 +604,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithExtendedRange(const LowExtended, HighExtended: double): TClassOfMockUtils;
+class function MockUtils.WithExtendedRange(
+  const LowExtended: Double;
+  const HighExtended: Double): TClassOfMockUtils;
 begin
   if LowExtended > HighExtended then
     raise EFidoMockUtilsException.Create('Extended range invalid, low must be lower or equal to high');
@@ -617,7 +616,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithDateTimeRange(const LowDateTime, HighDateTime: TDateTime): TClassOfMockUtils;
+class function MockUtils.WithDateTimeRange(
+  const LowDateTime: TDateTime;
+  const HighDateTime: TDateTime): TClassOfMockUtils;
 begin
   if LowDateTime > HighDateTime then
     raise EFidoMockUtilsException.Create('DateTime range invalid, low must be lower or equal to high');
@@ -627,7 +628,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithDateRange(const LowDate, HighDate: TDate): TClassOfMockUtils;
+class function MockUtils.WithDateRange(
+  const LowDate: TDate;
+  const HighDate: TDate): TClassOfMockUtils;
 begin
   if LowDate > HighDate then
     raise EFidoMockUtilsException.Create('Date range invalid, low must be lower or equal to high');
@@ -637,7 +640,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithTimeRange(const LowTime, HighTime: TTime): TClassOfMockUtils;
+class function MockUtils.WithTimeRange(
+  const LowTime: TTime;
+  const HighTime: TTime): TClassOfMockUtils;
 begin
   if LowTime > HighTime then
     raise EFidoMockUtilsException.Create('Time range invalid, low must be lower or equal to high');
@@ -647,7 +652,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithInt64Range(const LowInt64, HighInt64: Int64): TClassOfMockUtils;
+class function MockUtils.WithInt64Range(
+  const LowInt64: Int64;
+  const HighInt64: Int64): TClassOfMockUtils;
 begin
   if LowInt64 > HighInt64 then
     raise EFidoMockUtilsException.Create('Int64 range invalid, low must be lower or equal to high');
@@ -657,7 +664,9 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithNativeIntRange(const LowNativeInt, HighNativeInt: NativeInt): TClassOfMockUtils;
+class function MockUtils.WithNativeIntRange(
+  const LowNativeInt: NativeInt;
+  const HighNativeInt: NativeInt): TClassOfMockUtils;
 begin
   if LowNativeInt > HighNativeInt then
     raise EFidoMockUtilsException.Create('NativeInt range invalid, low must be lower or equal to high');
@@ -667,7 +676,7 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithIntegerFrom(const LowInteger: integer): TClassOfMockUtils;
+class function MockUtils.WithIntegerFrom(const LowInteger: Integer): TClassOfMockUtils;
 begin
   Result := WithIntegerRange(LowInteger, MaxInt);
 end;
@@ -684,7 +693,7 @@ begin
   Result := MockUtils;
 end;
 
-class function MockUtils.WithExtendedFrom(const LowExtended: double): TClassOfMockUtils;
+class function MockUtils.WithExtendedFrom(const LowExtended: Double): TClassOfMockUtils;
 begin
   Result := WithExtendedRange(LowExtended, MaxInt);
 end;
@@ -718,13 +727,21 @@ begin
   Result := WithNativeIntRange(LowNativeInt, MaxInt);
 end;
 
-class function MockUtils.WithRanges(const LowInteger, HighInteger: integer;
-  const LowExtended, HighExtended: Extended;
-  const LowDateTime, HighDateTime: TDateTime;
-  const LowDate, HighDate: TDate;
-  const LowTime, HighTime: TTime;
-  const LowInt64, HighInt64: Int64;
-  const LowNativeInt, HighNativeInt: NativeInt): TClassOfMockUtils;
+class function MockUtils.WithRanges(
+  const LowInteger: Integer;
+  const HighInteger: Integer;
+  const LowExtended: Extended;
+  const HighExtended: Extended;
+  const LowDateTime: TDateTime;
+  const HighDateTime: TDateTime;
+  const LowDate: TDate;
+  const HighDate: TDate;
+  const LowTime: TTime;
+  const HighTime: TTime;
+  const LowInt64: Int64;
+  const HighInt64: Int64;
+  const LowNativeInt: NativeInt;
+  const HighNativeInt: NativeInt): TClassOfMockUtils;
 begin
    WithIntegerRange(LowInteger, HighInteger);
    WithExtendedRange(LowExtended, HighExtended);

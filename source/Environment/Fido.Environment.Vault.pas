@@ -34,46 +34,54 @@ uses
 
 type
   TVault = class(TInterfacedObject, IVault)
-  private
-    class var Secrets: IDictionary<string, string>;
-    class function Key(AEnvironment: string; AKey: string): string;
+  private class var
+    Secrets: IDictionary<string, string>;
   private
     FEnvironment: string;
-    function TryGetSecret(AKey: string; out Value: string): Boolean;
+
+    class function CalculateKey(const Environment: string; const Key: string): string;
+    function TryGetSecret(const Key: string; out Value: string): Boolean;
   public
-    class procedure Add(AEnvironment: string; AKey: string; AValue: string);
+    constructor Create(const Environment: string);
 
-    constructor Create(AEnvironment: string);
-
-    function GetSecret(AKey: string): string; // IVault
+    class procedure Add(const Environment: string; const Key: string; const Value: string);
+    // IVault
+    function GetSecret(const Key: string): string;
   end;
 
 implementation
 
-class procedure TVault.Add(AEnvironment: string; AKey: string; AValue: string);
+class procedure TVault.Add(
+  const Environment: string;
+  const Key: string;
+  const Value: string);
 begin
-  Secrets.AddOrSetValue(Key(AEnvironment, AKey), AValue);
+  Secrets.AddOrSetValue(CalculateKey(Environment, Key), Value);
 end;
 
-constructor TVault.Create(AEnvironment: string);
+constructor TVault.Create(const Environment: string);
 begin
-  FEnvironment := AEnvironment;
+  FEnvironment := Environment;
 end;
 
-function TVault.GetSecret(AKey: string): string;
+function TVault.GetSecret(const Key: string): string;
 begin
-  if not TryGetSecret(AKey, Result) then
+  if not TryGetSecret(Key, Result) then
     Result := '';
 end;
 
-class function TVault.Key(AEnvironment: string; AKey: string): string;
+class function TVault.CalculateKey(
+  const Environment: string;
+  const Key: string): string;
 begin
-  Result := AEnvironment.ToLower + '.' + AKey.ToLower;
+  Result := Environment.ToLower + '.' + Key.ToLower;
 end;
 
-function TVault.TryGetSecret(AKey: string; out Value: string): Boolean;
+function TVault.TryGetSecret(
+  const Key: string;
+  out Value: string): Boolean;
 begin
-  Result := Assigned(Secrets) and Secrets.TryGetValue(Key(FEnvironment, AKey), Value)
+  Result := Assigned(Secrets) and Secrets.TryGetValue(CalculateKey(FEnvironment, Key), Value)
 end;
 
 initialization

@@ -50,15 +50,8 @@ type
     FIsNullable: Boolean;
     FTypeQualifiedName: string;
   public
-    constructor Create(
-      const IsOut: Boolean;
-      const Name: string;
-      const RestName: string;
-      const ClassType: TClass;
-      const &Type: TMethodParameterType;
-      const TypeInfo: PTypeInfo;
-      const IsNullable: Boolean;
-      const TypeQualifiedName: string);
+    constructor Create(const IsOut: Boolean; const Name: string; const RestName: string; const ClassType: TClass; const &Type: TMethodParameterType; const TypeInfo: PTypeInfo;
+      const IsNullable: Boolean; const TypeQualifiedName: string);
 
     property IsOut: Boolean read FIsOut;
     property Name: string read FName;
@@ -84,19 +77,9 @@ type
     FPreProcessPipelineSteps: IList<string>;
     FPostProcessPipelineSteps: IList<string>;
   public
-    constructor Create(
-      const Instance: TValue;
-      const MethodName: string;
-      const Path: string;
-      const HttpMethod: THttpMethod;
-      const Parameters: IList<TEndPointParameter>;
-      const Consumes: TArray<TMimeType>;
-      const Produces: TArray<TMimeType>;
-      const ResponseCode: Integer;
-      const ResponseText: string;
-      const PreProcessPipelineSteps: IList<string>;
+    constructor Create(const Instance: TValue; const MethodName: string; const Path: string; const HttpMethod: THttpMethod; const Parameters: IList<TEndPointParameter>;
+      const Consumes: TArray<TMimeType>; const Produces: TArray<TMimeType>; const ResponseCode: Integer; const ResponseText: string; const PreProcessPipelineSteps: IList<string>;
       const PostProcessPipelineSteps: IList<string>);
-
 
     property Instance: TValue read FInstance;
     property MethodName: string read FMethodName;
@@ -117,14 +100,10 @@ type
     FSSLCertFilePath: string;
     FSSLKeyFilePath: string;
   public
-    constructor Create(
-      const SSLRootCertFilePath: string;
-      const SSLCertFilePath: string;
-      const SSLKeyFilePath: string);
+    constructor Create(const SSLRootCertFilePath: string; const SSLCertFilePath: string; const SSLKeyFilePath: string);
     class function CreateEmpty: TSSLCertData; static;
 
     function IsValid: Boolean;
-
     function SSLRootCertFilePath: string;
     function SSLCertFilePath: string;
     function SSLKeyFilePath: string;
@@ -158,7 +137,15 @@ implementation
 
 { TEndPointParameter }
 
-constructor TEndPointParameter.Create(const IsOut: Boolean; const Name, RestName: string; const ClassType: TClass; const &Type: TMethodParameterType; const TypeInfo: PTypeInfo; const IsNullable: Boolean; const TypeQualifiedName: string);
+constructor TEndPointParameter.Create(
+  const IsOut: Boolean;
+  const Name: string;
+  const RestName: string;
+  const ClassType: TClass;
+  const &Type: TMethodParameterType;
+  const TypeInfo: PTypeInfo;
+  const IsNullable: Boolean;
+  const TypeQualifiedName: string);
 begin
   FIsOut := IsOut;
   FName := Name;
@@ -203,9 +190,9 @@ end;
 { TSSLCertData }
 
 constructor TSSLCertData.Create(
-  const SSLRootCertFilePath,
-        SSLCertFilePath,
-        SSLKeyFilePath: string);
+  const SSLRootCertFilePath: string;
+  const SSLCertFilePath: string;
+  const SSLKeyFilePath: string);
 begin
   FSSLRootCertFilePath := SSLRootCertFilePath;
   FSSLCertFilePath := SSLCertFilePath;

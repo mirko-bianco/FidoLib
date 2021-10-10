@@ -43,23 +43,10 @@ uses
 
 type
   AnonAction = class
-    class procedure Setup(
-      const Owner: TComponent;
-      const Control: TControl;
-      const OnExecuteProc: TProc<TObject>;
-      const OnExecuteProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore;
-      const OnChangeProc: TProc<TObject> = nil;
-      const OnChangeProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore;
-      const OnStateChangeProc: TProc<TObject> = nil;
-      const OnStateChangeProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore;
-      const OnUpdateProc: TProc<TObject> = nil;
-      const OnUpdateProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore); overload; static;
+    class procedure Setup(const Owner: TComponent; const Control: TControl; const OnExecuteProc: TProc<TObject>; const OnExecuteProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore;
+      const OnChangeProc: TProc<TObject> = nil; const OnChangeProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore; const OnStateChangeProc: TProc<TObject> = nil; const OnStateChangeProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore; const OnUpdateProc: TProc<TObject> = nil; const OnUpdateProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore); overload; static;
 
-    class procedure Setup<T>(
-      const Owner: TComponent;
-      const Control: TControl;
-      const Executer: T;
-      const ExecuterMethodName: string;
+    class procedure Setup<T>(const Owner: TComponent; const Control: TControl; const Executer: T; const ExecuterMethodName: string;
       const OnExecuteProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore); overload; static;
   end;
 

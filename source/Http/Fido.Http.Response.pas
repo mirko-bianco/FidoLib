@@ -49,30 +49,25 @@ type
     FMimeType: TMimeType;
     FResponseText: string;
 
-    constructor StringsToDictionary(
-      const Strings: TStrings;
-      const Dictionary: IDictionary<string, string>);
+    constructor StringsToDictionary(const Strings: TStrings; const Dictionary: IDictionary<string, string>);
+
     procedure ApplyChanges;
   public
     constructor Create(
       const RequestInfo: IHTTPRequestInfo;
       const ResponseInfo: IHTTPResponseInfo);
 
-    procedure SetResponseCode(
-      const ResponseCode: Integer;
-      const ResponseText: string = '');
+    procedure SetResponseCode(const ResponseCode: Integer;const ResponseText: string = '');
     function Body: string;
     procedure SetBody(const Body: string);
     procedure SetStream(const Stream: TStream);
     function HeaderParams: IDictionary<string, string>;
     function MimeType: TMimeType;
     procedure SetMimeType(const MimeType: TMimeType);
-
-    procedure ServeFile(FilenamePath: string);
+    procedure ServeFile(const FilenamePath: string);
     procedure WriteHeader;
-
     procedure WriteBytesToWebSocket(const Buffer: TWSBytes);
-    procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; ByteCount: Integer; Append: Boolean = True);
+    procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; const ByteCount: Integer; const Append: Boolean = True);
     procedure DisconnectWebSocket;
 
     function GetWebSocketSignature(const Key: string): string;
@@ -82,7 +77,7 @@ implementation
 
 { THttpResponse }
 
-procedure THttpResponse.ServeFile(FilenamePath: string);
+procedure THttpResponse.ServeFile(const FilenamePath: string);
 begin
   FResponseInfo.SmartServeFile(FilenamePath);
 end;
@@ -98,7 +93,9 @@ begin
   FResponseInfo.SetContentType(SMimeType[MimeType]);
 end;
 
-procedure THttpResponse.SetResponseCode(const ResponseCode: Integer; const ResponseText: string);
+procedure THttpResponse.SetResponseCode(
+  const ResponseCode: Integer;
+  const ResponseText: string);
 begin
   FResponseCode := ResponseCode;
   FResponseText := ResponseText;
@@ -110,7 +107,9 @@ begin
   FResponseInfo.SetContentStream(Stream);
 end;
 
-constructor THttpResponse.StringsToDictionary(const Strings: TStrings; const Dictionary: IDictionary<string, string>);
+constructor THttpResponse.StringsToDictionary(
+  const Strings: TStrings;
+  const Dictionary: IDictionary<string, string>);
 var
   I: Integer;
 begin
@@ -133,7 +132,9 @@ begin
   FResponseInfo.WriteHeader;
 end;
 
-constructor THttpResponse.Create(const RequestInfo: IHTTPRequestInfo; const ResponseInfo: IHTTPResponseInfo);
+constructor THttpResponse.Create(
+  const RequestInfo: IHTTPRequestInfo;
+  const ResponseInfo: IHTTPResponseInfo);
 var
   TempBodyParams: Shared<TStringList>;
   Accepts: Shared<TStringList>;
@@ -236,8 +237,10 @@ begin
   Result := FMimeType;
 end;
 
-procedure THttpResponse.ReadBytesFromWebSocket(var Buffer: TWSBytes;
-  ByteCount: Integer; Append: Boolean);
+procedure THttpResponse.ReadBytesFromWebSocket(
+  var Buffer: TWSBytes;
+  const ByteCount: Integer;
+  const Append: Boolean);
 begin
   FResponseInfo.ReadBytesFromWebSocket(Buffer, ByteCount, Append);
 end;

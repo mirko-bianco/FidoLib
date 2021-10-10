@@ -43,10 +43,7 @@ type
     FScriptRunner: IDatabaseScriptRunner;
     FDatabaseMigrationsRepository: IDatabaseMigrationsRepository;
   public
-    constructor Create(
-      const ScriptRunner: IDatabaseScriptRunner;
-      const DatabaseMigrationsRepository: IDatabaseMigrationsRepository;
-      const ScriptsFolder: string);
+    constructor Create(const ScriptRunner: IDatabaseScriptRunner; const DatabaseMigrationsRepository: IDatabaseMigrationsRepository; const ScriptsFolder: string);
 
     procedure Run;
   end;

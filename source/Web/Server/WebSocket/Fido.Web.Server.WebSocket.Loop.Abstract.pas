@@ -42,11 +42,14 @@ type
       FData : TWSBytes;
       FStart: Integer;
       FSize : Integer;
+
       procedure GetSize(Len: Integer);
       function DataSize: Int64;
       function Ping: Boolean;
       function Pong: TWSBytes;
-      function GetData(var AData: TBytes; var IsText: Boolean): Boolean;
+      function GetData(
+        var AData: TBytes;
+        var IsText: Boolean): Boolean;
       procedure Consume;
       function Close: Boolean;
       procedure CloseMessage;
@@ -54,6 +57,7 @@ type
       procedure SetText(const Str: string);
       procedure SetData(const Data: TBytes; const IsText: Boolean = False);
     end;
+
   private var
     FHttpResponse: IHttpResponse;
     FThread: TThread;
@@ -63,10 +67,9 @@ type
     procedure Step; virtual; abstract;
     function GetLoopDuration: Integer; virtual; abstract;
   public
-    constructor Create(
-      const Key: string;
-      const HttpResponse: IHttpResponse);
+    constructor Create(const Key: string; const HttpResponse: IHttpResponse);
     destructor Destroy; override;
+
     procedure SendMessage(const Str: string);
     procedure SendData(const Data: TBytes; var IsText: Boolean);
     procedure ReadLoop;
@@ -82,7 +85,9 @@ begin
   SetData(TEncoding.UTF8.GetBytes(Str), True);
 end;
 
-procedure TLoopServerWebSocket.TMessageRecord.SetData(const Data: TBytes; const IsText: Boolean = False);
+procedure TLoopServerWebSocket.TMessageRecord.SetData(
+  const Data: TBytes;
+  const IsText: Boolean = False);
 var
   DataLength: Int64;
   X, C: Integer;
@@ -199,7 +204,9 @@ begin
   Consume;
 end;
 
-function TLoopServerWebSocket.TMessageRecord.GetData(var AData: TBytes; var IsText: Boolean): Boolean;
+function TLoopServerWebSocket.TMessageRecord.GetData(
+  var AData: TBytes;
+  var IsText: Boolean): Boolean;
 var
   Index: Integer;
 begin
@@ -236,7 +243,9 @@ begin
   FHttpResponse.DisconnectWebSocket;
 end;
 
-constructor TLoopServerWebSocket.Create(const Key: string; const HttpResponse: IHttpResponse);
+constructor TLoopServerWebSocket.Create(
+  const Key: string;
+  const HttpResponse: IHttpResponse);
 begin
   inherited Create;
   FHttpResponse := HttpResponse;
@@ -268,7 +277,9 @@ begin
   inherited;
 end;
 
-procedure TLoopServerWebSocket.SendData(const Data: TBytes; var IsText: Boolean);
+procedure TLoopServerWebSocket.SendData(
+  const Data: TBytes;
+  var IsText: Boolean);
 var
   WebSocketMessage: TMessageRecord;
 begin

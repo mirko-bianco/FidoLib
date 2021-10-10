@@ -30,6 +30,7 @@ uses
 type
   IStreamResourceReader = interface
     ['{7783691D-3653-4E36-81A9-30B333398523}']
+
     function GetResourceStream(const ResName: string): TStream; overload;
     function GetResourceStream(const ResId: Integer): TStream; overload;
   end;

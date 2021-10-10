@@ -38,14 +38,14 @@ uses
 
 type
   TDelegatedObservable = class(TInterfacedObject, IObservable)
-  strict private var
+  strict private
     FLock: IReadWriteSync;
     FIdentity: string;
     FObservable: Weak<IInterface>;
     FNeedsSync: boolean;
     FObservers: IList<Weak<IObserver>>;
     FPaused: boolean;
-  strict private
+
     function GetObservable: IInterface;
     procedure ClearObservers;
     procedure Relay(const Sender: IInterface; const Notification: INotification);
@@ -72,6 +72,7 @@ type
   TSynchronizedNotificationThread = class(TThread)
   private
     FProc: TProc;
+
     procedure ExecProc;
   protected
     procedure Execute; override;
@@ -106,7 +107,9 @@ begin
   Relay(GetObservable, Notification);
 end;
 
-procedure TDelegatedObservable.Broadcast(const Description: string; const Data: TNotificationData);
+procedure TDelegatedObservable.Broadcast(
+  const Description: string;
+  const Data: TNotificationData);
 begin
   if IsPaused then
     Exit;
@@ -130,7 +133,9 @@ begin
   end;
 end;
 
-constructor TDelegatedObservable.Create(const Observable: IInterface; const Identity: string = '');
+constructor TDelegatedObservable.Create(
+  const Observable: IInterface;
+  const Identity: string = '');
 var
   Named: INamedObject;
   Name: string;
@@ -218,7 +223,9 @@ begin
   end;
 end;
 
-procedure TDelegatedObservable.Relay(const Sender: IInterface; const Notification: INotification);
+procedure TDelegatedObservable.Relay(
+  const Sender: IInterface;
+  const Notification: INotification);
 var
   ProcEnum: TProc;
   List: TArray<Weak<IObserver>>;

@@ -64,7 +64,9 @@ implementation
 
 { THttpRequest }
 
-constructor THttpRequest.StringsToDictionary(const Strings: TStrings; const Dictionary: IDictionary<string, string>);
+constructor THttpRequest.StringsToDictionary(
+  const Strings: TStrings;
+  const Dictionary: IDictionary<string, string>);
 var
   I: Integer;
 begin

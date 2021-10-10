@@ -50,20 +50,19 @@ type
   EFidoListDataSetException = class(EFidoException);
 
   TListDataSet<T: IInvokable> = class(TVirtualDataSet)
-  strict private
-    type
-      TMethodInfo = record
-        FieldName: string;
-        IsList: Boolean;
-        TypeKind: TTypeKind;
-        VariableTypeName: string;
-        Handle: PTypeInfo;
-      end;
-    const
+  strict private type
+    TMethodInfo = record
+      FieldName: string;
+      IsList: Boolean;
+      TypeKind: TTypeKind;
+      VariableTypeName: string;
+      Handle: PTypeInfo;
+    end;
+  strict private const
       GETTER_PREFIX = 'GET';
       SETTER_PREFIX = 'SET';
       MAX_TRAVERSEOBJECT = 2;
-    var
+  strict private
       FEntityFactoryFunc: TFunc<PTypeInfo, TValue>;
       FOriginalDataList: IList<T>;
       FFilteredDataList: IList<T>;
@@ -72,10 +71,8 @@ type
       FTraversedTypeInfoMap: IDictionary<PTypeInfo, Integer>;
       FDatasetFieldAttributes: IDatasetFieldAttributes;
 
-    function TryGetGetterMethodInfo(const RttiMeth: TRttiMethod;
-                                    out MethodInfo: TMethodInfo): Boolean;
-    function TryGetSetterMethodInfo(const RttiMeth: TRttiMethod;
-                                    out MethodInfo: TMethodInfo): Boolean;
+    function TryGetGetterMethodInfo(const RttiMeth: TRttiMethod; out MethodInfo: TMethodInfo): Boolean;
+    function TryGetSetterMethodInfo(const RttiMeth: TRttiMethod; out MethodInfo: TMethodInfo): Boolean;
     procedure AddFieldDef(const FieldName: string; const FieldType: TFieldType);
     procedure SetDataList(const Value: IList<T>);
     procedure ListChangedEvent(Sender: TObject; const Item: T; Action: TCollectionChangedAction);
@@ -83,19 +80,14 @@ type
     procedure DoInitialize(const EntityFactoryFunc: TFunc<PTypeInfo, TValue>);
     function IsInRange(const Index: Integer): Boolean;
     procedure SetOnCheckItemVisibility(const Value: TPredicate<T>);
-
     function GetCurrentEntity: T;
     function GetEntityFieldValue(const Entity: TValue; const Prefix: string; const FieldName: string; out Value: Variant): Boolean; overload;
     procedure RecordToEntity(const RecordNo: Integer); overload;
     procedure RecordToEntity(Entity: TValue; const Prefix: string); overload;
-
     function InternalDataList: IList<T>;
-
     function IsFiltered: Boolean;
     procedure FilterDataset;
-
-    procedure OnFieldGetText(Sender: TField; var Text: string; DisplayText: Boolean);
-
+    procedure OnFieldGetText( Sender: TField; var Text: string; DisplayText: Boolean);
     procedure _OnDeleteRecord(Sender: TCustomVirtualDataset; const Index: Integer); virtual;
     procedure _OnGetRecordCount(Sender: TCustomVirtualDataset; var Count: Integer); virtual;
     procedure _OnFilterRecord(DataSet: TDataSet; var Accept: Boolean); virtual;
@@ -103,7 +95,6 @@ type
     procedure _OnPostData(Sender: TCustomVirtualDataset; const Index: Integer); virtual;
     procedure _OnLocate(Sender: TCustomVirtualDataset; const KeyFields: string; const KeyValues: Variant; const Options: TLocateOptions; var Index: Integer); virtual;
     procedure _OnLookupValue(Sender: TCustomVirtualDataset; const KeyFields: string; const KeyValues: Variant; const ResultFields: string; var Value: Variant); virtual;
-  private
     function GetIsGetterName(const Name: string): boolean;
     function GetMappedName(const Name: string): string;
   protected
@@ -111,7 +102,7 @@ type
 
     procedure SetFiltered(Value: Boolean); override;
   public
-    constructor Create(Owner: TComponent; const EntityFactoryFunc: TFunc<PTypeInfo, TValue>); reintroduce; overload;
+    constructor Create( Owner: TComponent; const EntityFactoryFunc: TFunc<PTypeInfo, TValue>); reintroduce; overload;
     constructor Create(Owner: TComponent; const EntityFactoryFunc: TFunc<PTypeInfo, TValue>; const DatasetFieldAttributes: IDatasetFieldAttributes); reintroduce; overload;
 
     property CurrentEntity: T read GetCurrentEntity;
@@ -129,7 +120,9 @@ implementation
 
 { TListDataSet<T> }
 
-procedure TListDataSet<T>.AddFieldDef(const FieldName: string; const FieldType: TFieldType);
+procedure TListDataSet<T>.AddFieldDef(
+  const FieldName: string;
+  const FieldType: TFieldType);
 begin
   if FieldType = ftString then
     FieldDefs.Add(FieldName, FieldType, FStringMaxLength)
@@ -137,7 +130,10 @@ begin
     FieldDefs.Add(FieldName, FieldType, 0);
 end;
 
-constructor TListDataSet<T>.Create(Owner: TComponent; const EntityFactoryFunc: TFunc<PTypeInfo, TValue>; const DatasetFieldAttributes: IDatasetFieldAttributes);
+constructor TListDataSet<T>.Create(
+  Owner: TComponent;
+  const EntityFactoryFunc: TFunc<PTypeInfo, TValue>;
+  const DatasetFieldAttributes: IDatasetFieldAttributes);
 begin
   Guard.CheckTrue(Assigned(EntityFactoryFunc), 'EntityFactoryFunc');
   Guard.CheckNotNull(DatasetFieldAttributes, 'FieldViewAttributes');
@@ -166,7 +162,9 @@ begin
   DoInitialize(EntityFactoryFunc);
 end;
 
-constructor TListDataSet<T>.Create(Owner: TComponent; const EntityFactoryFunc: TFunc<PTypeInfo, TValue>);
+constructor TListDataSet<T>.Create(
+  Owner: TComponent;
+  const EntityFactoryFunc: TFunc<PTypeInfo, TValue>);
 begin
   Create(Owner, EntityFactoryFunc, TDatasetFieldAttributes.Create);
 end;
@@ -209,7 +207,11 @@ begin
     Result := nil;
 end;
 
-function TListDataSet<T>.GetEntityFieldValue(const Entity: TValue; const Prefix: string; const FieldName: string; out Value: Variant): Boolean;
+function TListDataSet<T>.GetEntityFieldValue(
+  const Entity: TValue;
+  const Prefix: string;
+  const FieldName: string;
+  out Value: Variant): Boolean;
 var
   Context: TRttiContext;
   LType: TRttiType;
@@ -271,7 +273,9 @@ begin
       end;
 end;
 
-procedure TListDataSet<T>.InternalInitFieldDefsObjectClass(const TypInfo: PTypeInfo; const Prefix: string);
+procedure TListDataSet<T>.InternalInitFieldDefsObjectClass(
+  const TypInfo: PTypeInfo;
+  const Prefix: string);
 var
   Context: TRttiContext;
   LRttiType: TRttiType;
@@ -347,7 +351,10 @@ begin
   Result := (Index >= 0) and (Index < InternalDataList.Count);
 end;
 
-procedure TListDataSet<T>.ListChangedEvent(Sender: TObject; const Item: T; Action: TCollectionChangedAction);
+procedure TListDataSet<T>.ListChangedEvent(
+  Sender: TObject;
+  const Item: T;
+  Action: TCollectionChangedAction);
 begin
   if State in [dsEdit, dsInsert] then
     Exit;
@@ -373,7 +380,10 @@ begin
   EnableControls;
 end;
 
-procedure TListDataSet<T>.OnFieldGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+procedure TListDataSet<T>.OnFieldGetText(
+  Sender: TField;
+  var Text: string;
+  DisplayText: Boolean);
 var
   Precision: Integer;
 begin
@@ -409,7 +419,9 @@ begin
   FTraversedTypeInfoMap.Clear;
 end;
 
-procedure TListDataSet<T>.RecordToEntity(Entity: TValue; const Prefix: string);
+procedure TListDataSet<T>.RecordToEntity(
+  Entity: TValue;
+  const Prefix: string);
 var
   Context: TRttiContext;
   LTypes: TRttiType;
@@ -493,7 +505,9 @@ begin
       end;
 end;
 
-procedure TListDataSet<T>._OnDeleteRecord(Sender: TCustomVirtualDataset; const Index: Integer);
+procedure TListDataSet<T>._OnDeleteRecord(
+  Sender: TCustomVirtualDataset;
+  const Index: Integer);
 var
   Item: T;
   OriginalIndex: Integer;
@@ -512,11 +526,17 @@ begin
   end;
 end;
 
-procedure TListDataSet<T>._OnFilterRecord(DataSet: TDataSet; var Accept: Boolean);
+procedure TListDataSet<T>._OnFilterRecord(
+  DataSet: TDataSet;
+  var Accept: Boolean);
 begin
 end;
 
-procedure TListDataSet<T>._OnGetFieldValue(Sender: TCustomVirtualDataset; const Field: TField; const Index: Integer; var Value: Variant);
+procedure TListDataSet<T>._OnGetFieldValue(
+  Sender: TCustomVirtualDataset;
+  const Field: TField;
+  const Index: Integer;
+  var Value: Variant);
 begin
   Value := Null;
 
@@ -529,12 +549,19 @@ begin
     raise EFidoListDataSetException.Create('Index out of range.');
 end;
 
-procedure TListDataSet<T>._OnGetRecordCount(Sender: TCustomVirtualDataset; var Count: Integer);
+procedure TListDataSet<T>._OnGetRecordCount(
+  Sender: TCustomVirtualDataset;
+  var Count: Integer);
 begin
   Count := InternalDataList.Count;
 end;
 
-procedure TListDataSet<T>._OnLocate(Sender: TCustomVirtualDataset; const KeyFields: string; const KeyValues: Variant; const Options: TLocateOptions; var Index: Integer);
+procedure TListDataSet<T>._OnLocate(
+  Sender: TCustomVirtualDataset;
+  const KeyFields: string;
+  const KeyValues: Variant;
+  const Options: TLocateOptions;
+  var Index: Integer);
 var
   List: IList<T>;
   Enumerable: IEnumerable<T>;
@@ -604,7 +631,12 @@ begin
     Index := InternalDataList.IndexOf(Enumerable.First);
 end;
 
-procedure TListDataSet<T>._OnLookupValue(Sender: TCustomVirtualDataset; const KeyFields: string; const KeyValues: Variant; const ResultFields: string; var Value: Variant);
+procedure TListDataSet<T>._OnLookupValue(
+  Sender: TCustomVirtualDataset;
+  const KeyFields: string;
+  const KeyValues: Variant;
+  const ResultFields: string;
+  var Value: Variant);
 var
   Index: Integer;
   VarArray: TArray<variant>;
@@ -633,7 +665,9 @@ begin
     Value := VarArray;
 end;
 
-procedure TListDataSet<T>._OnPostData(Sender: TCustomVirtualDataset; const Index: Integer);
+procedure TListDataSet<T>._OnPostData(
+  Sender: TCustomVirtualDataset;
+  const Index: Integer);
 var
   Entity: TValue;
 begin
@@ -738,7 +772,9 @@ begin
     Result := Copy(Result, Length(GETTER_PREFIX) + 1, Length(Result));
 end;
 
-function TListDataSet<T>.TryGetGetterMethodInfo(const RttiMeth: TRttiMethod; out MethodInfo: TMethodInfo): Boolean;
+function TListDataSet<T>.TryGetGetterMethodInfo(
+  const RttiMeth: TRttiMethod;
+  out MethodInfo: TMethodInfo): Boolean;
 begin
   if not ((RttiMeth.Visibility in [mvPublic, mvPublished]) and
           (RttiMeth.MethodKind = mkFunction) and
@@ -758,7 +794,9 @@ begin
   Result := True;
 end;
 
-function TListDataSet<T>.TryGetSetterMethodInfo(const RttiMeth: TRttiMethod; out MethodInfo: TMethodInfo): Boolean;
+function TListDataSet<T>.TryGetSetterMethodInfo(
+  const RttiMeth: TRttiMethod;
+  out MethodInfo: TMethodInfo): Boolean;
 begin
   if not ((RttiMeth.Visibility in [mvPublic, mvPublished]) and
           (RttiMeth.MethodKind = mkProcedure) and
@@ -784,7 +822,9 @@ end;
 
 { TListDataSetOfObservable<T> }
 
-constructor TListDataSetOfObservable<T>.Create(Owner: TComponent; const EntityFactoryFunc: TFunc<PTypeInfo, TValue>);
+constructor TListDataSetOfObservable<T>.Create(
+  Owner: TComponent;
+  const EntityFactoryFunc: TFunc<PTypeInfo, TValue>);
 begin
   inherited Create(Owner, EntityFactoryFunc);
   FListFactory :=

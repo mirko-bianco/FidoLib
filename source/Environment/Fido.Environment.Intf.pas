@@ -35,7 +35,6 @@ type
     ['{7BC21F7E-F515-4372-A93F-C405755F777C}']
 
     function GetSecret(Secret: string): string;
-
     function EnvironmentName: string;
     function EnvironmentType: TEnvironmentType;
   end;

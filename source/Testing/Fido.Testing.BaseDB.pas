@@ -55,9 +55,7 @@ type
     function GetStringResReader: IStringResourceReader;
     function GetResourceText(const ResourceName: string): string;
   public
-    constructor Create(
-      const TransactionHandler: ITransactionHandler;
-      const StringResourceReader: IStringResourceReader);
+    constructor Create(const TransactionHandler: ITransactionHandler; const StringResourceReader: IStringResourceReader);
     destructor Destroy; override;
   end;
 

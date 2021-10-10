@@ -68,8 +68,9 @@ type
     FEnumerator: Weak<IEnumerator>;
     FParams: IDictionary<string,TParamDescriptor>;
     FMethods: IDictionary<string, TMethodDescriptor>;
-    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType;
-      const Direction: TParamType; const IsFunction: Boolean; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+
+    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType; const Direction: TParamType; const IsFunction: Boolean; const IsPagingLimit: Boolean;
+      const IsPagingOffset: Boolean): TParamDescriptor;
     procedure ProcessAllAttributes;
     procedure CacheColumns;
   private
@@ -78,29 +79,23 @@ type
     function ExtractSQLString(const ResString: string): string;
     function GetSQLData: string;
     function GetIsDefined: boolean;
-
     procedure SetEnumeratorValue(out Result: TValue);
     procedure DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
     procedure Execute(const Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
-    procedure ProcessAttribute(const Attribute : TCustomAttribute;
-      const Method: TRttiMethod = nil; const MethDesc: TMethodDescriptor = nil);
+    procedure ProcessAttribute(const Attribute : TCustomAttribute; const Method: TRttiMethod = nil; const MethDesc: TMethodDescriptor = nil);
     procedure ProcessMethod(const Method: TRttiMethod);
     procedure RaiseError(const Msg: string; const Args: array of const);
     procedure TestDatasetOpen(const MethodToBeCalled: string);
     procedure SetExecMethod(const Value: TMethodDescriptor);
-
     procedure DefineStatement(const Method: TRttiMethod);
     procedure ValidateStatement;
 
     property Executor: IStatementExecutor read FExecutor;
     property ExecMethod: TMethodDescriptor read FExecMethod write SetExecMethod;
   public
-    constructor Create(
-      const ResReader: IStringResourceReader;
-      const StatementExecutor: IStatementExecutor);
+    constructor Create(const ResReader: IStringResourceReader; const StatementExecutor: IStatementExecutor);
 
     class function GetInstance(const Container: TContainer): TVirtualStatement<T>; static;
-    
     // IVirtualStatementMetadata
     function GetDescription: string;
     function GetIsScalar: boolean;
@@ -120,8 +115,13 @@ uses
 
 { TVirtualStatement<T> }
 
-function TVirtualStatement<T>.AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType;
-  const Direction: TParamType; const IsFunction: Boolean; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+function TVirtualStatement<T>.AddOrUpdateDescriptor(
+  const OriginalName: string;
+  const RttiType: TRttiType;
+  const Direction: TParamType;
+  const IsFunction: Boolean;
+  const IsPagingLimit: Boolean;
+  const IsPagingOffset: Boolean): TParamDescriptor;
 var
   MappedName: string;
 begin
@@ -278,7 +278,10 @@ begin
   Executor.Prepare;
 end;
 
-procedure TVirtualStatement<T>.DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TVirtualStatement<T>.DoInvoke(
+  Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   MethodDesc: TMethodDescriptor;
 begin
@@ -318,7 +321,10 @@ begin
   end;
 end;
 
-procedure TVirtualStatement<T>.Execute(const Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TVirtualStatement<T>.Execute(
+  const Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   Arg : TRttiParameter;
   Entry: TPair<string, TParamDescriptor>;
@@ -444,7 +450,9 @@ begin
   Result := ExecMethod.IsFunction;
 end;
 
-function TVirtualStatement<T>.GetMappedName(const Name: string; const IsFunction: boolean): string;
+function TVirtualStatement<T>.GetMappedName(
+  const Name: string;
+  const IsFunction: boolean): string;
 var
   Prefix: string;
 begin
@@ -454,7 +462,7 @@ begin
   // remove getter prefix; TODO setters?
   if IsFunction and GetIsGetterName(Result) then
     Delete (Result, 1, Length(GetterPrefix));
- 
+
   // in case of procedures and functions we prefix parameter with "P_", e.g. "P_ORDERID"
   if StatementType in [stStoredProc, stFunction] then
     Result := 'P_' + Result;
@@ -524,7 +532,9 @@ begin
 end;
 
 procedure TVirtualStatement<T>.ProcessAttribute(
-  const Attribute: TCustomAttribute; const Method: TRttiMethod; const MethDesc: TMethodDescriptor);
+  const Attribute: TCustomAttribute;
+  const Method: TRttiMethod;
+  const MethDesc: TMethodDescriptor);
 begin
   // process interface-level attributes (Statement, Description and Map )
   if not Assigned(Method) then
@@ -613,7 +623,9 @@ begin
       end;
 end;
 
-procedure TVirtualStatement<T>.RaiseError(const Msg: string; const Args: array of const);
+procedure TVirtualStatement<T>.RaiseError(
+  const Msg: string;
+  const Args: array of const);
 begin
   raise EFidoVirtualStatementError.CreateFmt(Msg, Args);
 end;

@@ -93,24 +93,17 @@ type
   strict private
     class function CreateReadonlyListAsValue(const ElementTypeInfo: PTypeInfo; const ValuesArray: array of string; const ConfigurationName: string): TValue; static;
     class function CreateList<T>(const ValuesArray: array of string; const ConfigurationName: string): TValue; static;
-
     class function ToReadonlyListOfInterfaces(const JSONString: string; const TypeInfo: PTypeInfo; const ElementTypeInfo: PTypeInfo): TValue; static;
     class function ToReadonlyListOfPrimitives(const JSONString: string; const ElementTypeInfo: PTypeInfo; const ConfigurationName: string): TValue; static;
-
     class function ToInterface(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): IInterface; overload; static;
     class function ToInterfaceAsValue(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
-
     class function ToObject(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
-
     class function ToReadonlyList(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
-
     class function ToPrimitive(const Value: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; static;
     class function ToEnumeration(const Value: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; static;
   public
     class function &To<T>(const JSONString: string; const ConfigurationName: string = ''): T; overload; static;
     class function &To(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string = ''): TValue; overload; static;
-
-
   end;
 
   EJSONMarshaller = class(EFidoException);
@@ -121,10 +114,8 @@ type
     class function FromInterface(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string): Nullable<string>; static;
     class function FromPrimitive(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string): Nullable<string>; static;
     class function FromReadonlyList(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string): string; static;
-
     class function FromReadonlyListOfInterfaces(const Value: TValue; const TypInfo: PTypeInfo; const ElementTypeInfo: PTypeInfo; const ConfigurationName: string): string; static;
     class function FromReadonlyListOfPrimitives(const Value: TValue; const TypInfo: PTypeInfo; const ElementTypeInfo: PTypeInfo; const ConfigurationName: string): string; static;
-
     class function InternalFrom(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string = ''): TJsonValue; static;
   public
     class function From<T>(const Value: T; const ConfigurationName: string = ''): string; overload; static;
@@ -158,7 +149,9 @@ begin
 
 end;
 
-procedure TJSONVirtualDto.CacheColumns(const JSONObject: TJSONObject; const ConfigurationName: string);
+procedure TJSONVirtualDto.CacheColumns(
+  const JSONObject: TJSONObject;
+  const ConfigurationName: string);
 var
   D: TPair<string, TJSONDTOMethodDescriptor>;
   ObjectValue: TJsonValue;
@@ -189,7 +182,10 @@ begin
   end;
 end;
 
-constructor TJSONVirtualDto.Create(const PIID: PTypeInfo; const Json: string; const ConfigurationName: string);
+constructor TJSONVirtualDto.Create(
+  const PIID: PTypeInfo;
+  const Json: string;
+  const ConfigurationName: string);
 var
   JSONObject: TJSONObject;
 begin
@@ -205,7 +201,10 @@ begin
   end;
 end;
 
-constructor TJSONVirtualDto.Create(const PIID: PTypeInfo; const JSONObject: TJSONObject; const ConfigurationName: string);
+constructor TJSONVirtualDto.Create(
+  const PIID: PTypeInfo;
+  const JSONObject: TJSONObject;
+  const ConfigurationName: string);
 begin
   inherited Create(PIID, DoInvoke);
 
@@ -224,7 +223,8 @@ begin
 end;
 
 procedure TJSONVirtualDto.DoInvoke(Method: TRttiMethod;
-  const Args: TArray<TValue>; out Result: TValue);
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   MethodDesc: TJSONDTOMethodDescriptor;
 begin

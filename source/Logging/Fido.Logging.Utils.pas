@@ -34,48 +34,36 @@ uses
 
 type
   Logging = class
-    class procedure LogData(
-      const Logger: ILogger;
-      const Value: TValue); overload; static;
-
-    class procedure LogData(
-      const Logger: ILogger;
-      const LogLevel: TLogLevel;
-      const Value: TValue); overload; static;
-
-    class procedure LogData(
-      const Logger: ILogger;
-      const Msg: string;
-      const Value: TValue); overload; static;
-
-    class procedure LogDuration(
-      const Logger: ILogger;
-      const ClassName: string;
-      const Method: string;
-      const Action: TProc); overload; static;
-
-    class function LogDuration<T>(
-      const Logger: ILogger;
-      const ClassName: string;
-      const Method: string;
-      const Action: TFunc<T>): T; overload; static;
+    class procedure LogData(const Logger: ILogger; const Value: TValue); overload; static;
+    class procedure LogData(const Logger: ILogger; const LogLevel: TLogLevel; const Value: TValue); overload; static;
+    class procedure LogData(const Logger: ILogger; const Msg: string; const Value: TValue); overload; static;
+    class procedure LogDuration(const Logger: ILogger; const ClassName: string; const Method: string; const Action: TProc); overload; static;
+    class function LogDuration<T>(const Logger: ILogger; const ClassName: string; const Method: string; const Action: TFunc<T>): T; overload; static;
   end;
 
 implementation
 
 { Logging }
 
-class procedure Logging.LogData(const Logger: ILogger; const LogLevel: TLogLevel; const Value: TValue);
+class procedure Logging.LogData(
+  const Logger: ILogger;
+  const LogLevel: TLogLevel;
+  const Value: TValue);
 begin
   Logger.LogValue(Loglevel, '', Value);
 end;
 
-class procedure Logging.LogData(const Logger: ILogger; const Value: TValue);
+class procedure Logging.LogData(
+  const Logger: ILogger;
+  const Value: TValue);
 begin
   Logger.LogValue(TLoglevel.Info, '', Value);
 end;
 
-class procedure Logging.LogData(const Logger: ILogger; const Msg: string; const Value: TValue);
+class procedure Logging.LogData(
+  const Logger: ILogger;
+  const Msg: string;
+  const Value: TValue);
 begin
   Logger.LogValue(TLoglevel.Info, Msg, Value);
 end;

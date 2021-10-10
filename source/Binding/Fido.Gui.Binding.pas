@@ -51,42 +51,22 @@ type
 
   GuiBinding = class
   private
-    class procedure InternalObservableSetup<DomainObject: IObservable; Component: TComponent>(
-      const Owner: TComponent;
-      const Observable: DomainObject;
-      const GuiComponent: Component); static;
+    class procedure InternalObservableSetup<DomainObject: IObservable; Component: TComponent>(const Owner: TComponent; const Observable: DomainObject; const GuiComponent: Component); static;
 
-    class procedure InternalMethodsSetup<Controller: IInterface; Component: TComponent>(
-      const Owner: TComponent; const TheController: Controller;
-      const GuiComponent: Component); static;
+    class procedure InternalMethodsSetup<Controller: IInterface; Component: TComponent>(const Owner: TComponent; const TheController: Controller; const GuiComponent: Component); static;
   public
-    class procedure SetupObservableToComponent<DomainObject: IObservable; Component: TComponent>(
-      const Source: DomainObject;
-      const SourceAttributeName: string;
-      const Destination: Component;
+    class procedure SetupObservableToComponent<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
       const DestinationAttributeName: string); overload; static;
 
-    class procedure SetupComponentToObservable<Component: TComponent; DomainObject: IObservable>(
-      const Source: Component;
-      const SourceAttributeName: string;
-      const SourceEventName: string;
-      const Destination: DomainObject;
-      const DestinationAttributeName: string); overload; static;
+    class procedure SetupComponentToObservable<Component: TComponent; DomainObject: IObservable>(const Source: Component; const SourceAttributeName: string; const SourceEventName: string;
+      const Destination: DomainObject; const DestinationAttributeName: string); overload; static;
 
-    class procedure SetupBidirectional<DomainObject: IObservable; Component: TComponent>(
-      const Source: DomainObject;
-      const SourceAttributeName: string;
-      const Destination: Component;
-      const DestinationAttributeName: string;
-      const DestinationEventName: string); overload; static;
+    class procedure SetupBidirectional<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
+      const DestinationAttributeName: string; const DestinationEventName: string); overload; static;
 
-    class procedure Setup<DomainObject: IObservable; Component: TComponent>(
-      const Observable: DomainObject;
-      const GuiComponent: Component); overload; static;
+    class procedure Setup<DomainObject: IObservable; Component: TComponent>(const Observable: DomainObject; const GuiComponent: Component); overload; static;
 
-    class procedure MethodsSetup<Controller: IInterface; Component: TComponent>(
-      const TheController: Controller;
-      const GuiComponent: Component); static;
+    class procedure MethodsSetup<Controller: IInterface; Component: TComponent>(const TheController: Controller; const GuiComponent: Component); static;
   end;
 
 implementation

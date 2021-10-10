@@ -39,9 +39,7 @@ type
     FHandler: ITransactionHandler;
     FTransactionFactory: TFunc<ITransactionHandler, ITransaction>;
   public
-    constructor Create(
-      const Handler: ITransactionHandler;
-      const TransactionFactory: TFunc<ITransactionHandler, ITransaction>);
+    constructor Create(const Handler: ITransactionHandler; const TransactionFactory: TFunc<ITransactionHandler, ITransaction>);
 
     function StartTransaction: ITransaction;
     procedure ResetNestedTransactionRollbackedStatus;
@@ -53,9 +51,7 @@ implementation
 
 { TTransactional }
 
-constructor TTransactional.Create(
-  const Handler: ITransactionHandler;
-  const TransactionFactory: TFunc<ITransactionHandler, ITransaction>);
+constructor TTransactional.Create(const Handler: ITransactionHandler; const TransactionFactory: TFunc<ITransactionHandler, ITransaction>);
 begin
   Guard.CheckNotNull(Handler, 'Handler');
   Guard.CheckTrue(Assigned(TransactionFactory), 'TransactionFactory not assigned');

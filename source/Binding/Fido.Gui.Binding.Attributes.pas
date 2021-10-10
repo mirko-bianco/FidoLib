@@ -41,9 +41,7 @@ type
     FSourceAttributeName: string;
     FDestinationAttributeName: string;
   public
-    constructor Create(
-      const SourceAttributeName: string;
-      const DestinationAttributeName: string);
+    constructor Create(const SourceAttributeName: string; const DestinationAttributeName: string);
 
     property SourceAttributeName: string read FSourceAttributeName;
     property DestinationAttributeName: string read FDestinationAttributeName;
@@ -56,10 +54,7 @@ type
     FSourceEventName: string;
     FDestinationAttributeName: string;
   public
-    constructor Create(
-      const SourceAttributeName: string;
-      const SourceEventName: string;
-      const DestinationAttributeName: string);
+    constructor Create(const SourceAttributeName: string; const SourceEventName: string; const DestinationAttributeName: string);
 
     property SourceAttributeName: string read FSourceAttributeName;
     property SourceEventName: string read FSourceEventName;
@@ -73,10 +68,7 @@ type
     FDestinationAttributeName: string;
     FDestinationEventName: string;
   public
-    constructor Create(
-      const SourceAttributeName: string;
-      const DestinationAttributeName: string;
-      const DestinationEventName: string);
+    constructor Create(const SourceAttributeName: string; const DestinationAttributeName: string; const DestinationEventName: string);
 
     property SourceAttributeName: string read FSourceAttributeName;
     property DestinationAttributeName: string read FDestinationAttributeName;
@@ -88,9 +80,7 @@ type
     FObservableMethodName: string;
     FOriginalEventExecutionType :TOriginalEventExecutionType;
   public
-    constructor Create(
-      const ObservableMethodName: string;
-      const OriginalEventExecutionType :TOriginalEventExecutionType = oeetBefore);
+    constructor Create(const ObservableMethodName: string; const OriginalEventExecutionType :TOriginalEventExecutionType = oeetBefore);
 
     property ObservableMethodName: string read FObservableMethodName write FObservableMethodName;
     property OriginalEventExecutionType :TOriginalEventExecutionType read FOriginalEventExecutionType write FOriginalEventExecutionType;

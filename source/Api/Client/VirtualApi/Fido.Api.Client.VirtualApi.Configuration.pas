@@ -36,10 +36,7 @@ type
     FActive: Boolean;
     FLiveEnvironment: Boolean;
   public
-    constructor Create(
-      const BaseUrl: string;
-      const Active: Boolean;
-      const LiveEnvironment: Boolean);
+    constructor Create(const BaseUrl: string; const Active: Boolean; const LiveEnvironment: Boolean);
 
     // IClientVirtualApiConfiguration
     function BaseUrl: string;
@@ -68,7 +65,10 @@ begin
   Result := FBaseUrl;
 end;
 
-constructor TClientVirtualApiConfiguration.Create(const BaseUrl: string; const Active: Boolean; const LiveEnvironment: Boolean);
+constructor TClientVirtualApiConfiguration.Create(
+  const BaseUrl: string;
+  const Active: Boolean;
+  const LiveEnvironment: Boolean);
 begin
   FBaseUrl := BaseUrl;
   FActive := Active;

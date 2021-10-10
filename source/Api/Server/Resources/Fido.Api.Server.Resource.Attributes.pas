@@ -115,7 +115,9 @@ implementation
 
 { PathAttribute }
 
-constructor PathAttribute.Create(const Method: THttpMethod; const Path: string);
+constructor PathAttribute.Create(
+  const Method: THttpMethod;
+  const Path: string);
 begin
   FMethod := Method;
   FPath := Path;
@@ -144,7 +146,9 @@ end;
 
 { ResponseCodeAttribute }
 
-constructor ResponseCodeAttribute.Create(const ResponseCode: Integer; const ResponseText: string);
+constructor ResponseCodeAttribute.Create(
+  const ResponseCode: Integer;
+  const ResponseText: string);
 begin
   FResponseCode := ResponseCode;
   FResponseText := ResponseText;

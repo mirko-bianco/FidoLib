@@ -42,9 +42,9 @@ uses
 
 type
   TFireDacStatementExecutor = class (TAbstractStatementExecutor, IStatementExecutor)
-  private var
-    FFireDacConnections: TFireDacConnections;
   private
+    FFireDacConnections: TFireDacConnections;
+
     function GetParameters: TFDParams;
   protected
     function BuildObjectInternal(const StatementType: TStatementType; const SQLData: string): TObject; override;
@@ -52,8 +52,7 @@ type
     constructor Create(FireDacConnections: TFireDacConnections);
 
     function GetParameterValue(const ParamName: string): Variant; override;
-    procedure AddParameter(const ParamName: string; const DataType: TFieldType;
-      const ParamType: TParamType = ptInput); override;
+    procedure AddParameter(const ParamName: string; const DataType: TFieldType; const ParamType: TParamType = ptInput); override;
     procedure SetParameterValue(const ParamName: string; const Value: Variant); override;
     procedure Prepare; override;
     procedure Execute; override;
@@ -67,8 +66,10 @@ uses
 
 { TFireDacStatementExecutor }
 
-procedure TFireDacStatementExecutor.AddParameter(const ParamName: string;
-  const DataType: TFieldType; const ParamType: TParamType);
+procedure TFireDacStatementExecutor.AddParameter(
+  const ParamName: string;
+  const DataType: TFieldType;
+  const ParamType: TParamType);
 var
   P: TFDParam;
 const
@@ -87,7 +88,8 @@ begin
 end;
 
 function TFireDacStatementExecutor.BuildObjectInternal(
-  const StatementType: TStatementType; const SQLData: string): TObject;
+  const StatementType: TStatementType;
+  const SQLData: string): TObject;
 begin
   Result := nil;
   try
@@ -183,7 +185,9 @@ begin
   end;
 end;
 
-procedure TFireDacStatementExecutor.SetParameterValue(const ParamName: string; const Value: Variant);
+procedure TFireDacStatementExecutor.SetParameterValue(
+  const ParamName: string;
+  const Value: Variant);
 begin
   case GetParameters.ParamByName(ParamName).DataType of
     ftGuid:

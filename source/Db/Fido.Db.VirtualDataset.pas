@@ -97,7 +97,9 @@ type
     constructor Create(const Field: TBlobField; const Mode: TBlobStreamMode);
     destructor Destroy; override;
 
-    function Write(const Buffer; Count: Longint): Longint; override;
+    function Write(
+      const Buffer;
+      Count: Longint): Longint; override;
     procedure Truncate;
   end;
 
@@ -116,22 +118,17 @@ type
     FMasterDataLink: TVirtualMasterDataLink;
     FModifiedFields: TList;
     FOldValueBuffer: TRecordBuffer;
-
     FOnDeleteRecord: TDeleteRecordEvent;
     FOnGetFieldValue: TGetFieldValueEvent;
     FOnGetRecordCount: TGetRecordCountEvent;
     FOnPostData: TPostDataEvent;
     FOnLocate: TLocateEvent;
     FOnLookupValue: TLookupValueEvent;
-
     Reserved: Pointer;
 
-    // Event firing methods
     procedure DoDeleteRecord(const Index: Integer); virtual;
     procedure DoGetFieldValue(const Field: TField; const Index: Integer; var Value: Variant); virtual;
     procedure DoPostData(const Index: Integer); virtual;
-
-    // Internal methods
     function InternalGetRecord(const Buffer: TRecordBuffer; const GetMode: TGetMode; const DoCheck: Boolean): TGetResult; virtual;
     function GetMasterSource: TDataSource;
     function GetTopIndex: Integer;
@@ -142,8 +139,6 @@ type
     procedure SetIndex(const Value: Integer);
     procedure SetTopIndex(const Value: Integer);
     procedure SetMasterSource(const Value: TDataSource);
-
-    { Standard overrides }
     function GetActiveRecBuf(var RecBuf: TRecordBuffer): Boolean;
     function GetCanModify: Boolean; override;
     function GetRecNo: Integer; override;
@@ -152,8 +147,6 @@ type
     procedure DoOnNewRecord; override;
     procedure InternalEdit; override;
     procedure SetRecNo(Value: Integer); override;
-
-    { Abstract overrides }
     function AllocRecordBuffer: TRecordBuffer; override;
     procedure FreeRecordBuffer(var Buffer: TRecordBuffer); override;
     procedure GetBookmarkData(Buffer: TRecordBuffer; Data: Pointer); override;
@@ -161,7 +154,7 @@ type
     function GetRecord(Buffer: TRecordBuffer; GetMode: TGetMode; DoCheck: Boolean): TGetResult; override;
     function GetRecordSize: Word; override;
     procedure InternalAddRecord(Buffer: Pointer; Append: Boolean); override;
-    procedure InternalClose; override; { abstract override }
+    procedure InternalClose; override;
     procedure InternalCreateFields; virtual;
     procedure InternalDelete; override;
     procedure InternalFirst; override;
@@ -177,26 +170,20 @@ type
     procedure SetBookmarkFlag(Buffer: TRecordBuffer; Value: TBookmarkFlag); override;
     procedure SetBookmarkData(Buffer: TRecordBuffer; Data: Pointer); override;
     procedure SetFieldData(Field: TField; Buffer: Pointer); override;
-
     procedure SetFieldData(Field: TField; Buffer: TValueBuffer); override;
-
-    // actual impl. of SetFieldData, required to support both Delphi and CPP compile
     procedure InternalSetFieldData(const Field: TField; const Buffer: Pointer; const NativeFormat: Boolean); virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    { Standard public overrides }
     function BookmarkValid(Bookmark: TBookmark): Boolean; override;
     function CompareBookmarks(Bookmark1, Bookmark2: TBookmark): Integer; override;
     function CreateBlobStream(Field: TField; Mode: TBlobStreamMode): TStream; override;
     function GetBlobFieldData(FieldNo: Integer; var Buffer: TBlobByteData): Integer; override;
     function Locate(const KeyFields: string; const KeyValues: Variant; Options: TLocateOptions): Boolean; override;
     function Lookup(const KeyFields: string; const KeyValues: Variant; const ResultFields: string): Variant; override;
-
     function GetFieldData(Field: TField; var Buffer: TValueBuffer): Boolean; override;
-    
-    { Get/Set properties }
+
     property Current: Integer read FCurrent;
     property Index: Integer read GetIndex write SetIndex;
     property MasterDataLink: TVirtualMasterDataLink read FMasterDataLink;
@@ -205,8 +192,6 @@ type
     property ReadOnly: Boolean read FReadOnly write FReadOnly default False;
     property TopIndex: Integer read GetTopIndex write SetTopIndex;
     property TopRecNo: Integer read GetTopRecNo;
-
-    { Event properties }
     property OnDeleteRecord : TDeleteRecordEvent read FOnDeleteRecord write FOnDeleteRecord;
     property OnGetFieldValue: TGetFieldValueEvent read FOnGetFieldValue write FOnGetFieldValue;
     property OnGetRecordCount : TGetRecordCountEvent read FOnGetRecordCount write FOnGetRecordCount;
@@ -220,7 +205,6 @@ type
     property Active;
     property Filtered;
     property ReadOnly;
-
     property AfterCancel;
     property AfterClose;
     property AfterDelete;
@@ -240,7 +224,6 @@ type
     property BeforeRefresh;
     property BeforeScroll;
     property MasterSource;
-
     property OnCalcFields;
     property OnDeleteError;
     property OnDeleteRecord;
@@ -256,7 +239,7 @@ type
   end;
 
 procedure VirtualDatasetError(const Message: string; Dataset: TCustomVirtualDataset = nil);
-procedure VirtualDatasetErrorFmt(const Message: string; const Args: array of const ; Dataset: TCustomVirtualDataset = nil);
+procedure VirtualDatasetErrorFmt(const Message: string; const Args: array of const; Dataset: TCustomVirtualDataset = nil);
 
 implementation
 
@@ -269,7 +252,8 @@ begin
     Result := Result + (Integer(Dataset.Fields[I]) shr (I mod 16));
 end;
 
-procedure VirtualDatasetError(const Message: string;
+procedure VirtualDatasetError(
+  const Message: string;
   Dataset: TCustomVirtualDataset = nil);
 begin
   if Assigned(Dataset) then
@@ -278,15 +262,19 @@ begin
     raise EFidoVirtualDatasetError.Create(Message);
 end;
 
-procedure VirtualDatasetErrorFmt(const Message: string;
-  const Args: array of const ; Dataset: TCustomVirtualDataset = nil);
+procedure VirtualDatasetErrorFmt(
+  const Message: string;
+  const Args: array of const;
+  Dataset: TCustomVirtualDataset = nil);
 begin
   VirtualDatasetError(Format(Message, Args), Dataset);
 end;
 
 { TADBlobStream }
 
-constructor TADBlobStream.Create(const Field: TBlobField; const Mode: TBlobStreamMode);
+constructor TADBlobStream.Create(
+  const Field: TBlobField;
+  const Mode: TBlobStreamMode);
 begin
   Guard.CheckNotNull(Field, 'Field');
   FField := Field;
@@ -411,7 +399,9 @@ begin
   end;
 end;
 
-function TADBlobStream.Write(const Buffer; Count: Longint): Longint;
+function TADBlobStream.Write(
+  const Buffer;
+  Count: Longint): Longint;
 begin
   Result := inherited Write(Buffer, Count);
   FModified := True;
@@ -486,8 +476,9 @@ begin
     Result := False;
 end;
 
-function TCustomVirtualDataset.CompareBookmarks(Bookmark1, Bookmark2: TBookmark)
-  : Integer;
+function TCustomVirtualDataset.CompareBookmarks(
+  Bookmark1: TBookmark;
+  Bookmark2: TBookmark): Integer;
 const
   RetCodes: array [Boolean, Boolean] of ShortInt = ((2, -1), (1, 0));
 
@@ -504,8 +495,9 @@ begin
   end;
 end;
 
-function TCustomVirtualDataset.CreateBlobStream
-  (Field: TField; Mode: TBlobStreamMode): TStream;
+function TCustomVirtualDataset.CreateBlobStream(
+  Field: TField;
+  Mode: TBlobStreamMode): TStream;
 begin
   Result := TADBlobStream.Create(Field as TBlobField, Mode);
 end;
@@ -527,7 +519,9 @@ begin
     FOnDeleteRecord(Self, Index);
 end;
 
-procedure TCustomVirtualDataset.DoGetFieldValue(const Field: TField; const Index: Integer;
+procedure TCustomVirtualDataset.DoGetFieldValue(
+  const Field: TField;
+  const Index: Integer;
   var Value: Variant);
 begin
   if Assigned(FOnGetFieldValue) then
@@ -586,13 +580,15 @@ begin
   Result := RecBuf <> nil;
 end;
 
-function TCustomVirtualDataset.GetBlobFieldData(FieldNo: Integer;
+function TCustomVirtualDataset.GetBlobFieldData(
+  FieldNo: Integer;
   var Buffer: TBlobByteData): Integer;
 begin
   Result := inherited GetBlobFieldData(FieldNo, Buffer);
 end;
 
-procedure TCustomVirtualDataset.GetBookmarkData(Buffer: TRecordBuffer;
+procedure TCustomVirtualDataset.GetBookmarkData(
+  Buffer: TRecordBuffer;
   Data: Pointer);
 begin
   PInteger(Data)^ := PArrayRecInfo(Buffer)^.Index;
@@ -609,7 +605,9 @@ begin
   Result := not FReadOnly;
 end;
 
-function TCustomVirtualDataset.GetFieldData(Field: TField; var Buffer: TValueBuffer): Boolean;
+function TCustomVirtualDataset.GetFieldData(
+  Field: TField;
+  var Buffer: TValueBuffer): Boolean;
 var
   recBuf: TRecordBuffer;
   Data: Variant;
@@ -882,8 +880,10 @@ begin
     Result := PArrayRecInfo(RecBuf)^.Index + 1;
 end;
 
-function TCustomVirtualDataset.GetRecord(Buffer: TRecordBuffer;
-  GetMode: TGetMode; DoCheck: Boolean): TGetResult;
+function TCustomVirtualDataset.GetRecord(
+  Buffer: TRecordBuffer;
+  GetMode: TGetMode;
+  DoCheck: Boolean): TGetResult;
 var
   Accept: Boolean;
   SaveState: TDataSetState;
@@ -913,7 +913,10 @@ begin
     Result := InternalGetRecord(Buffer, GetMode, DoCheck)
 end;
 
-function TCustomVirtualDataset.InternalGetRecord(const Buffer: TRecordBuffer; const GetMode: TGetMode; const DoCheck: Boolean): TGetResult;
+function TCustomVirtualDataset.InternalGetRecord(
+  const Buffer: TRecordBuffer;
+  const GetMode: TGetMode;
+  const DoCheck: Boolean): TGetResult;
 var
   iRecCount: Integer;
 begin
@@ -1178,7 +1181,10 @@ begin
     Result := False;
 end;
 
-function TCustomVirtualDataset.Lookup(const KeyFields: string; const KeyValues: Variant; const ResultFields: string): Variant;
+function TCustomVirtualDataset.Lookup(
+  const KeyFields: string;
+  const KeyValues: Variant;
+  const ResultFields: string): Variant;
 begin
   if Assigned(FOnLookupValue) then
   begin
@@ -1204,13 +1210,15 @@ begin
   Resync([]);
 end;
 
-procedure TCustomVirtualDataset.SetBookmarkFlag(Buffer: TRecordBuffer;
+procedure TCustomVirtualDataset.SetBookmarkFlag(
+  Buffer: TRecordBuffer;
   Value: TBookmarkFlag);
 begin
   PArrayRecInfo(Buffer)^.BookmarkFlag := Value;
 end;
 
-procedure TCustomVirtualDataset.SetBookmarkData(Buffer: TRecordBuffer;
+procedure TCustomVirtualDataset.SetBookmarkData(
+  Buffer: TRecordBuffer;
   Data: Pointer);
 begin
   if PArrayRecInfo(Buffer)^.BookmarkFlag in [bfCurrent, bfInserted] then
@@ -1219,7 +1227,9 @@ begin
     PArrayRecInfo(Buffer)^.Index := -1;
 end;
 
-procedure TCustomVirtualDataset.SetFieldData(Field: TField; Buffer: Pointer);
+procedure TCustomVirtualDataset.SetFieldData(
+  Field: TField;
+  Buffer: Pointer);
 begin
   {$WARNINGS OFF}
   inherited;
@@ -1272,7 +1282,10 @@ begin
   end;
 end;
 
-procedure TCustomVirtualDataset.InternalSetFieldData(const Field: TField; const Buffer: Pointer; const NativeFormat: Boolean);
+procedure TCustomVirtualDataset.InternalSetFieldData(
+  const Field: TField;
+  const Buffer: Pointer;
+  const NativeFormat: Boolean);
 
   procedure BufferToVar(var Data: Variant);
   var
@@ -1383,7 +1396,9 @@ begin
   end;
 end;
 
-procedure TCustomVirtualDataset.SetFieldData(Field: TField; Buffer: TValueBuffer);
+procedure TCustomVirtualDataset.SetFieldData(
+  Field: TField;
+  Buffer: TValueBuffer);
 begin
   inherited;
   SetFieldData(Field, Pointer(Buffer));

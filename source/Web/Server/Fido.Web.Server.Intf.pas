@@ -31,9 +31,8 @@ uses
 type
   IWebServer = interface(IInvokable)
     ['{B824E7BB-38FA-4694-AD63-4BF057B48BF4}']
-    function Process(
-      const RestRequest: IHttpRequest;
-      const RestResponse: IHttpResponse): boolean;
+
+    function Process(const RestRequest: IHttpRequest; const RestResponse: IHttpResponse): boolean;
   end;
 
 implementation

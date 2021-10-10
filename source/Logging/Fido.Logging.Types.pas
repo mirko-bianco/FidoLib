@@ -32,10 +32,7 @@ type
     FMethod: string;
 
   public
-    constructor Create(
-      const LogType: string;
-      const &Class: string;
-      const Method: string);
+    constructor Create(const LogType: string; const &Class: string; const Method: string);
 
     function LogType: string;
     function &Class: string;

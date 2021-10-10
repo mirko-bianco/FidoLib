@@ -70,6 +70,7 @@ uses
 type
   {$M+}
   TIndyApiServerRequestFactory = reference to function(const RequestInfo: TIdHTTPRequestInfo): IHttpRequest;
+
   TIndyApiServerResponseFactory = reference to function(const Context: TIdContext; const RequestInfo: TIdHTTPRequestInfo; const ResponseInfo: TIdHTTPResponseInfo): IHttpResponse;
 
   EFidoApiException = class(EFidoException);
@@ -77,7 +78,7 @@ type
   TIndyApiServer = class(TInterfacedObject, IApiServer)
   private const
     SSL_PORT = 443;
-  private var
+  private
     FPort: word;
     FHttpServer: TIdHTTPServer;
     FSSLIOHandler: TIdServerIOHandlerSSLOpenSSL;
@@ -90,91 +91,36 @@ type
     FResponseMiddlewares: IDictionary<string, TResponseMiddlewareProc>;
     FLock: IReadWriteSync;
     FWebSockets: IDictionary<string, TClass>;
-  private
+
     function GetDefaultApiRequestFactory: TIndyApiServerRequestFactory;
     function GetDefaultApiResponseFactory: TIndyApiServerResponseFactory;
-
-    procedure OnParseAuthentication(
-      Context: TIdContext;
-      const AuthType,
-            AuthData: string;
-      var Username,
-          Password: string;
-      var Handled: Boolean);
-
-    procedure OnHTTPCommandEvent(
-      Context: TIdContext;
-      RequestInfo: TIdHTTPRequestInfo;
-      ResponseInfo: TIdHTTPResponseInfo);
-
-    function OnVerifyPeer(
-      Certificate: TIdX509;
-      AOk: Boolean;
-      ADepth, AError: Integer): Boolean;
-
-    procedure OnQuerySSLPort(
-      APort: Word;
-      var VUseSSL: Boolean);
-
-    procedure ProcessCommand(
-      const ApiRequest: IHttpRequest;
-      const ApiResponse: IHttpResponse);
-    function TryGetEndPoint(
-      const ApiRequest: IHttpRequest;
-      out EndPoint: TEndPoint): Boolean;
-    function TrySetPathParams(
-      const EndPoint: TEndPoint;
-      const URI: string;
-      const PathParams: IDictionary<string, string>): Boolean;
-    function TrySetMethodParams(
-      const ApiRequest: IHttpRequest;
-      const PathParams: IDictionary<string, string>;
-      const EndPoint: TEndPoint;
-      var Params: TArray<TValue>): Boolean;
-    procedure UpdateResponse(
-      const Method: TRttiMethod;
-      const MethodResult: TValue;
-      const ApiResponse: IHttpResponse;
-      const EndPoint: TEndPoint;
-      const Params: array of TValue);
-    function JSONConvertRequestToDto(
-      const Request: string;
-      const TypeInfo: PTypeInfo): TValue;
+    procedure OnParseAuthentication(Context: TIdContext; const AuthType: string; const AuthData: string; var Username: string; var Password: string; var Handled: Boolean);
+    procedure OnHTTPCommandEvent(Context: TIdContext; RequestInfo: TIdHTTPRequestInfo; ResponseInfo: TIdHTTPResponseInfo);
+    function OnVerifyPeer(Certificate: TIdX509; AOk: Boolean; ADepth: integer; AError: Integer): Boolean;
+    procedure OnQuerySSLPort(APort: Word; var VUseSSL: Boolean);
+    procedure ProcessCommand(const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
+    function TryGetEndPoint(const ApiRequest: IHttpRequest; out EndPoint: TEndPoint): Boolean;
+    function TrySetPathParams(const EndPoint: TEndPoint; const URI: string; const PathParams: IDictionary<string, string>): Boolean;
+    function TrySetMethodParams(const ApiRequest: IHttpRequest; const PathParams: IDictionary<string, string>; const EndPoint: TEndPoint; var Params: TArray<TValue>): Boolean;
+    procedure UpdateResponse(const Method: TRttiMethod; const MethodResult: TValue; const ApiResponse: IHttpResponse; const EndPoint: TEndPoint; const Params: array of TValue);
+    function JSONConvertRequestToDto(const Request: string; const TypeInfo: PTypeInfo): TValue;
     function TranslatePathToRegEx(Path: string): string;
-    procedure ConvertFromStringToTValue(const StringValue: string;
-      const TypeInfo: PTypeInfo; out Value: TValue);
+    procedure ConvertFromStringToTValue(const StringValue: string; const TypeInfo: PTypeInfo; out Value: TValue);
   protected
     function ConvertTValueToString(const Value: TValue): string; virtual;
-    function ConvertRequestToDto(
-      const MimeType: TMimeType;
-      const Request: string;
-      const TypeInfo: PTypeInfo): TValue; virtual;
-    function ConvertResponseDtoToString(
-      const MimeType: TMimeType;
-      const Value: TValue): string; virtual;
+    function ConvertRequestToDto(const MimeType: TMimeType; const Request: string; const TypeInfo: PTypeInfo): TValue; virtual;
+    function ConvertResponseDtoToString(const MimeType: TMimeType; const Value: TValue): string; virtual;
   public
-    constructor Create(
-      const Port: Word;
-      const MaxConnections: Integer;
-      const WebServer: IWebServer;
-      const SSLCertData: TSSLCertData;
-      const ApiRequestFactory: TIndyApiServerRequestFactory = nil;
+    constructor Create(const Port: Word; const MaxConnections: Integer; const WebServer: IWebServer; const SSLCertData: TSSLCertData; const ApiRequestFactory: TIndyApiServerRequestFactory = nil;
       const ApiResponseFactory: TIndyApiServerResponseFactory = nil);
-
     destructor Destroy; override;
 
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
-
     procedure RegisterResource(const Resource: TObject);
     procedure RegisterWebSocket(const WebSocketClass: TClass);
-
-    procedure RegisterRequestMiddleware(
-      const Name: string;
-      const Step: TRequestMiddlewareFunc);
-    procedure RegisterResponseMiddleware(
-      const Name: string;
-      const Step: TResponseMiddlewareProc);
+    procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
+    procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
   end;
 
 implementation
@@ -321,7 +267,10 @@ end;
 
 function TIndyApiServer.GetDefaultApiResponseFactory: TIndyApiServerResponseFactory;
 begin
-  Result := function(const Context: TIdContext; const RequestInfo: TIdHTTPRequestInfo; const ResponseInfo: TIdHTTPResponseInfo): IHttpResponse
+  Result := function(
+      const Context: TIdContext;
+      const RequestInfo: TIdHTTPRequestInfo;
+      const ResponseInfo: TIdHTTPResponseInfo): IHttpResponse
     var
       RequestInfoDecorator: IHttpRequestInfo;
       ResponseInfoDecorator: IHttpResponseInfo;
@@ -397,7 +346,10 @@ begin
     end;
 end;
 
-procedure TIndyApiServer.ConvertFromStringToTValue(const StringValue: string; const TypeInfo: PTypeInfo; out Value: TValue);
+procedure TIndyApiServer.ConvertFromStringToTValue(
+  const StringValue: string;
+  const TypeInfo: PTypeInfo;
+  out Value: TValue);
 begin
   Value := JSONUnmarshaller.&To(StringValue, TypeInfo);
 end;
@@ -665,12 +617,20 @@ begin
   ProcessCommand(ApiRequest, ApiResponse);
 end;
 
-procedure TIndyApiServer.OnParseAuthentication(Context: TIdContext; const AuthType, AuthData: string; var Username, Password: string; var Handled: Boolean);
+procedure TIndyApiServer.OnParseAuthentication(
+  Context: TIdContext;
+  const AuthType: string;
+  const AuthData: string;
+  var Username: string;
+  var Password: string;
+  var Handled: Boolean);
 begin
   Handled := True;
 end;
 
-procedure TIndyApiServer.OnQuerySSLPort(APort: Word; var VUseSSL: Boolean);
+procedure TIndyApiServer.OnQuerySSLPort(
+  APort: Word;
+  var VUseSSL: Boolean);
 begin
   VUseSSL := (APort = SSL_PORT);
 end;
@@ -873,12 +833,16 @@ begin
   end;
 end;
 
-procedure TIndyApiServer.RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
+procedure TIndyApiServer.RegisterRequestMiddleware(
+  const Name: string;
+  const Step: TRequestMiddlewareFunc);
 begin
   FRequestMiddlewares.Add(Name, Step);
 end;
 
-procedure TIndyApiServer.RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
+procedure TIndyApiServer.RegisterResponseMiddleware(
+  const Name: string;
+  const Step: TResponseMiddlewareProc);
 begin
   FResponseMiddlewares.Add(Name, Step);
 end;

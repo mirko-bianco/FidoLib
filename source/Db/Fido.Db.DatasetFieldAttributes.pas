@@ -39,19 +39,9 @@ type
   public
     constructor Create;
 
-    procedure SetAttribute(
-      const FieldName: string;
-      const Width: Integer;
-      const Title: string;
-      const &ReadOnly: Boolean;
-      const EditMask: string;
-      const Visible: Boolean;
-      const Precision: Integer = 0);
-
+    procedure SetAttribute(const FieldName: string; const Width: Integer; const Title: string; const &ReadOnly: Boolean; const EditMask: string; const Visible: Boolean; const Precision: Integer = 0);
     function TryGetAttribute(const FieldName: string; out Attribute: TDatasetFieldAttribute): Boolean;
-
     function GetFieldNamesEnumerator: IEnumerator<string>;
-
     function Count: Integer;
   end;
 
@@ -94,7 +84,9 @@ begin
       Precision));
 end;
 
-function TDatasetFieldAttributes.TryGetAttribute(const FieldName: string; out Attribute: TDatasetFieldAttribute): Boolean;
+function TDatasetFieldAttributes.TryGetAttribute(
+  const FieldName: string;
+  out Attribute: TDatasetFieldAttribute): Boolean;
 begin
   Result := FMap.TryGetValue(FieldName, Attribute);
 end;
