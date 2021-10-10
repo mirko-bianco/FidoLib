@@ -40,7 +40,7 @@ type
 
     procedure SetUpdateableValue(const Updateable: TUpdateable);
   public
-    constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>; Predicate: TProc<T, TUpdateable>); reintroduce;
+    constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>; const Predicate: TProc<T, TUpdateable>); reintroduce;
 
     property UpdateableValue: TUpdateable read FUpdateableValue write SetUpdateableValue;
   end;
@@ -49,7 +49,10 @@ implementation
 
 { TUpdateablePerThreadDictionary<T, TUpdateable> }
 
-constructor TUpdateablePerThreadDictionary<T, TUpdateable>.Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>; Predicate: TProc<T, TUpdateable>);
+constructor TUpdateablePerThreadDictionary<T, TUpdateable>.Create(
+  const Ownership: TDictionaryOwnerships;
+  const FactoryFunc: TFunc<T>;
+  const Predicate: TProc<T, TUpdateable>);
 begin
   Guard.CheckTrue(Assigned(Predicate), 'Predicate');
   inherited Create(Ownership, FactoryFunc);

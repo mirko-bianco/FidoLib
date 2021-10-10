@@ -34,7 +34,6 @@ type
     ['{02C85396-C3AD-4FAE-BEA3-C1A6E7507CDE}']
 
     function GetOldDBMigrations: ISet<string>;
-
     procedure SaveDBMigration(const FileName: string);
   end;
 

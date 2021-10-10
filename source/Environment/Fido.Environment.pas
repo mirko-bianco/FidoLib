@@ -39,8 +39,6 @@ type
     FEnvironmentName: string;
     FEnvironmentType: TEnvironmentType;
     FVault: IVault;
-  protected
-
   public
     constructor Create(Environment: string);
 

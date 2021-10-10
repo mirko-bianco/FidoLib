@@ -75,7 +75,9 @@ begin
   FDelegatedObservable.Broadcast(Description);
 end;
 
-procedure TDeepObservableList<T>.Broadcast(const Description: string; const Data: TNotificationData);
+procedure TDeepObservableList<T>.Broadcast(
+  const Description: string;
+  const Data: TNotificationData);
 begin
   FDelegatedObservable.Broadcast(Description, Data);
 end;
@@ -102,7 +104,9 @@ begin
   Result := FDelegatedObservable.GetIdentity;
 end;
 
-procedure TDeepObservableList<T>.Insert(Index: Integer; const Item: T);
+procedure TDeepObservableList<T>.Insert(
+  Index: Integer;
+  const Item: T);
 var
   Observable: IObservable;
 begin
@@ -118,7 +122,9 @@ begin
   Result := FDelegatedObservable.IsPaused;
 end;
 
-procedure TDeepObservableList<T>.Notify(const Sender: IInterface; const Notification: INotification);
+procedure TDeepObservableList<T>.Notify(
+  const Sender: IInterface;
+  const Notification: INotification);
 var
   Item: T;
 begin

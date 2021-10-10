@@ -51,11 +51,9 @@ type
     procedure SetCustomHeaders(const Headers: IDictionary<string, string>);
     function RawHeaders: TStrings;
     function TransferFileEnabled: Boolean;
-
     procedure WriteBytesToWebSocket(const Buffer: TWSBytes);
-    procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; ByteCount: Integer; Append: Boolean = True);
+    procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; const ByteCount: Integer; const Append: Boolean = True);
     procedure DisconnectWebSocket;
-
     function GetWebSocketSignature(const Key: string): string;
   end;
 

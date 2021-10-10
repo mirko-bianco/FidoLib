@@ -38,14 +38,14 @@ uses
 
 type
   TDelegatedObservable = class(TInterfacedObject, IObservable)
-  strict private var
+  strict private
     FLock: IReadWriteSync;
     FIdentity: string;
     FObservable: Weak<IInterface>;
     FNeedsSync: boolean;
     FObservers: IList<Weak<IObserver>>;
     FPaused: boolean;
-  strict private
+
     function GetObservable: IInterface;
     procedure ClearObservers;
     procedure Relay(const Sender: IInterface; const Notification: INotification);
@@ -72,6 +72,7 @@ type
   TSynchronizedNotificationThread = class(TThread)
   private
     FProc: TProc;
+
     procedure ExecProc;
   protected
     procedure Execute; override;
@@ -106,7 +107,9 @@ begin
   Relay(GetObservable, Notification);
 end;
 
-procedure TDelegatedObservable.Broadcast(const Description: string; const Data: TNotificationData);
+procedure TDelegatedObservable.Broadcast(
+  const Description: string;
+  const Data: TNotificationData);
 begin
   if IsPaused then
     Exit;
@@ -130,7 +133,9 @@ begin
   end;
 end;
 
-constructor TDelegatedObservable.Create(const Observable: IInterface; const Identity: string = '');
+constructor TDelegatedObservable.Create(
+  const Observable: IInterface;
+  const Identity: string = '');
 var
   Named: INamedObject;
   Name: string;
@@ -202,14 +207,19 @@ begin
 end;
 
 procedure TDelegatedObservable.RegisterObserver(const Observer: IObserver);
+var
+  FoundObserver: Weak<IObserver>;
 begin
   FLock.BeginWrite;
   try
     // cannot use direct IndexOf because we hold Weaks
-    with FObservers.GetEnumerator do
-      while MoveNext do
-        if Current.Target = Observer then
-          Exit;
+    if FObservers.TryGetFirst(
+        FoundObserver,
+        function(const Item: Weak<IObserver>): Boolean
+        begin
+          Result := Item.Target = Observer;
+        end) then
+      Exit;
 
     FObservers.Add(Weak<IObserver>.Create(Observer));
     FNeedsSync := FNeedsSync or Supports(Observer, IGUIObserver);
@@ -218,7 +228,9 @@ begin
   end;
 end;
 
-procedure TDelegatedObservable.Relay(const Sender: IInterface; const Notification: INotification);
+procedure TDelegatedObservable.Relay(
+  const Sender: IInterface;
+  const Notification: INotification);
 var
   ProcEnum: TProc;
   List: TArray<Weak<IObserver>>;
@@ -238,12 +250,18 @@ begin
 
   ProcEnum :=
     procedure
-    var
-      Observer: Weak<IObserver>;
     begin
-      for Observer in List do
-        if Observer.IsAlive then
-          Observer.Target.Notify(Sender, Notification);
+      TCollections.CreateList<Weak<IObserver>>(List)
+        .Where(
+          function(const Observer: Weak<IObserver>): Boolean
+          begin
+            Result := Observer.IsAlive;
+          end)
+        .ForEach(
+          procedure(const Observer: Weak<IObserver>)
+          begin
+            Observer.Target.Notify(Sender, Notification);
+          end);
     end;
 
   if FNeedsSync then

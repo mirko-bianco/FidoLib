@@ -46,9 +46,7 @@ type
   private
     function Load(const ResoourceName: string): TStream;
   public
-    constructor Create(
-      const StreamResourceReader: IStreamResourceReader;
-      const Interpreters: TArray<IWebServerInterpreter> = []);
+    constructor Create(const StreamResourceReader: IStreamResourceReader; const Interpreters: TArray<IWebServerInterpreter> = []);
 
     function Process(const RestRequest: IHttpRequest; const RestResponse: IHttpResponse): Boolean; override;
   end;

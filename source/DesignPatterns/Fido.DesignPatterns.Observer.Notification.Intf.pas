@@ -32,6 +32,7 @@ type
 
   INotification = interface(IInvokable)
     ['{3123DC88-9383-4DF0-B098-EBAFBE706BB3}']
+
     function GetData: TNotificationData;
     function GetDescription: string;
     function GetSender: IInterface;

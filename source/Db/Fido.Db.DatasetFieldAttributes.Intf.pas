@@ -35,19 +35,9 @@ type
   IDatasetFieldAttributes = interface
     ['{0A138581-4D0D-4BBB-8DB8-FC9C5FB5CCB7}']
 
-    procedure SetAttribute(
-      const FieldName: string;
-      const Width: Integer;
-      const Title: string;
-      const &ReadOnly: Boolean;
-      const EditMask: string;
-      const Visible: Boolean;
-      const Precision: Integer = 0);
-
+    procedure SetAttribute(const FieldName: string; const Width: Integer; const Title: string; const &ReadOnly: Boolean; const EditMask: string; const Visible: Boolean; const Precision: Integer = 0);
     function TryGetAttribute(const FieldName: string; out Attribute: TDatasetFieldAttribute): Boolean;
-
     function GetFieldNamesEnumerator: IEnumerator<string>;
-
     function Count: Integer;
   end;
 

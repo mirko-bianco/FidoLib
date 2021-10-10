@@ -64,7 +64,9 @@ implementation
 
 { THttpRequest }
 
-constructor THttpRequest.StringsToDictionary(const Strings: TStrings; const Dictionary: IDictionary<string, string>);
+constructor THttpRequest.StringsToDictionary(
+  const Strings: TStrings;
+  const Dictionary: IDictionary<string, string>);
 var
   I: Integer;
 begin
@@ -72,7 +74,7 @@ begin
   Guard.CheckNotNull(Dictionary, 'Dictionary');
 
   for I := 0 to Strings.Count - 1 do
-    Dictionary.AddOrSetValue(Strings.Names[I], Strings.ValueFromIndex[I]);
+    Dictionary[Strings.Names[I]] := Strings.ValueFromIndex[I];
 end;
 
 function THttpRequest.URI: string;

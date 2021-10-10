@@ -27,14 +27,16 @@ interface
 uses
   System.SysUtils,
   System.Rtti,
-  System.TypInfo;
+  System.TypInfo,
+
+  Spring.Collections;
 
 type
   // An owning object will atomatically free any instance that is part of its
   // properties. It will also free the instances in an array of objects.
   TOwningObject = class
   private
-    procedure FreeClassProperties; inline;
+    procedure FreeClassProperties;
   public
     destructor Destroy; override;
   end;
@@ -50,38 +52,36 @@ end;
 
 procedure TOwningObject.FreeClassProperties;
 var
-  i: Integer;
   RttiContext: TRttiContext;
-  RttiProperty: TRttiProperty;
-  Value: TValue;
 begin
-  for RttiProperty in RttiContext.GetType(Self.ClassType).GetProperties do
-  begin
-    if RttiProperty.PropertyType.TypeKind = tkClass then
+  TCollections.CreateList<TRttiProperty>(RttiContext.GetType(Self.ClassType).GetProperties).ForEach(
+    procedure(const RttiProperty: TRttiProperty)
+    var
+      i: Integer;
+      Value: TValue;
     begin
-
-      Value := RttiProperty.GetValue(Self);
-      try
-        TObject(PPointer(Value.GetReferenceToRawData)^).Free;
-      except
-      end;
-    end
-    else if RttiProperty.PropertyType.TypeKind = tkDynArray then
-    begin
-
-      if TRttiDynamicArrayType(RttiProperty.PropertyType).ElementType.TypeKind = tkClass then
+      if RttiProperty.PropertyType.TypeKind = tkClass then
       begin
         Value := RttiProperty.GetValue(Self);
+        try
+          TObject(PPointer(Value.GetReferenceToRawData)^).Free;
+        except
+        end;
+      end
+      else if RttiProperty.PropertyType.TypeKind = tkDynArray then
+      begin
+        if TRttiDynamicArrayType(RttiProperty.PropertyType).ElementType.TypeKind = tkClass then
+        begin
+          Value := RttiProperty.GetValue(Self);
 
-        for i := 0 to Value.GetArrayLength - 1 do
-          try
-            TObject(PPointer(Value.GetArrayElement(i).GetReferenceToRawData)^).Free;
-          except
-          end;
+          for i := 0 to Value.GetArrayLength - 1 do
+            try
+              TObject(PPointer(Value.GetArrayElement(i).GetReferenceToRawData)^).Free;
+            except
+            end;
+        end;
       end;
-
-    end;
-  end;
+    end);
 end;
 
 end.

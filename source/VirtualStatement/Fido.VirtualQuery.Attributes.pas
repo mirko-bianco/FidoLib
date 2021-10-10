@@ -29,7 +29,8 @@ type
   private
     FData: string;
   public
-    constructor Create (const Data: string);
+    constructor Create(const Data: string);
+
     property Data: string read FData;
   end;
 

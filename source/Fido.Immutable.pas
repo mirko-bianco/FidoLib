@@ -56,7 +56,9 @@ implementation
 { TImmutable<T> }
 
 {$IFDEF DELPHIX_SYDNEY_UP}
-class operator TImmutable<T>.Assign(var Dest: TImmutable<T>; const [ref] Src: TImmutable<T>);
+class operator TImmutable<T>.Assign(
+  var Dest: TImmutable<T>;
+  const [ref] Src: TImmutable<T>);
 begin
   if not Dest.FAssigned.IsEmpty then
     raise EImmutableException.Create('Immutables cannot be reassigned.');

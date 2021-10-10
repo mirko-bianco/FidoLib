@@ -68,8 +68,9 @@ type
     FEnumerator: Weak<IEnumerator>;
     FParams: IDictionary<string,TParamDescriptor>;
     FMethods: IDictionary<string, TMethodDescriptor>;
-    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType;
-      const Direction: TParamType; const IsFunction: Boolean; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+
+    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType; const Direction: TParamType; const IsFunction: Boolean; const IsPagingLimit: Boolean;
+      const IsPagingOffset: Boolean): TParamDescriptor;
     procedure ProcessAllAttributes;
     procedure CacheColumns;
   private
@@ -78,29 +79,23 @@ type
     function ExtractSQLString(const ResString: string): string;
     function GetSQLData: string;
     function GetIsDefined: boolean;
-
     procedure SetEnumeratorValue(out Result: TValue);
     procedure DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
     procedure Execute(const Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
-    procedure ProcessAttribute(const Attribute : TCustomAttribute;
-      const Method: TRttiMethod = nil; const MethDesc: TMethodDescriptor = nil);
+    procedure ProcessAttribute(const Attribute : TCustomAttribute; const Method: TRttiMethod = nil; const MethDesc: TMethodDescriptor = nil);
     procedure ProcessMethod(const Method: TRttiMethod);
     procedure RaiseError(const Msg: string; const Args: array of const);
     procedure TestDatasetOpen(const MethodToBeCalled: string);
     procedure SetExecMethod(const Value: TMethodDescriptor);
-
     procedure DefineStatement(const Method: TRttiMethod);
     procedure ValidateStatement;
 
     property Executor: IStatementExecutor read FExecutor;
     property ExecMethod: TMethodDescriptor read FExecMethod write SetExecMethod;
   public
-    constructor Create(
-      const ResReader: IStringResourceReader;
-      const StatementExecutor: IStatementExecutor);
+    constructor Create(const ResReader: IStringResourceReader; const StatementExecutor: IStatementExecutor);
 
     class function GetInstance(const Container: TContainer): TVirtualStatement<T>; static;
-    
     // IVirtualStatementMetadata
     function GetDescription: string;
     function GetIsScalar: boolean;
@@ -120,8 +115,13 @@ uses
 
 { TVirtualStatement<T> }
 
-function TVirtualStatement<T>.AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType;
-  const Direction: TParamType; const IsFunction: Boolean; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+function TVirtualStatement<T>.AddOrUpdateDescriptor(
+  const OriginalName: string;
+  const RttiType: TRttiType;
+  const Direction: TParamType;
+  const IsFunction: Boolean;
+  const IsPagingLimit: Boolean;
+  const IsPagingOffset: Boolean): TParamDescriptor;
 var
   MappedName: string;
 begin
@@ -154,32 +154,34 @@ var
   D: TPair<string, TMethodDescriptor>;
   Field: TField;
 begin
-  for D in FMethods do
-    with D.Value do
-      case Category of
+  FMethods.Values.ForEach(
+    procedure(const Value: TMethodDescriptor)
+    begin
+      case Value.Category of
         mcColGetter:
         begin
-          Field := FDataset.FieldByName(MappedName);
+          Field := FDataset.FieldByName(Value.MappedName);
           if Assigned(Field) then
-            FieldValue := Field.Value;
+            Value.FieldValue := Field.Value;
         end;
         mcExecute:
-          if IsFunction then
+          if Value.IsFunction then
           begin
             // try to find field matching function name
-            Field := FDataset.FindField(MappedName);
+            Field := FDataset.FindField(Value.MappedName);
             // if none use first
             if Assigned(Field) then
             begin
-              FieldValue := Field.Value;
+              Value.FieldValue := Field.Value;
             end
             else
             begin
               Field := FDataset.Fields[0];
-              FieldValue := Field.Value;
+              Value.FieldValue := Field.Value;
             end;
           end;
       end;
+    end);
 end;
 
 constructor TVirtualStatement<T>.Create(
@@ -217,10 +219,8 @@ end;
 
 procedure TVirtualStatement<T>.DefineStatement(const Method: TRttiMethod);
 var
-  Arg : TRttiParameter;
   ParamsList: IList<TParamDescriptor>;
   Param: TParamDescriptor;
-  Attribute: TCustomAttribute;
   IsPagingLimit: Boolean;
   IsPagingOffset: Boolean;
   MappedName: string;
@@ -235,25 +235,29 @@ begin
   begin
     FParameterCommaList := '';
 
-    for Arg in Method.GetParameters do
-    begin
-      IsPagingLimit := False;
-      IsPagingOffset := False;
-      for Attribute in Arg.GetAttributes do
-        if Attribute is PagingLimitAttribute then
-          IsPagingLimit := True
-        else if Attribute is PagingOffsetAttribute then
-          IsPagingOffset := True
-        else if Attribute is ColumnAttribute then
-          MappedName := ColumnAttribute(Attribute).Line;
+    TCollections.CreateList<TRttiParameter>(Method.GetParameters).ForEach(
+      procedure(const Arg: TRttiParameter)
+      begin
+        IsPagingLimit := False;
+        IsPagingOffset := False;
 
+        TCollections.CreateList<TCustomAttribute>(Arg.GetAttributes).ForEach(
+          procedure(const Attribute: TCustomAttribute)
+          begin
+            if Attribute is PagingLimitAttribute then
+              IsPagingLimit := True
+            else if Attribute is PagingOffsetAttribute then
+              IsPagingOffset := True
+            else if Attribute is ColumnAttribute then
+              MappedName := ColumnAttribute(Attribute).Line;
+          end);
 
-      Param := AddOrUpdateDescriptor(Arg.Name, Arg.ParamType, ptInput, False, IsPagingLimit, IsPagingOffset);
-      if MappedName <> '' then
-        Param.MappedName := MappedName;
+        Param := AddOrUpdateDescriptor(Arg.Name, Arg.ParamType, ptInput, False, IsPagingLimit, IsPagingOffset);
+        if MappedName <> '' then
+          Param.MappedName := MappedName;
 
-      ParamsList.Add(Param);
-    end;
+        ParamsList.Add(Param);
+      end);
 
     // define OUT ora update IN/OUT parameter in stored procedures
     if ExecMethod.IsFunction and (StatementType = stStoredProc) then
@@ -269,16 +273,23 @@ begin
   Executor.BuildObject(StatementType, GetSQLData);
 
   // define parameters in executor once Direction and ParameterList is finally established
-  with ParamsList.GetEnumerator do
-    while MoveNext do
-      with Current do
-        if not(Current.IsPagingLimit or Current.IsPagingOffset) then
-          Executor.AddParameter(MappedName, DataType.FieldType, Direction);
+  ParamsList
+    .Where(function(const Item: TParamDescriptor): Boolean
+      begin
+        Result := not(Item.IsPagingLimit or Item.IsPagingOffset);
+      end)
+    .ForEach(procedure(const Item: TParamDescriptor)
+      begin
+        Executor.AddParameter(Item.MappedName, Item.DataType.FieldType, Item.Direction);
+      end);
 
   Executor.Prepare;
 end;
 
-procedure TVirtualStatement<T>.DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TVirtualStatement<T>.DoInvoke(
+  Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   MethodDesc: TMethodDescriptor;
 begin
@@ -318,11 +329,11 @@ begin
   end;
 end;
 
-procedure TVirtualStatement<T>.Execute(const Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TVirtualStatement<T>.Execute(
+  const Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
-  Arg : TRttiParameter;
-  Entry: TPair<string, TParamDescriptor>;
-  Descriptor: TParamDescriptor;
   PagingLimit: Integer;
   PagingOffset: Integer;
 begin
@@ -333,11 +344,9 @@ begin
   PagingLimit := -1;
   PagingOffset := -1;
 
-  if not FParams.IsEmpty then
-    // set IN parameter values by name (to be sure)
-    for Entry in FParams do
+  FParams.Values.ForEach(
+    procedure(const Descriptor: TParamDescriptor)
     begin
-      Descriptor := Entry.Value;
       if (Descriptor.Direction in [ptInput, ptInputOutput]) and
          not(Descriptor.IsPagingLimit or Descriptor.IsPagingOffset) then
         // convert value to variant (stripping Nullable to its base type if necessary)
@@ -346,13 +355,12 @@ begin
         PagingLimit := Args[Descriptor.Index].AsInteger
       else if Descriptor.IsPagingOffset then
         PagingOffset := Args[Descriptor.Index].AsInteger;
-    end;
+    end);
 
   if (PagingLimit <> 0) then
   begin
     Executor.SetPaging(PagingLimit, PagingOffset);
   end;
-
 
   // open dataset if query like
   if StatementType in stOpenable then
@@ -444,7 +452,9 @@ begin
   Result := ExecMethod.IsFunction;
 end;
 
-function TVirtualStatement<T>.GetMappedName(const Name: string; const IsFunction: boolean): string;
+function TVirtualStatement<T>.GetMappedName(
+  const Name: string;
+  const IsFunction: boolean): string;
 var
   Prefix: string;
 begin
@@ -454,7 +464,7 @@ begin
   // remove getter prefix; TODO setters?
   if IsFunction and GetIsGetterName(Result) then
     Delete (Result, 1, Length(GetterPrefix));
- 
+
   // in case of procedures and functions we prefix parameter with "P_", e.g. "P_ORDERID"
   if StatementType in [stStoredProc, stFunction] then
     Result := 'P_' + Result;
@@ -492,21 +502,24 @@ procedure TVirtualStatement<T>.ProcessAllAttributes;
 var
   Context: TRttiContext;
   RttiType: TRttiType;
-  Attribute: TCustomAttribute;
-  Method: TRttiMethod;
-  Pair: TPair<string, TMethodDescriptor>;
 begin
   Context := TRttiContext.Create;
 
   RttiType := Context.GetType(TypeInfo(T));
 
   // process interface-level attributes
-  for Attribute in RttiType.GetAttributes do
-    ProcessAttribute(Attribute);
+  TCollections.CreateList<TCustomAttribute>(RttiType.GetAttributes).ForEach(
+    procedure(const Attribute: TCustomAttribute)
+    begin
+      ProcessAttribute(Attribute);
+    end);
 
   // process all methods (and their attributes)
-  for Method in RttiType.GetMethods do
-    ProcessMethod(Method);
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+    procedure(const Method: TRttiMethod)
+    begin
+      ProcessMethod(Method);
+    end);
 
   // if no [Execute] found and only one method assume it is the one (unless already assigned to column)
   if not Assigned(ExecMethod) and (FMethods.Count = 1) then
@@ -514,17 +527,24 @@ begin
       ExecMethod := FMethods.First.Value;
 
   // set remaining methods to rows affected or colgetters
-  for Pair in FMethods do
-    with Pair.Value do
-      if Category = mcNone then
-        if (StatementType = stCommand) and SameText(MappedName, 'ROWSAFFECTED') and (ReturnType = rtInteger) then
-          Category := mcRowsAffected
+  FMethods.Values
+    .Where(function(const Value: TMethodDescriptor): Boolean
+      begin
+        Result := Value.Category = mcNone;
+      end)
+    .ForEach(procedure(const Value: TMethodDescriptor)
+      begin
+        if (StatementType = stCommand) and SameText(Value.MappedName, 'ROWSAFFECTED') and (Value.ReturnType = rtInteger) then
+          Value.Category := mcRowsAffected
         else
-          Category := mcColGetter;
+          Value.Category := mcColGetter;
+      end);
 end;
 
 procedure TVirtualStatement<T>.ProcessAttribute(
-  const Attribute: TCustomAttribute; const Method: TRttiMethod; const MethDesc: TMethodDescriptor);
+  const Attribute: TCustomAttribute;
+  const Method: TRttiMethod;
+  const MethDesc: TMethodDescriptor);
 begin
   // process interface-level attributes (Statement, Description and Map )
   if not Assigned(Method) then
@@ -594,8 +614,11 @@ begin
   end;
 
   // auto describe based in attributes
-  for Attribute in Method.GetAttributes do
-    ProcessAttribute(Attribute, Method, MethodDesc);
+  TCollections.CreateList<TCustomAttribute>(Method.GetAttributes).ForEach(
+    procedure(const Attribute: TCustomAttribute)
+    begin
+      ProcessAttribute(Attribute, Method, MethodDesc);
+    end);
 
   // assign rest to columns for openables except for scalars
   if StatementType in stOpenable - stScalar then
@@ -613,7 +636,9 @@ begin
       end;
 end;
 
-procedure TVirtualStatement<T>.RaiseError(const Msg: string; const Args: array of const);
+procedure TVirtualStatement<T>.RaiseError(
+  const Msg: string;
+  const Args: array of const);
 begin
   raise EFidoVirtualStatementError.CreateFmt(Msg, Args);
 end;

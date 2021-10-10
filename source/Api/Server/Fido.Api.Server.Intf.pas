@@ -37,6 +37,7 @@ uses
 type
   {$M+}
   TRequestMiddlewareFunc = reference to function(const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
+
   TResponseMiddlewareProc = reference to procedure(const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
 
   IApiServer = interface(IInvokable)
@@ -44,7 +45,6 @@ type
 
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
-
     procedure RegisterResource(const Resource: TObject);
     procedure RegisterWebSocket(const WebSocketClass: TClass);
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);

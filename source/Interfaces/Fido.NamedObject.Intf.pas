@@ -30,6 +30,7 @@ type
   // in order to be able to use generic calls (e.g. listing) on various classes
   INamedObject = interface(IInvokable)
   ['{FDCBBE1E-4158-43E0-B833-377264C83387}']
+
     function GetId: integer;
     function GetDescription: string;
   end;

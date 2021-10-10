@@ -35,6 +35,7 @@ uses
 type
   IObservable = interface(IInvokable)
     ['{54BCAF18-3021-439C-B8BC-8D4D30E1ECF4}']
+
     procedure RegisterObserver(const Observer: IObserver);
     procedure UnregisterObserver(const Observer: IObserver);
     function GetIdentity: string;
@@ -56,7 +57,11 @@ implementation
 
 { Observables }
 
-class procedure Observables.SetAndBroadcast<T>(const Observable: IObservable; var Member: T; const Value: T; const Notification: INotification);
+class procedure Observables.SetAndBroadcast<T>(
+  const Observable: IObservable;
+  var Member: T;
+  const Value: T;
+  const Notification: INotification);
 begin
   if TValue.From<T>(Member) <> TValue.From<T>(Value) then
   begin
@@ -65,7 +70,11 @@ begin
   end;
 end;
 
-class procedure Observables.SetAndBroadcast<T>(const Observable: IObservable; var Member: T; const Value: T; const Description: string);
+class procedure Observables.SetAndBroadcast<T>(
+  const Observable: IObservable;
+  var Member: T;
+  const Value: T;
+  const Description: string);
 begin
   if TValue.From<T>(Member) <> TValue.From<T>(Value) then
   begin
@@ -74,7 +83,12 @@ begin
   end;
 end;
 
-class procedure Observables.SetAndBroadcast<T>(const Observable: IObservable; var Member: T; const Value: T; const Description: string; const Data: TNotificationData);
+class procedure Observables.SetAndBroadcast<T>(
+  const Observable: IObservable;
+  var Member: T;
+  const Value: T;
+  const Description: string;
+  const Data: TNotificationData);
 begin
   if TValue.From<T>(Member) <> TValue.From<T>(Value) then
   begin

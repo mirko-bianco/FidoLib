@@ -68,7 +68,8 @@ type
     FType: TStatementType;
     FData: string;
   public
-    constructor Create (const &Type: TStatementType; const Data: string);
+    constructor Create(const &Type: TStatementType; const Data: string);
+
     property Data: string read FData;
     property &Type: TStatementType read FType;
   end;
@@ -101,6 +102,7 @@ type
     FLine: string;
   public
     constructor Create(const Line: string);
+
     property Line: string read FLine write FLine;
   end;
 
@@ -135,7 +137,9 @@ end;
 
 { StatementAttribute }
 
-constructor StatementAttribute.Create(const &Type: TStatementType; const Data: string);
+constructor StatementAttribute.Create(
+  const &Type: TStatementType;
+  const Data: string);
 begin
   FType := &Type;
   FData := Data.ToUpper;

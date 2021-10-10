@@ -44,21 +44,13 @@ type
   strict private var
     FTokensManager: IJWTManager;
   protected
-    procedure Authenticate(
-      const Username: string;
-      const Password: string;
-      const ClientId: string;
-      var Token: TJWT); virtual; abstract;
+    procedure Authenticate(const Username: string; const Password: string; const ClientId: string; var Token: TJWT); virtual; abstract;
   public
     constructor Create(const TokensManager: IJWTManager);
 
     [Path(rmGET, '/token')]
-    procedure GetToken(
-      const [QueryParam('grant_type')] GrantType: string;
-      const [QueryParam('username')] Username: string;
-      const [QueryParam('password')] Password: string;
-      const [QueryParam('client_id')] ClientId: string;
-      out [BodyParam] Result: TJWTRequest);
+    procedure GetToken(const [QueryParam('grant_type')] GrantType: string; const [QueryParam('username')] Username: string; const [QueryParam('password')] Password: string;
+      const [QueryParam('client_id')] ClientId: string; out [BodyParam] Result: TJWTRequest);
   end;
 
 implementation
@@ -73,7 +65,12 @@ begin
   FTokensManager := TokensManager;
 end;
 
-procedure TAbstractJWTAutorization.GetToken(const GrantType, Username, Password, ClientId: string; out Result: TJWTRequest);
+procedure TAbstractJWTAutorization.GetToken(
+  const GrantType: string;
+  const Username: string;
+  const Password: string;
+  const ClientId: string;
+  out Result: TJWTRequest);
 var
   Token: TJWT;
 begin

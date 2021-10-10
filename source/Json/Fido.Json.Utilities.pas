@@ -32,12 +32,8 @@ type
 
   TJSONUnQuotedString = class(TJSONString)
   public
-    /// <summary> see com.borland.dbx.transport.JSONAncestor#estimatedByteSize() </summary>
     function EstimatedByteSize: Integer; override;
-
-    /// <summary> see com.borland.dbx.transport.JSONAncestor#toBytes(byte[], int) </summary>
     function ToBytes(const Data: TArray<Byte>; Offset: Integer): Integer; override;
-    /// <summary> Returns the quoted string content. </summary>
     procedure ToChars(Builder: TStringBuilder; Options: TJSONAncestor.TJSONOutputOptions); override;
 
   end;
@@ -54,7 +50,9 @@ begin
   Inc(Arg);
 end;
 
-class function JsonUtilities.TryStringToTGuid(const Input: string; out Guid: TGuid): Boolean;
+class function JsonUtilities.TryStringToTGuid(
+  const Input: string;
+  out Guid: TGuid): Boolean;
 begin
   Result := False;
   try
@@ -74,7 +72,9 @@ begin
     Result := 6 * System.Length(FValue);
 end;
 
-function TJSONUnQuotedString.ToBytes(const Data: TArray<Byte>; Offset: Integer): Integer;
+function TJSONUnQuotedString.ToBytes(
+  const Data: TArray<Byte>;
+  Offset: Integer): Integer;
 var
   CurrentChar: Char;
   UnicodeValue: Integer;
@@ -150,9 +150,13 @@ begin
   Result := Offset;
 end;
 
-procedure TJSONUnQuotedString.ToChars(Builder: TStringBuilder; Options: TJSONAncestor.TJSONOutputOptions);
+procedure TJSONUnQuotedString.ToChars(
+ Builder: TStringBuilder;
+ Options: TJSONAncestor.TJSONOutputOptions);
 
-  procedure AppendWithSpecialChars(Builder: TStringBuilder; Options: TJSONAncestor.TJSONOutputOptions);
+  procedure AppendWithSpecialChars(
+    Builder: TStringBuilder;
+    Options: TJSONAncestor.TJSONOutputOptions);
   var
     P, PEnd: PChar;
     UnicodeValue: Integer;

@@ -37,12 +37,18 @@ type
 
 implementation
 
-class function Utilities.IfThen<T>(const PredicateFunc: TFunc<Boolean>; const IfTrue: T; const IfFalse: T): T;
+class function Utilities.IfThen<T>(
+  const PredicateFunc: TFunc<Boolean>;
+  const IfTrue: T;
+  const IfFalse: T): T;
 begin
   Result := IfThen<T>(PredicateFunc(), IfTrue, IfFalse);
 end;
 
-class function Utilities.IfThen<T>(const PredicateResult: Boolean; const IfTrue, IfFalse: T): T;
+class function Utilities.IfThen<T>(
+  const PredicateResult: Boolean;
+  const IfTrue: T;
+  const IfFalse: T): T;
 begin
   if PredicateResult then
     Result := IfTrue
@@ -50,7 +56,9 @@ begin
     Result := IfFalse;
 end;
 
-class function Utilities.TryStringToTGuid(const Input: string; out Guid: TGuid): Boolean;
+class function Utilities.TryStringToTGuid(
+  const Input: string;
+  out Guid: TGuid): Boolean;
 begin
   Result := False;
   try

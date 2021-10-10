@@ -36,8 +36,8 @@ type
 
   TClientVirtualApiCallParameter = record
     Kind: TClientVirtualApiCallParameterKind;
-    Name: String;
-    Value: String;
+    Name: string;
+    Value: string;
   end;
 
   TClientVirtualApiCall = class
@@ -46,20 +46,21 @@ type
     HTTP_OK_MAXIMUN_RANGE = 299;
     DEFAULT_TIMEOUT_IN_MSECS = 5000;
   private
-    FApiName: String;
-    FApiMethodName: String;
+    FApiName: string;
+    FApiMethodName: string;
     FApiMethod: TRESTRequestMethod;
     FStarted: TDateTime;
     FFinished: TDateTime;
     FResponseCode: Integer;
-    FResponseContent: String;
-    FResponseHeaders: TStrings;
+    FResponseContent: string;
+    FResponseHeaders: Tstrings;
     FParameters: IList<TClientVirtualApiCallParameter>;
+
     function GetIsOK: Boolean;
     function GetDurationInMsecs: Cardinal;
     function GetParameters: IReadOnlyList<TClientVirtualApiCallParameter>;
-    procedure SetApiMethodName(const Value: String);
-    procedure SetApiName(const Value: String);
+    procedure SetApiMethodName(const Value: string);
+    procedure SetApiName(const Value: string);
   public
     Url: string;
     ContentType: string;
@@ -67,29 +68,16 @@ type
     HandleRedirects: boolean;
     Timeout: Cardinal;
   public
-    constructor Create(
-      const ApiName,
-            ApiMethodName: String;
-      const ApiMethod: TRESTRequestMethod);
+    constructor Create(const ApiName: string; const ApiMethodName: string; const ApiMethod: TRESTRequestMethod);
     destructor Destroy; override;
 
-    function TryGetParameterValue(
-      const Kind: TClientVirtualApiCallParameterKind;
-      const Name: String;
-      out Value: String): Boolean;
-    procedure SetParameter(
-      const Kind: TClientVirtualApiCallParameterKind;
-      const Name,
-            Value: String);
-
+    function TryGetParameterValue(const Kind: TClientVirtualApiCallParameterKind; const Name: string; out Value: string): Boolean;
+    procedure SetParameter(const Kind: TClientVirtualApiCallParameterKind; const Name: string; const Value: string);
     procedure Start;
-    procedure Finish(
-      const ResponseCode: Integer;
-      const ResponseContent: String;
-      const ResponseHeaders: TStrings = nil);
+    procedure Finish(const ResponseCode: Integer; const ResponseContent: string; const ResponseHeaders: Tstrings = nil);
 
-    property ApiName: String read FApiName write SetApiName;
-    property ApiMethodName: String read FApiMethodName write SetApiMethodName;
+    property ApiName: string read FApiName write SetApiName;
+    property ApiMethodName: string read FApiMethodName write SetApiMethodName;
     property ApiMethod: TRESTRequestMethod read FApiMethod;
     property Parameters: IReadOnlyList<TClientVirtualApiCallParameter> read GetParameters;
     property IsOK: Boolean read GetIsOK;
@@ -97,8 +85,8 @@ type
     property Ended: TDateTime read FStarted;
     property DurationInMsecs: Cardinal read GetDurationInMsecs;
     property ResponseCode: Integer read FResponseCode;
-    property ResponseContent: String read FResponseContent;
-    property ResponseHeaders: TStrings read FResponseHeaders;
+    property ResponseContent: string read FResponseContent;
+    property ResponseHeaders: Tstrings read FResponseHeaders;
   end;
 
 implementation
@@ -109,7 +97,10 @@ uses
 
 { TClientVirtualApiCall }
 
-constructor TClientVirtualApiCall.Create(const ApiName, ApiMethodName: String; const ApiMethod: TRESTRequestMethod);
+constructor TClientVirtualApiCall.Create(
+  const ApiName: string;
+  const ApiMethodName: string;
+  const ApiMethod: TRESTRequestMethod);
 begin
   Guard.CheckFalse(ApiName.IsEmpty);
   Guard.CheckFalse(ApiMethodName.IsEmpty);
@@ -118,7 +109,7 @@ begin
   Self.ApiMethodName := ApiMethodName;
   FApiMethod := ApiMethod;
   FParameters := TCollections.CreateList<TClientVirtualApiCallParameter>;
-  FResponseHeaders := TStringList.Create;
+  FResponseHeaders := TstringList.Create;
   Timeout := DEFAULT_TIMEOUT_IN_MSECS;
 end;
 
@@ -128,15 +119,17 @@ begin
   inherited;
 end;
 
-procedure TClientVirtualApiCall.Finish(const ResponseCode: Integer;
-  const ResponseContent: String; const ResponseHeaders: TStrings);
+procedure TClientVirtualApiCall.Finish(
+  const ResponseCode: Integer;
+  const ResponseContent: string;
+  const ResponseHeaders: Tstrings);
 begin
   FFinished := Now;
   FResponseCode := ResponseCode;
   FResponseContent := ResponseContent;
   FResponseHeaders.Clear;
   if Assigned(ResponseHeaders) then
-    FResponseHeaders.AddStrings(ResponseHeaders);
+    FResponseHeaders.Addstrings(ResponseHeaders);
 end;
 
 function TClientVirtualApiCall.GetDurationInMsecs: Cardinal;
@@ -154,20 +147,22 @@ begin
   Result := FParameters.AsReadOnlyList;
 end;
 
-procedure TClientVirtualApiCall.SetApiMethodName(const Value: String);
+procedure TClientVirtualApiCall.SetApiMethodName(const Value: string);
 begin
   Guard.CheckFalse(Value.IsEmpty);
   FApiMethodName := Value;
 end;
 
-procedure TClientVirtualApiCall.SetApiName(const Value: String);
+procedure TClientVirtualApiCall.SetApiName(const Value: string);
 begin
   Guard.CheckFalse(Value.IsEmpty);
   FApiName := Value;
 end;
 
-procedure TClientVirtualApiCall.SetParameter(const Kind: TClientVirtualApiCallParameterKind;
-  const Name, Value: String);
+procedure TClientVirtualApiCall.SetParameter(
+  const Kind: TClientVirtualApiCallParameterKind;
+  const Name: string;
+  const Value: string);
 var
   Index: Integer;
   Parameter: TClientVirtualApiCallParameter;
@@ -209,8 +204,10 @@ begin
   FStarted := Now;
 end;
 
-function TClientVirtualApiCall.TryGetParameterValue(const Kind: TClientVirtualApiCallParameterKind;
-  const Name: String; out Value: String): Boolean;
+function TClientVirtualApiCall.TryGetParameterValue(
+  const Kind: TClientVirtualApiCallParameterKind;
+  const Name: string;
+  out Value: string): Boolean;
 var
   Parameter: TClientVirtualApiCallParameter;
 begin

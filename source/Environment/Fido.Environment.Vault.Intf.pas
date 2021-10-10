@@ -27,7 +27,8 @@ interface
 type
   IVault = interface
     ['{85219258-B133-4F33-95AA-538CE9DDB0E1}']
-    function GetSecret(AKey: String): String;
+
+    function GetSecret(const Key: String): String;
   end;
 
 implementation
