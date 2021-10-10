@@ -38,7 +38,7 @@ type
     FDataset: TDataset;
     FOwner: IInterface;
   public
-    constructor Create (const Owner: IInterface; const Dataset: TDataset);
+    constructor Create(const Owner: IInterface; const Dataset: TDataset);
     destructor Destroy; override;
     // IEnumerator
     function GetCurrent: TValue;
@@ -50,7 +50,9 @@ implementation
 
 { TValueEnumerator }
 
-constructor TValueEnumerator.Create(const Owner: IInterface; const Dataset: TDataset);
+constructor TValueEnumerator.Create(
+  const Owner: IInterface;
+  const Dataset: TDataset);
 begin
   inherited Create;
   FOwner := Owner;

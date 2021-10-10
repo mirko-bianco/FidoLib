@@ -42,16 +42,13 @@ type
 
   {$M+}
   TFileWebServer = class(TAbstractWebServer, IWebServer)
-  private var
+  private
     FRootFolder: string;
     FIndexFilePath: string;
-  private
+
     function Load(const FilenamePath: string): TStream;
   public
-    constructor Create(
-      const RootFolder: string;
-      const IndexFileName: string;
-      const Interpreters: TArray<IWebServerInterpreter> = []);
+    constructor Create(const RootFolder: string; const IndexFileName: string; const Interpreters: TArray<IWebServerInterpreter> = []);
 
     function Process(const RestRequest: IHttpRequest; const RestResponse: IHttpResponse): Boolean; override;
   end;

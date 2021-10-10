@@ -30,6 +30,7 @@ uses
 type
   IWebServerInterpreter = interface(IInvokable)
     ['{4493D29D-CB64-497A-8B68-D0D78B9F4A6A}']
+
     procedure Interpret(const SourceStream: TStream; out DestinationStream: TStream);
   end;
 

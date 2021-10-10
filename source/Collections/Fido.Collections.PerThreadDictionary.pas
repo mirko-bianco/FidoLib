@@ -57,7 +57,9 @@ implementation
 
 { TPerThreadDictionary<T> }
 
-constructor TPerThreadDictionary<T>.Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>);
+constructor TPerThreadDictionary<T>.Create(
+  const Ownership: TDictionaryOwnerships;
+  const FactoryFunc: TFunc<T>);
 begin
   Guard.CheckTrue(Assigned(FactoryFunc), 'FFactoryFunc');
   inherited Create;

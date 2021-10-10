@@ -35,7 +35,7 @@ type
     FSender: IInterface;
   public
     constructor Create(const Sender: IInterface; const Description: string; const Data: TNotificationData);
-    // TValue
+
     function GetData: TNotificationData;
     function GetDescription: string;
     function GetSender: IInterface;
@@ -45,7 +45,10 @@ implementation
 
 { TNotification }
 
-constructor TNotification.Create(const Sender: IInterface; const Description: string; const Data: TNotificationData);
+constructor TNotification.Create(
+  const Sender: IInterface;
+  const Description: string;
+  const Data: TNotificationData);
 begin
   inherited Create;
   FSender := Sender;

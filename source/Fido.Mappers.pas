@@ -89,7 +89,9 @@ begin
   FMappersMap := Spring.Collections.TCollections.CreateDictionary<PTypeInfo, IDictionary<PTypeInfo, TValueMapProc>>;
 end;
 
-procedure Mappers.TMappers.Map<TA, TB>(const Source: TA; const Dest: TB);
+procedure Mappers.TMappers.Map<TA, TB>(
+  const Source: TA;
+  const Dest: TB);
 var
   SourceTypeInfo: PTypeInfo;
   DestTypeInfo: PTypeInfo;
@@ -111,8 +113,9 @@ begin
   end;
 end;
 
-function Mappers.TMappers.TryGetGetterMethodPropName(const RttiMeth: TRttiMethod;
-                                 out PropertyName: string): Boolean;
+function Mappers.TMappers.TryGetGetterMethodPropName(
+  const RttiMeth: TRttiMethod;
+  out PropertyName: string): Boolean;
 begin
   PropertyName := RttiMeth.Name.ToUpper;
   if RttiMeth.Name.ToUpper.StartsWith(GETTER_PREFIX) then
@@ -121,8 +124,9 @@ begin
   Result := not PropertyName.IsEmpty;
 end;
 
-function Mappers.TMappers.TryGetSetterMethodPropName(const RttiMeth: TRttiMethod;
-                                 out PropertyName: string): Boolean;
+function Mappers.TMappers.TryGetSetterMethodPropName(
+  const RttiMeth: TRttiMethod;
+  out PropertyName: string): Boolean;
 begin
   PropertyName := RttiMeth.Name;
   if RttiMeth.Name.ToUpper.StartsWith(SETTER_PREFIX) then
@@ -135,37 +139,45 @@ function Mappers.TMappers.GetInstanceValues<TA>(const Instance: TA): IDictionary
 var
   Context: Shared<TRttiContext>;
   RttiType: TRttiType;
-  RttiMeth: TRttiMethod;
-  RttiProp: TRttiProperty;
-  PropertyName: string;
   InstanceValue: TValue;
+  LResult: IDictionary<string, TValue>;
 begin
   InstanceValue := TValue.From<TA>(Instance);
-  Result := TCollections.CreateDictionary<string, TValue>;
+  LResult := TCollections.CreateDictionary<string, TValue>;
   Context := TRttiContext.Create;
   RttiType := Context.Value.GetType(TypeInfo(TA));
 
-  for RttiProp in RttiType.GetProperties do
-    if (RttiProp.Visibility = mvPublished) and
-       RttiProp.IsReadable then
-      Result.AddOrSetValue(RttiProp.Name.ToUpper, RttiProp.GetValue(InstanceValue.AsPointer));
+  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+    .Where(function(const RttiProp: TRttiProperty): Boolean
+      begin
+        Result := (RttiProp.Visibility = mvPublished) and RttiProp.IsReadable;
+      end)
+    .ForEach(procedure(const RttiProp: TRttiProperty)
+      begin
+        LResult[RttiProp.Name.ToUpper] := RttiProp.GetValue(InstanceValue.AsPointer);
+      end);
 
-  for RttiMeth in RttiType.GetMethods do
-    if (RttiMeth.Visibility = mvPublished) and
-       (RttiMeth.MethodKind = mkFunction) and
-       (Length(RttiMeth.GetParameters) = 0) and
-       TryGetGetterMethodPropName(RttiMeth, PropertyName) then
-      Result.AddOrSetValue(PropertyName, RttiMeth.Invoke(InstanceValue, []));
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+    procedure(const RttiMeth: TRttiMethod)
+    var
+      PropertyName: string;
+    begin
+      if (RttiMeth.Visibility = mvPublished) and
+         (RttiMeth.MethodKind = mkFunction) and
+         (Length(RttiMeth.GetParameters) = 0) and
+         TryGetGetterMethodPropName(RttiMeth, PropertyName) then
+        LResult[PropertyName] := RttiMeth.Invoke(InstanceValue, []);
+    end);
+
+  Result := LResult;
 end;
 
-function Mappers.TMappers.SetInstanceValues<TB>(const Instance: TB; const Values: IDictionary<string, TValue>): Boolean;
+function Mappers.TMappers.SetInstanceValues<TB>(
+  const Instance: TB;
+  const Values: IDictionary<string, TValue>): Boolean;
 var
   Context: TRttiContext;
   RttiType: TRttiType;
-  RttiMeth: TRttiMethod;
-  RttiProp: TRttiProperty;
-  PropertyName: string;
-  Value: TValue;
   InstanceValue: TValue;
 begin
   InstanceValue := TValue.From<TB>(Instance);
@@ -174,19 +186,30 @@ begin
   try
     RttiType := Context.GetType(TypeInfo(TB));
 
-    for RttiProp in RttiType.GetProperties do
-      if (RttiProp.Visibility = mvPublished) and
-         RttiProp.IsWritable and
-         Values.TryGetValue(RttiProp.Name.ToUpper, Value) then
-        RttiProp.SetValue(InstanceValue.AsPointer, Value);
+    TCollections.CreateList<TRttiProperty>(RttiType.GetProperties).ForEach(
+      procedure(const RttiProp: TRttiProperty)
+      var
+        Value: TValue;
+      begin
+        if (RttiProp.Visibility = mvPublished) and
+           RttiProp.IsWritable and
+           Values.TryGetValue(RttiProp.Name.ToUpper, Value) then
+          RttiProp.SetValue(InstanceValue.AsPointer, Value);
+      end);
 
-    for RttiMeth in RttiType.GetMethods do
-      if (RttiMeth.Visibility = mvPublished) and
-         (RttiMeth.MethodKind = mkProcedure) and
-         (Length(RttiMeth.GetParameters) = 1) and
-         TryGetSetterMethodPropName(RttiMeth, PropertyName) and
-         Values.TryGetValue(PropertyName, Value) then
-        RttiMeth.Invoke(InstanceValue, [Value]);
+    TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+      procedure(const RttiMeth: TRttiMethod)
+      var
+        PropertyName: string;
+        Value: TValue;
+      begin
+        if (RttiMeth.Visibility = mvPublished) and
+           (RttiMeth.MethodKind = mkProcedure) and
+           (Length(RttiMeth.GetParameters) = 1) and
+           TryGetSetterMethodPropName(RttiMeth, PropertyName) and
+           Values.TryGetValue(PropertyName, Value) then
+          RttiMeth.Invoke(InstanceValue, [Value]);
+      end);
 
     Result := True;
   except
@@ -194,7 +217,9 @@ begin
   end;
 end;
 
-function Mappers.TMappers.TryAutoMap<TA, TB>(const Source: TA; const Dest: TB): Boolean;
+function Mappers.TMappers.TryAutoMap<TA, TB>(
+  const Source: TA;
+  const Dest: TB): Boolean;
 begin
   Result := SetInstanceValues<TB>(Dest, GetInstanceValues<TA>(Source));
 end;
@@ -212,16 +237,16 @@ end;
 function Mappers.TMappers.ConvertMapProc<TA, TB>(const MapProc: TProc<TA, TB>): TValueMapProc;
 begin
   Result := procedure(SourceValue: TValue; DestValue: TValue)
-            var
-              GenericSource: TA;
-              GenericDest: TB;
-            begin
-               if not SourceValue.TryAsType<TA>(GenericSource) then
-                 raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [SourceValue.TypeInfo.Name]);
-               if not DestValue.TryAsType<TB>(GenericDest) then
-                 raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [DestValue.TypeInfo.Name]);
-              MapProc(GenericSource, GenericDest);
-            end;
+    var
+      GenericSource: TA;
+      GenericDest: TB;
+    begin
+       if not SourceValue.TryAsType<TA>(GenericSource) then
+         raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [SourceValue.TypeInfo.Name]);
+       if not DestValue.TryAsType<TB>(GenericDest) then
+         raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [DestValue.TypeInfo.Name]);
+      MapProc(GenericSource, GenericDest);
+    end;
 end;
 
 procedure Mappers.TMappers.RegisterMapper<TA, TB>(const MapProc: TProc<TA, TB>);
@@ -240,8 +265,8 @@ begin
 
     ValueMapProc := ConvertMapProc<TA, TB>(MapProc);
 
-    Map.AddOrSetValue(DestTypeInfo, ValueMapProc);
-    FMappersMap.AddOrSetValue(SourceTypeInfo, Map);
+    Map[DestTypeInfo] := ValueMapProc;
+    FMappersMap[SourceTypeInfo] := Map;
   finally
     FLock.EndWrite;
   end;
@@ -269,7 +294,9 @@ begin
   Result := FMappers;
 end;
 
-class procedure Mappers.Map<TA, TB>(const Source: TA; const Dest: TB);
+class procedure Mappers.Map<TA, TB>(
+  const Source: TA;
+  const Dest: TB);
 begin
   GetMappers.Map<TA, TB>(Source, Dest);
 end;

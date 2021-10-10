@@ -71,7 +71,9 @@ begin
   Result := (TGuidVarData(V).VGuid = nil) or CompareMem(TGuidVarData(V).VGuid, @EmptyGuid, SizeOf(TGuid));
 end;
 
-procedure TGuidVariantType.Cast(var Dest: TVarData; const Source: TVarData);
+procedure TGuidVariantType.Cast(
+  var Dest: TVarData;
+  const Source: TVarData);
 var
   LSource, LTemp: TVarData;
 begin
@@ -99,8 +101,10 @@ begin
   end;
 end;
 
-procedure TGuidVariantType.CastTo(var Dest: TVarData; const Source: TVarData;
-const AVarType: TVarType);
+procedure TGuidVariantType.CastTo(
+  var Dest: TVarData;
+  const Source: TVarData;
+  const AVarType: TVarType);
 var
   LTemp: TVarData;
 begin
@@ -130,7 +134,9 @@ begin
   TGuidVarData(V).VGuid := nil;
 end;
 
-procedure TGuidVariantType.Copy(var Dest: TVarData; const Source: TVarData;
+procedure TGuidVariantType.Copy(
+  var Dest: TVarData;
+  const Source: TVarData;
 const Indirect: Boolean);
 begin
   if Indirect and VarDataIsByRef(Source) then
@@ -143,8 +149,10 @@ begin
   end;
 end;
 
-function TGuidVariantType.CompareOp(const Left, Right: TVarData; const Operator:
-TVarOp): Boolean;
+function TGuidVariantType.CompareOp(
+  const Left: TVarData;
+  const Right: TVarData;
+  const Operator: TVarOp): Boolean;
 begin
   Result := False;
   if (Left.VType = VarType) and (Right.VType = VarType) then

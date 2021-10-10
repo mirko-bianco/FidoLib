@@ -66,15 +66,11 @@ type
     function GetFieldByName(const FieldName: string): TField;
     function GetParameterValue(const ParamName: string): Variant; virtual;
     function GetRowsAffected: integer;
-
-    procedure AddParameter(const ParamName: string; const DataType: TFieldType;
-      const ParamType: TParamType = ptInput); virtual;
+    procedure AddParameter(const ParamName: string; const DataType: TFieldType; const ParamType: TParamType = ptInput); virtual;
     procedure SetParameterValue(const ParamName: string; const Value: Variant); virtual; abstract;
     procedure BuildObject(const StatementType: TStatementType; const SQLData: string);
     procedure Prepare; virtual; abstract;
-
     procedure SetPaging(const PagingLimit: Integer; const PagingOffset: Integer);
-
     function Open: TDataset;
     procedure Execute; virtual;
 
@@ -85,8 +81,10 @@ implementation
 
 { TAbstractStatementExecutor }
 
-procedure TAbstractStatementExecutor.AddParameter(const ParamName: string;
-  const DataType: TFieldType; const ParamType: TParamType);
+procedure TAbstractStatementExecutor.AddParameter(
+  const ParamName: string;
+  const DataType: TFieldType;
+  const ParamType: TParamType);
 begin
   AssertTypeIn(stParametrised);
   // .. implement rest in descendant
@@ -105,7 +103,9 @@ begin
     RaiseError('Call not allowed for statement type %d', [Ord(StatementType)]);
 end;
 
-procedure TAbstractStatementExecutor.BuildObject(const StatementType: TStatementType; const SQLData: string);
+procedure TAbstractStatementExecutor.BuildObject(
+  const StatementType: TStatementType;
+  const SQLData: string);
 begin
   FreeAndNil(FStatement);
   FRowsAffected := 0;
@@ -174,12 +174,16 @@ begin
   end;
 end;
 
-procedure TAbstractStatementExecutor.RaiseError(const Msg: string; const Args: array of const);
+procedure TAbstractStatementExecutor.RaiseError(
+  const Msg: string;
+  const Args: array of const);
 begin
   raise EFidoStatementExecutorError.CreateFmt(Msg, Args);
 end;
 
-procedure TAbstractStatementExecutor.SetPaging(const PagingLimit: Integer; const PagingOffset: Integer);
+procedure TAbstractStatementExecutor.SetPaging(
+  const PagingLimit: Integer;
+  const PagingOffset: Integer);
 begin
   FPagingLimit := PagingLimit;
   FPagingOffset := PagingOffset;

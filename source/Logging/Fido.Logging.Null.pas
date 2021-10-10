@@ -31,8 +31,9 @@ uses
 
 type
   TNullLoggerEx = class(TInterfacedObject, ILogger)
+  private class var
+    fGlobalInstance: ILogger;
   private
-    class var fGlobalInstance: ILogger;
     class constructor Create;
 
     function GetEnabled: Boolean;
@@ -51,87 +52,66 @@ type
     procedure Log(const event: TLogEvent); overload;
 
     procedure LogValue(const name: string; const value: TValue); overload;
-    procedure LogValue(level: TLogLevel; const name: string;
-      const value: TValue); overload;
+    procedure LogValue(level: TLogLevel; const name: string; const value: TValue); overload;
 
     procedure Log(const msg: string); overload;
     procedure Log(const msg: string; const e: Exception); overload;
     procedure Log(const fmt: string; const args: array of const); overload;
-    procedure Log(const fmt: string;
-      const args: array of const; const e: Exception); overload;
+    procedure Log(const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Log(level: TLogLevel; const msg: string); overload;
-    procedure Log(level: TLogLevel; const msg: string;
-      const e: Exception); overload;
-    procedure Log(level: TLogLevel; const fmt: string;
-      const args: array of const); overload;
-    procedure Log(level: TLogLevel; const fmt: string;
-      const args: array of const; const e: Exception); overload;
+    procedure Log(level: TLogLevel; const msg: string; const e: Exception); overload;
+    procedure Log(level: TLogLevel; const fmt: string; const args: array of const); overload;
+    procedure Log(level: TLogLevel; const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Fatal(const msg: string); overload;
     procedure Fatal(const msg: string; const e: Exception); overload;
     procedure Fatal(const fmt: string; const args: array of const); overload;
-    procedure Fatal(const fmt: string; const args: array of const;
-      const e: Exception); overload;
+    procedure Fatal(const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Error(const msg: string); overload;
     procedure Error(const msg: string; const e: Exception); overload;
     procedure Error(const fmt: string; const args: array of const); overload;
-    procedure Error(const fmt: string; const args: array of const;
-      const e: Exception); overload;
+    procedure Error(const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Warn(const msg: string); overload;
     procedure Warn(const msg: string; const e: Exception); overload;
     procedure Warn(const fmt: string; const args: array of const); overload;
-    procedure Warn(const fmt: string; const args: array of const;
-      const e: Exception); overload;
+    procedure Warn(const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Info(const msg: string); overload;
     procedure Info(const msg: string; const e: Exception); overload;
     procedure Info(const fmt: string; const args: array of const); overload;
-    procedure Info(const fmt: string; const args: array of const;
-      const e: Exception); overload;
+    procedure Info(const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Text(const msg: string); overload;
     procedure Text(const msg: string; const e: Exception); overload;
     procedure Text(const fmt: string; const args: array of const); overload;
-    procedure Text(const fmt: string; const args: array of const;
-      const e: Exception); overload;
+    procedure Text(const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Debug(const msg: string); overload;
     procedure Debug(const msg: string; const e: Exception); overload;
     procedure Debug(const fmt: string; const args: array of const); overload;
-    procedure Debug(const fmt: string; const args: array of const;
-      const e: Exception); overload;
+    procedure Debug(const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Trace(const msg: string); overload;
     procedure Trace(const msg: string; const e: Exception); overload;
     procedure Trace(const fmt: string; const args: array of const); overload;
-    procedure Trace(const fmt: string; const args: array of const;
-      const e: Exception); overload;
+    procedure Trace(const fmt: string; const args: array of const; const e: Exception); overload;
 
     procedure Enter(const methodName: string); overload;
-    procedure Enter(const classType: TClass;
-      const methodName: string); overload;
-    procedure Enter(const instance: TObject;
-      const methodName: string); overload;
-    procedure Enter(level: TLogLevel; const classType: TClass;
-      const methodName: string); overload;
+    procedure Enter(const classType: TClass; const methodName: string); overload;
+    procedure Enter(const instance: TObject; const methodName: string); overload;
+    procedure Enter(level: TLogLevel; const classType: TClass; const methodName: string); overload;
 
     procedure Leave(const methodName: string); overload;
-    procedure Leave(const classType: TClass;
-      const methodName: string); overload;
-    procedure Leave(const instance: TObject;
-      const methodName: string); overload;
-    procedure Leave(level: TLogLevel; const classType: TClass;
-      const methodName: string); overload;
+    procedure Leave(const classType: TClass; const methodName: string); overload;
+    procedure Leave(const instance: TObject; const methodName: string); overload;
+    procedure Leave(level: TLogLevel; const classType: TClass; const methodName: string); overload;
 
-    function Track(const classType: TClass;
-      const methodName: string): IInterface; overload;
-    function Track(const instance: TObject;
-      const methodName: string): IInterface; overload;
-    function Track(level: TLogLevel; const classType: TClass;
-      const methodName: string): IInterface; overload;
+    function Track(const classType: TClass; const methodName: string): IInterface; overload;
+    function Track(const instance: TObject; const methodName: string): IInterface; overload;
+    function Track(level: TLogLevel; const classType: TClass; const methodName: string): IInterface; overload;
 
     class property GlobalInstance: ILogger read fGlobalInstance;
   end;
@@ -151,25 +131,35 @@ begin
   fGlobalInstance := TNullLoggerEx.Create;
 end;
 
-procedure TNullLoggerEx.Log(level: TLogLevel; const msg: string);
+procedure TNullLoggerEx.Log(
+  level: TLogLevel;
+  const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Log(level: TLogLevel; const fmt: string;
+procedure TNullLoggerEx.Log(
+  level: TLogLevel;
+  const fmt: string;
   const args: array of const);
 begin
 end;
 
-procedure TNullLoggerEx.Log(level: TLogLevel; const msg: string;
+procedure TNullLoggerEx.Log(
+  level: TLogLevel;
+  const msg: string;
   const e: Exception);
 begin
 end;
 
-procedure TNullLoggerEx.Debug(const fmt: string; const args: array of const);
+procedure TNullLoggerEx.Debug(
+  const fmt: string;
+  const args: array of const);
 begin
 end;
 
-procedure TNullLoggerEx.Debug(const fmt: string; const args: array of const;
+procedure TNullLoggerEx.Debug(
+  const fmt: string;
+  const args: array of const;
   const e: Exception);
 begin
 end;
@@ -178,15 +168,21 @@ procedure TNullLoggerEx.Debug(const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Debug(const msg: string; const e: Exception);
+procedure TNullLoggerEx.Debug(
+  const msg: string;
+  const e: Exception);
 begin
 end;
 
-procedure TNullLoggerEx.Error(const fmt: string; const args: array of const);
+procedure TNullLoggerEx.Error(
+  const fmt: string;
+  const args: array of const);
 begin
 end;
 
-procedure TNullLoggerEx.Enter(level: TLogLevel; const classType: TClass;
+procedure TNullLoggerEx.Enter(
+  level: TLogLevel;
+  const classType: TClass;
   const methodName: string);
 begin
 end;
@@ -195,17 +191,21 @@ procedure TNullLoggerEx.Enter(const methodName: string);
 begin
 end;
 
-procedure TNullLoggerEx.Enter(const classType: TClass;
+procedure TNullLoggerEx.Enter(
+  const classType: TClass;
   const methodName: string);
 begin
 end;
 
-procedure TNullLoggerEx.Enter(const instance: TObject;
+procedure TNullLoggerEx.Enter(
+  const instance: TObject;
   const methodName: string);
 begin
 end;
 
-procedure TNullLoggerEx.Error(const fmt: string; const args: array of const;
+procedure TNullLoggerEx.Error(
+  const fmt: string;
+  const args: array of const;
   const e: Exception);
 begin
 end;
@@ -214,15 +214,21 @@ procedure TNullLoggerEx.Error(const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Error(const msg: string; const e: Exception);
+procedure TNullLoggerEx.Error(
+ const msg: string;
+ const e: Exception);
 begin
 end;
 
-procedure TNullLoggerEx.Fatal(const fmt: string; const args: array of const);
+procedure TNullLoggerEx.Fatal(
+  const fmt: string;
+  const args: array of const);
 begin
 end;
 
-procedure TNullLoggerEx.Fatal(const fmt: string; const args: array of const;
+procedure TNullLoggerEx.Fatal(
+  const fmt: string;
+  const args: array of const;
   const e: Exception);
 begin
 end;
@@ -246,11 +252,15 @@ procedure TNullLoggerEx.Fatal(const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Fatal(const msg: string; const e: Exception);
+procedure TNullLoggerEx.Fatal(
+  const msg: string;
+  const e: Exception);
 begin
 end;
 
-procedure TNullLoggerEx.Info(const msg: string; const e: Exception);
+procedure TNullLoggerEx.Info(
+  const msg: string;
+  const e: Exception);
 begin
 end;
 
@@ -258,7 +268,9 @@ procedure TNullLoggerEx.Info(const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Info(const fmt: string; const args: array of const;
+procedure TNullLoggerEx.Info(
+  const fmt: string;
+  const args: array of const;
   const e: Exception);
 begin
 end;
@@ -268,7 +280,9 @@ begin
   Result := False;
 end;
 
-function TNullLoggerEx.IsEnabled(level: TLogLevel; eventTypes: TLogEventTypes): Boolean; //FI:O804
+function TNullLoggerEx.IsEnabled(
+  level: TLogLevel;
+  eventTypes: TLogEventTypes): Boolean; //FI:O804
 begin
   Result := False;
 end;
@@ -303,11 +317,15 @@ begin
   Result := False;
 end;
 
-procedure TNullLoggerEx.Info(const fmt: string; const args: array of const);
+procedure TNullLoggerEx.Info(
+  const fmt: string;
+  const args: array of const);
 begin
 end;
 
-procedure TNullLoggerEx.Leave(level: TLogLevel; const classType: TClass;
+procedure TNullLoggerEx.Leave(
+  level: TLogLevel;
+  const classType: TClass;
   const methodName: string);
 begin
 end;
@@ -320,67 +338,92 @@ procedure TNullLoggerEx.Log(const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Log(const msg: string; const e: Exception);
-begin
-end;
-
-procedure TNullLoggerEx.Log(const fmt: string; const args: array of const);
-begin
-end;
-
-procedure TNullLoggerEx.Log(const fmt: string; const args: array of const;
+procedure TNullLoggerEx.Log(
+  const msg: string;
   const e: Exception);
 begin
 end;
 
-procedure TNullLoggerEx.Leave(const instance: TObject;
+procedure TNullLoggerEx.Log(
+  const fmt: string;
+  const args: array of const);
+begin
+end;
+
+procedure TNullLoggerEx.Log(
+  const fmt: string;
+  const args: array of const;
+  const e: Exception);
+begin
+end;
+
+procedure TNullLoggerEx.Leave(
+  const instance: TObject;
   const methodName: string);
 begin
 end;
 
-procedure TNullLoggerEx.Leave(const classType: TClass;
+procedure TNullLoggerEx.Leave(
+  const classType: TClass;
   const methodName: string);
 begin
 end;
 
-procedure TNullLoggerEx.Log(level: TLogLevel; const fmt: string;
+procedure TNullLoggerEx.Log(
+  level: TLogLevel;
+  const fmt: string;
   const args: array of const; const e: Exception);
 begin
 end;
 
-procedure TNullLoggerEx.LogValue(level: TLogLevel; const name: string;
+procedure TNullLoggerEx.LogValue(
+  level: TLogLevel;
+  const name: string;
   const value: TValue);
 begin
   if value.IsObject then
     value.AsObject.Free;
 end;
 
-procedure TNullLoggerEx.LogValue(const name: string; const value: TValue);
+procedure TNullLoggerEx.LogValue(
+  const name: string;
+  const value: TValue);
 begin
   if value.IsObject then
     value.AsObject.Free;
 end;
 
-procedure TNullLoggerEx.Text(const fmt: string; const args: array of const);
+procedure TNullLoggerEx.Text(
+  const fmt: string;
+  const args: array of const);
 begin
 end;
 
-procedure TNullLoggerEx.Text(const fmt: string; const args: array of const;
+procedure TNullLoggerEx.Text(
+  const fmt: string;
+  const args: array of const;
   const e: Exception);
 begin
 end;
 
-function TNullLoggerEx.Track(const instance: TObject; const methodName: string): IInterface; //FI:O804
+function TNullLoggerEx.Track(
+  const instance: TObject;
+  const methodName: string): IInterface; //FI:O804
 begin
   Result := nil;
 end;
 
-function TNullLoggerEx.Track(const classType: TClass; const methodName: string): IInterface; //FI:O804
+function TNullLoggerEx.Track(
+  const classType: TClass;
+  const methodName: string): IInterface; //FI:O804
 begin
   Result := nil;
 end;
 
-function TNullLoggerEx.Track(level: TLogLevel; const classType: TClass; const methodName: string): IInterface; //FI:O804
+function TNullLoggerEx.Track(
+  level: TLogLevel;
+  const classType: TClass;
+  const methodName: string): IInterface; //FI:O804
 begin
   Result := nil;
 end;
@@ -389,15 +432,21 @@ procedure TNullLoggerEx.Text(const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Text(const msg: string; const e: Exception);
+procedure TNullLoggerEx.Text(
+  const msg: string;
+  const e: Exception);
 begin
 end;
 
-procedure TNullLoggerEx.Trace(const fmt: string; const args: array of const);
+procedure TNullLoggerEx.Trace(
+  const fmt: string;
+  const args: array of const);
 begin
 end;
 
-procedure TNullLoggerEx.Trace(const fmt: string; const args: array of const;
+procedure TNullLoggerEx.Trace(
+  const fmt: string;
+  const args: array of const;
   const e: Exception);
 begin
 end;
@@ -406,15 +455,21 @@ procedure TNullLoggerEx.Trace(const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Trace(const msg: string; const e: Exception);
+procedure TNullLoggerEx.Trace(
+  const msg: string;
+  const e: Exception);
 begin
 end;
 
-procedure TNullLoggerEx.Warn(const fmt: string; const args: array of const);
+procedure TNullLoggerEx.Warn(
+  const fmt: string;
+  const args: array of const);
 begin
 end;
 
-procedure TNullLoggerEx.Warn(const fmt: string; const args: array of const;
+procedure TNullLoggerEx.Warn(
+  const fmt: string;
+  const args: array of const;
   const e: Exception);
 begin
 end;
@@ -423,7 +478,9 @@ procedure TNullLoggerEx.Warn(const msg: string);
 begin
 end;
 
-procedure TNullLoggerEx.Warn(const msg: string; const e: Exception);
+procedure TNullLoggerEx.Warn(
+  const msg: string;
+  const e: Exception);
 begin
 end;
 

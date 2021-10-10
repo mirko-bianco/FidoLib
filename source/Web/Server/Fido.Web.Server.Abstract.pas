@@ -37,12 +37,10 @@ uses
 type
   {$M+}
   TAbstractWebServer = class(TInterfacedObject, IWebServer)
-  protected var
-    FInterpreters: TArray<IWebServerInterpreter>;
   protected
-    procedure ProcessResource(
-      const SourceStream: TStream;
-      const RestResponse: IHttpResponse);
+    FInterpreters: TArray<IWebServerInterpreter>;
+
+    procedure ProcessResource(const SourceStream: TStream; const RestResponse: IHttpResponse);
     function Interpret(const SourceStream: TStream): TStream;
   public
     constructor Create(const Interpreters: TArray<IWebServerInterpreter> = []);
@@ -52,7 +50,9 @@ type
 
 implementation
 
-procedure TAbstractWebServer.ProcessResource(const SourceStream: TStream; const RestResponse: IHttpResponse);
+procedure TAbstractWebServer.ProcessResource(
+  const SourceStream: TStream;
+  const RestResponse: IHttpResponse);
 var
   TempStream: TMemoryStream;
 begin

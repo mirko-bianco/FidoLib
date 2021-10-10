@@ -46,10 +46,7 @@ type
     FIssuer: string;
     FDefaultValidityInSecs: Integer;
   public
-    constructor Create(
-      const Secret: TJOSEBytes;
-      const Issuer: string;
-      const DefaultValidityInSecs: Integer);
+    constructor Create(const Secret: TJOSEBytes; const Issuer: string; const DefaultValidityInSecs: Integer);
 
     function TryVerifyToken(const CompactToken: string; out Token: TJWT): Boolean;
     function GenerateToken: TJWT;
@@ -73,7 +70,9 @@ begin
   FDefaultValidityInSecs := DefaultValidityInSecs;
 end;
 
-function TJWTManager.TryVerifyToken(const CompactToken: string; out Token: TJWT): Boolean;
+function TJWTManager.TryVerifyToken(
+  const CompactToken: string;
+  out Token: TJWT): Boolean;
 var
   Key: Shared<TJWK>;
 begin

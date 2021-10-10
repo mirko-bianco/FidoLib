@@ -67,24 +67,21 @@ type
     FList: Weak<IReadonlyList<TRecord>>;
     FParams: IDictionary<string, TParamDescriptor>;
     FMethods: IDictionary<string, TMethodDescriptor>;
-    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType;
-      const Direction: TParamType; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+
+    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType; const Direction: TParamType; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
     procedure ProcessAllAttributes;
     function ExtractSQLString(const ResString: string): string;
     function GetSQLData: string;
     function GetIsDefined: boolean;
-
     function GetIsGetterName(const Name: string): boolean;
     function GetMappedName(const Name: string): string;
     procedure SetEnumeratorValue(out Result: TValue);
     procedure Execute(const Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
-    procedure ProcessAttribute(const Attribute : TCustomAttribute;
-      const Method: TRttiMethod = nil; const MethDesc: TMethodDescriptor = nil);
+    procedure ProcessAttribute(const Attribute: TCustomAttribute; const Method: TRttiMethod = nil; const MethDesc: TMethodDescriptor = nil);
     procedure ProcessMethod(const Method: TRttiMethod; const Collection: IDictionary<string, TMethodDescriptor>);
     procedure RaiseError(const Msg: string; const Args: array of const);
     procedure TestDatasetOpen(const MethodToBeCalled: string);
     procedure SetExecMethod(const Value: TMethodDescriptor);
-
     procedure DefineStatement(const Method: TRttiMethod);
     procedure ValidateStatement;
   private
@@ -93,12 +90,9 @@ type
     property Executor: IStatementExecutor read FExecutor;
     property ExecMethod: TMethodDescriptor read FExecMethod write SetExecMethod;
   public
-    constructor Create(
-      const ResReader: IStringResourceReader;
-      const StatementExecutor: IStatementExecutor);
+    constructor Create(const ResReader: IStringResourceReader; const StatementExecutor: IStatementExecutor);
 
     class function GetInstance(const Container: TContainer): TVirtualQuery<TRecord, T>; static;
-
     // IVirtualQueryMetadata
     function GetDescription: string;
     function GetSQLResource: string;
@@ -115,8 +109,12 @@ uses
 
 { TVirtualStatement<TRecord, T> }
 
-function TVirtualQuery<TRecord, T>.AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType;
-  const Direction: TParamType; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+function TVirtualQuery<TRecord, T>.AddOrUpdateDescriptor(
+  const OriginalName: string;
+  const RttiType: TRttiType;
+  const Direction: TParamType;
+  const IsPagingLimit: Boolean;
+  const IsPagingOffset: Boolean): TParamDescriptor;
 var
   MappedName: string;
 begin
@@ -165,11 +163,7 @@ end;
 
 procedure TVirtualQuery<TRecord, T>.DefineStatement(const Method: TRttiMethod);
 var
-  Arg : TRttiParameter;
   ParamsList: IList<TParamDescriptor>;
-  Attribute: TCustomAttribute;
-  IsPagingLimit: Boolean;
-  IsPagingOffset: Boolean;
 begin
   ParamsList := TCollections.CreateList<TParamDescriptor>;
 
@@ -177,19 +171,26 @@ begin
   // so we know their directions and are able to define parameter list
   FParameterCommaList := '';
 
-  for Arg in Method.GetParameters do
-  begin
-    IsPagingLimit := False;
-    IsPagingOffset := False;
-    for Attribute in Arg.GetAttributes do
-      if Attribute is PagingLimitAttribute then
-        IsPagingLimit := True
-      else
-        if Attribute is PagingOffsetAttribute then
-        IsPagingOffset := True;
+  TCollections.CreateList<TRttiParameter>(Method.GetParameters).ForEach(
+    procedure(const Arg: TRttiParameter)
+    var
+      IsPagingLimit: Boolean;
+      IsPagingOffset: Boolean;
+    begin
+      IsPagingLimit := False;
+      IsPagingOffset := False;
 
-    ParamsList.Add(AddOrUpdateDescriptor(Arg.Name, Arg.ParamType, ptInput, IsPagingLimit, IsPagingOffset));
-  end;
+      TCollections.CreateList<TCustomAttribute>(Arg.GetAttributes).ForEach(
+        procedure(const Attribute: TCustomAttribute)
+        begin
+          if Attribute is PagingLimitAttribute then
+            IsPagingLimit := True
+          else if Attribute is PagingOffsetAttribute then
+            IsPagingOffset := True;
+        end);
+
+      ParamsList.Add(AddOrUpdateDescriptor(Arg.Name, Arg.ParamType, ptInput, IsPagingLimit, IsPagingOffset));
+    end);
 
   // TODO param values could also be set with setters
 
@@ -200,16 +201,23 @@ begin
   Executor.BuildObject(stQuery, GetSQLData);
 
   // define parameters in executor once Direction and ParameterList is finally established
-  with ParamsList.GetEnumerator do
-    while MoveNext do
-      with Current do
-        if not(Current.IsPagingLimit or Current.IsPagingOffset) then
-          Executor.AddParameter(MappedName, DataType.FieldType, Direction);
-
+  ParamsList
+    .Where(function(const Item: TParamDescriptor): Boolean
+      begin
+        Result := not(Item.IsPagingLimit or Item.IsPagingOffset);
+      end)
+    .ForEach(procedure(const Item: TParamDescriptor)
+      begin
+        Executor.AddParameter(Item.MappedName, Item.DataType.FieldType, Item.Direction);
+      end);
+  
   Executor.Prepare;
 end;
 
-procedure TVirtualQuery<TRecord, T>.DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TVirtualQuery<TRecord, T>.DoInvoke(
+  Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
   MethodDesc: TMethodDescriptor;
 begin
@@ -240,11 +248,11 @@ begin
   end;
 end;
 
-procedure TVirtualQuery<TRecord, T>.Execute(const Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+procedure TVirtualQuery<TRecord, T>.Execute(
+  const Method: TRttiMethod;
+  const Args: TArray<TValue>;
+  out Result: TValue);
 var
-  Arg : TRttiParameter;
-  Entry: TPair<string, TParamDescriptor>;
-  Descriptor: TParamDescriptor;
   PagingLimit: Integer;
   PagingOffset: Integer;
 begin
@@ -255,11 +263,8 @@ begin
   PagingLimit := -1;
   PagingOffset := -1;
 
-  if not FParams.IsEmpty then
-    // set IN parameter values by name (to be sure)
-    for Entry in FParams do
+  FParams.Values.ForEach(procedure(const Descriptor: TParamDescriptor)
     begin
-      Descriptor := Entry.Value;
       if (Descriptor.Direction in [ptInput, ptInputOutput]) and
          not(Descriptor.IsPagingLimit or Descriptor.IsPagingOffset) then
         // convert value to variant (stripping Nullable to its base type if necessary)
@@ -268,14 +273,10 @@ begin
         PagingLimit := Args[Descriptor.Index].AsInteger
       else if Descriptor.IsPagingOffset then
         PagingOffset := Args[Descriptor.Index].AsInteger;
-    end;
+    end);
 
   if (PagingLimit <> 0) then
-  begin
     Executor.SetPaging(PagingLimit, PagingOffset);
-  end;
-
-
 
   FDataset := Executor.Open;
   case ExecMethod.ReturnType of
@@ -354,21 +355,24 @@ procedure TVirtualQuery<TRecord, T>.ProcessAllAttributes;
 var
   Context: TRttiContext;
   RttiType: TRttiType;
-  Attribute: TCustomAttribute;
-  Method: TRttiMethod;
-  Pair: TPair<string, TMethodDescriptor>;
 begin
   Context := TRttiContext.Create;
 
   RttiType := Context.GetType(TypeInfo(T));
 
   // process interface-level attributes
-  for Attribute in RttiType.GetAttributes do
-    ProcessAttribute(Attribute);
+  TCollections.CreateList<TCustomAttribute>(RttiType.GetAttributes).ForEach(
+    procedure(const Attribute: TCustomAttribute)
+    begin
+      ProcessAttribute(Attribute);
+    end);
 
   // process all methods (and their attributes)
-  for Method in RttiType.GetMethods do
-    ProcessMethod(Method, FMethods);
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+    procedure(const Method: TRttiMethod)
+    begin
+      ProcessMethod(Method, FMethods);
+    end);
 
   // if no [Execute] found and only one method assume it is the one (unless already assigned to column)
   if not Assigned(ExecMethod) and (FMethods.Count = 1) then
@@ -376,14 +380,21 @@ begin
       ExecMethod := FMethods.First.Value;
 
   // set remaining methods to rows affected or colgetters
-  for Pair in FMethods do
-    with Pair.Value do
-      if Category = mcNone then
-        Category := mcColGetter;
+  FMethods.Values
+    .Where(function(const Value: TMethodDescriptor): Boolean
+      begin
+        Result := Value.Category = mcNone;
+      end)
+    .ForEach(procedure(const Value: TMethodDescriptor)
+      begin
+        Value.Category := mcColGetter;
+      end);
 end;
 
 procedure TVirtualQuery<TRecord, T>.ProcessAttribute(
-  const Attribute: TCustomAttribute; const Method: TRttiMethod; const MethDesc: TMethodDescriptor);
+  const Attribute: TCustomAttribute;
+  const Method: TRttiMethod;
+  const MethDesc: TMethodDescriptor);
 begin
   // process interface-level attributes (Statement, Description and Map )
   if not Assigned(Method) then
@@ -413,9 +424,10 @@ begin
   end;
 end;
 
-procedure TVirtualQuery<TRecord, T>.ProcessMethod(const Method: TRttiMethod; const Collection: IDictionary<string, TMethodDescriptor>);
+procedure TVirtualQuery<TRecord, T>.ProcessMethod(
+  const Method: TRttiMethod;
+  const Collection: IDictionary<string, TMethodDescriptor>);
 var
-  Attribute : TCustomAttribute;
   MethodDesc: TMethodDescriptor;
   O: TDatasetOperation;
   S: string;
@@ -448,8 +460,11 @@ begin
   end;
 
   // auto describe based in attributes
-  for Attribute in Method.GetAttributes do
-    ProcessAttribute(Attribute, Method, MethodDesc);
+  TCollections.CreateList<TCustomAttribute>(Method.GetAttributes).ForEach(
+    procedure(const Attribute: TCustomAttribute)
+    begin
+      ProcessAttribute(Attribute, Method, MethodDesc);
+    end);
 
   // assign rest to columns for openables
   for O := TDatasetOperation(1) to High(TDatasetOperation) do
@@ -466,7 +481,9 @@ begin
     end;
 end;
 
-procedure TVirtualQuery<TRecord, T>.RaiseError(const Msg: string; const Args: array of const);
+procedure TVirtualQuery<TRecord, T>.RaiseError(
+  const Msg: string;
+  const Args: array of const);
 begin
   raise EFidoVirtualQueryError.CreateFmt(Msg, Args);
 end;

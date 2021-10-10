@@ -45,13 +45,7 @@ type
     FDurationSeconds: Int64;
     FDurationMilliSeconds: Int64;
   public
-    constructor Create(
-      const &Class: string;
-      const Method: string;
-      const DurationHours: Int64;
-      const DurationMinutes: Int64;
-      const DurationSeconds: Int64;
-      const DurationMilliSeconds: Int64);
+    constructor Create(const &Class: string; const Method: string; const DurationHours: Int64; const DurationMinutes: Int64; const DurationSeconds: Int64; const DurationMilliSeconds: Int64);
 
     function TotalDurationMS: Int64;
     function DurationHours: Int64;
@@ -66,7 +60,6 @@ type
     FClassName: string;
     FMethodName: string;
     FDuration: TTime;
-
     FIsCancelled: Boolean;
   public
     constructor Create(const Logger: ILogger; const ClassName: string; const MethodName: string);

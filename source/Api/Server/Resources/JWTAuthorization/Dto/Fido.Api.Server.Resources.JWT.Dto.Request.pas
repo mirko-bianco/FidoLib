@@ -42,7 +42,7 @@ type
     FExpires_In: Nullable<Integer>;
     FError: Nullable<string>;
   public
-    constructor CreateSuccess(const Access_Token: string; Expires_In: Integer);
+    constructor CreateSuccess(const Access_Token: string; const Expires_In: Integer);
     constructor CreateFailure(const Error: string);
 
     property Access_Token: Nullable<string> read FAccess_Token;
@@ -60,7 +60,9 @@ begin
   FError := Error;
 end;
 
-constructor TJWTRequest.CreateSuccess(const Access_Token: string; Expires_In: Integer);
+constructor TJWTRequest.CreateSuccess(
+  const Access_Token: string;
+  const Expires_In: Integer);
 begin
   inherited Create;
   FAccess_Token := Access_Token;

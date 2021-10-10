@@ -35,6 +35,7 @@ type
 
   IVirtualQueryMetadata = interface(IInvokable)
     ['{B4E2883B-690A-4681-A7E3-996A82028565}']
+
     function GetDescription: string;
     function GetSQLResource: string;
 

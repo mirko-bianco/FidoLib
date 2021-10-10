@@ -32,10 +32,15 @@ uses
 
 type
   EApiServer400 = class(EFidoException); //Bad request
+
   EApiServer401 = class(EFidoException); //Unauthorized
+
   EApiServer403 = class(EFidoException); //Forbidden
+
   EApiServer404 = class(EFidoException); //Not found
+
   EApiServer409 = class(EFidoException); //Conflict
+
   EApiServer500 = class(EFidoException) //Internal server error
     constructor Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string);
   end;
@@ -45,7 +50,11 @@ implementation
 
 { EApiServer500 }
 
-constructor EApiServer500.Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string);
+constructor EApiServer500.Create(
+  const Msg: string;
+  const Logger: ILogger;
+  const &Class: string;
+  const Method: string);
 begin
   Logger.LogValue(TLogLevel.Error, Msg, TLoggedData.Create('Error', &Class, Method));
   inherited Create(Msg);

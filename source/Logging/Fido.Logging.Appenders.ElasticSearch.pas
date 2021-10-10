@@ -47,10 +47,7 @@ type
   protected
     procedure DoSend(const Event: TLogEvent); override;
   public
-    constructor Create(
-      const Api: IElasticsearchLoggingApi;
-      const Index: string;
-      const TypeName: string);
+    constructor Create(const Api: IElasticsearchLoggingApi; const Index: string; const TypeName: string);
   end;
 
 implementation

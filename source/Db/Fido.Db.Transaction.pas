@@ -37,13 +37,13 @@ type
   private
     FId: integer;
     FHandler: ITransactionHandler;
+
     procedure Close;
     function GetIsClosed: boolean;
     procedure AssertClosedState(const ExpectedState: boolean);
   public
     constructor Create(const Handler: ITransactionHandler);
     destructor Destroy; override;
-
     // ITransaction
     procedure Commit;
     procedure Rollback;

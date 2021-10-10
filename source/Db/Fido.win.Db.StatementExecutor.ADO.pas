@@ -49,8 +49,7 @@ type
     constructor Create(AdoConnections: TAdoConnections);
 
     function GetParameterValue(const ParamName: string): Variant; override;
-    procedure AddParameter(const ParamName: string; const DataType: TFieldType;
-      const ParamType: TParamType = ptInput); override;
+    procedure AddParameter(const ParamName: string; const DataType: TFieldType; const ParamType: TParamType = ptInput); override;
     procedure SetParameterValue(const ParamName: string; const Value: Variant); override;
     procedure Prepare; override;
     procedure Execute; override;
@@ -64,8 +63,10 @@ uses
 
 { TADOStatementExecutor }
 
-procedure TADOStatementExecutor.AddParameter(const ParamName: string;
-  const DataType: TFieldType; const ParamType: TParamType);
+procedure TADOStatementExecutor.AddParameter(
+  const ParamName: string;
+  const DataType: TFieldType;
+  const ParamType: TParamType);
 var
   P: TParameter;
 const
@@ -87,7 +88,8 @@ begin
 end;
 
 function TADOStatementExecutor.BuildObjectInternal(
-  const StatementType: TStatementType; const SQLData: string): TObject;
+  const StatementType: TStatementType;
+  const SQLData: string): TObject;
 begin
   Result := nil;
   try
@@ -176,7 +178,9 @@ begin
   end;
 end;
 
-procedure TADOStatementExecutor.SetParameterValue(const ParamName: string; const Value: Variant);
+procedure TADOStatementExecutor.SetParameterValue(
+  const ParamName: string;
+  const Value: Variant);
 begin
   GetParameters.ParamByName(ParamName).Value := Value;
 end;

@@ -49,25 +49,15 @@ type
     private
       FProc: TProc<TObject>;
     public
-      constructor Create(
-        const Owner: TComponent;
-        const Proc: TProc<TObject>); reintroduce;
+      constructor Create(const Owner: TComponent; const Proc: TProc<TObject>); reintroduce;
     published
       procedure OnEvent(Sender: TObject);
     end;
   protected
-    class function Generate(
-      const Owner: TComponent;
-      const Control: TControl;
-      const Proc: TProc<TObject>;
-      const OriginalEvent: TNotifyEvent = nil;
+    class function Generate(const Owner: TComponent; const Control: TControl; const Proc: TProc<TObject>; const OriginalEvent: TNotifyEvent = nil;
       const OriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore): TNotifyEvent; static;
   public
-    class procedure Setup(
-      const Owner: TComponent;
-      const Control: TControl;
-      const EventName: string;
-      const Proc: TProc<TObject>;
+    class procedure Setup(const Owner: TComponent; const Control: TControl; const EventName: string; const Proc: TProc<TObject>;
       const OriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore); overload; static;
   end;
 

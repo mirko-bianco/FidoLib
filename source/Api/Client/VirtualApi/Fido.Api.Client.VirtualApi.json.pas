@@ -114,7 +114,9 @@ begin
   Result := JSONMarshaller.From(Value.AsObject, Value.TypeInfo);
 end;
 
-function TJSONClientVirtualApi<T, IConfiguration>.ConvertResponseToDto(const Response: string; const TypeInfo: PTypeInfo): TValue;
+function TJSONClientVirtualApi<T, IConfiguration>.ConvertResponseToDto(
+  const Response: string;
+  const TypeInfo: PTypeInfo): TValue;
 begin
   inherited;
 

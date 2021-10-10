@@ -30,6 +30,7 @@ uses
 type
   ILoopServerWebSocket = interface(IInvokable)
     ['{739B19DA-8759-4619-A433-8FA14E779B83}']
+
     procedure SendMessage(const Str: string);
     procedure SendData(const Data: TBytes; var IsText: Boolean);
     procedure ReadLoop();

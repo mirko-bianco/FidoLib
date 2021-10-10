@@ -44,7 +44,6 @@ type
     FRawHeaders: TStrings;
 
     procedure ParseParams(const Encoding: IIdTextEncoding; const Params: TStrings; const Value: string);
-
     function GetEncoding: IIdTextEncoding;
   public
     constructor Create(const RequestInfo: TIdHTTPRequestInfo); reintroduce;

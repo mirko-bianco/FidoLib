@@ -34,6 +34,7 @@ type
 
   ITransaction = interface(IInvokable)
     ['{B7724AFF-0857-4A5D-AADA-0483D00C3011}']
+
     procedure Commit;
     procedure Rollback;
     procedure RunAndCommit(const Proc: TProc);

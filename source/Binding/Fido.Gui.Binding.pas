@@ -37,6 +37,8 @@ uses
   Fmx.Controls,
 {$IFEND}
 
+  Spring.Collections,
+
   Fido.Exceptions,
   Fido.DesignPatterns.Observable.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
@@ -51,42 +53,22 @@ type
 
   GuiBinding = class
   private
-    class procedure InternalObservableSetup<DomainObject: IObservable; Component: TComponent>(
-      const Owner: TComponent;
-      const Observable: DomainObject;
-      const GuiComponent: Component); static;
+    class procedure InternalObservableSetup<DomainObject: IObservable; Component: TComponent>(const Owner: TComponent; const Observable: DomainObject; const GuiComponent: Component); static;
 
-    class procedure InternalMethodsSetup<Controller: IInterface; Component: TComponent>(
-      const Owner: TComponent; const TheController: Controller;
-      const GuiComponent: Component); static;
+    class procedure InternalMethodsSetup<Controller: IInterface; Component: TComponent>(const Owner: TComponent; const TheController: Controller; const GuiComponent: Component); static;
   public
-    class procedure SetupObservableToComponent<DomainObject: IObservable; Component: TComponent>(
-      const Source: DomainObject;
-      const SourceAttributeName: string;
-      const Destination: Component;
+    class procedure SetupObservableToComponent<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
       const DestinationAttributeName: string); overload; static;
 
-    class procedure SetupComponentToObservable<Component: TComponent; DomainObject: IObservable>(
-      const Source: Component;
-      const SourceAttributeName: string;
-      const SourceEventName: string;
-      const Destination: DomainObject;
-      const DestinationAttributeName: string); overload; static;
+    class procedure SetupComponentToObservable<Component: TComponent; DomainObject: IObservable>(const Source: Component; const SourceAttributeName: string; const SourceEventName: string;
+      const Destination: DomainObject; const DestinationAttributeName: string); overload; static;
 
-    class procedure SetupBidirectional<DomainObject: IObservable; Component: TComponent>(
-      const Source: DomainObject;
-      const SourceAttributeName: string;
-      const Destination: Component;
-      const DestinationAttributeName: string;
-      const DestinationEventName: string); overload; static;
+    class procedure SetupBidirectional<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
+      const DestinationAttributeName: string; const DestinationEventName: string); overload; static;
 
-    class procedure Setup<DomainObject: IObservable; Component: TComponent>(
-      const Observable: DomainObject;
-      const GuiComponent: Component); overload; static;
+    class procedure Setup<DomainObject: IObservable; Component: TComponent>(const Observable: DomainObject; const GuiComponent: Component); overload; static;
 
-    class procedure MethodsSetup<Controller: IInterface; Component: TComponent>(
-      const TheController: Controller;
-      const GuiComponent: Component); static;
+    class procedure MethodsSetup<Controller: IInterface; Component: TComponent>(const TheController: Controller; const GuiComponent: Component); static;
   end;
 
 implementation
@@ -210,36 +192,39 @@ class procedure GuiBinding.InternalObservableSetup<DomainObject, Component>(
 var
   Ctx: TRttiContext;
   RttiType: TRttiType;
-  Field: TRttiField;
-  Attribute: TCustomAttribute;
   Index: Integer;
 begin
   Ctx := TRttiContext.Create;
   RttiType := Ctx.GetType(GuiComponent.ClassType);
-  for Field in RttiType.GetFields do
-    for Attribute in Field.GetAttributes do
+
+  TCollections.CreateList<TRttiField>(RttiType.GetFields).ForEach(
+    procedure(const Field: TRttiField)
     begin
-      if Attribute is UnidirectionalToGuiBindingAttribute then
-        GuiBinding.SetupObservableToComponent(
-          Observable,
-          (Attribute as UnidirectionalToGuiBindingAttribute).SourceAttributeName,
-          GuiComponent.FindComponent(Field.Name),
-          (Attribute as UnidirectionalToGuiBindingAttribute).DestinationAttributeName);
-      if Attribute is UnidirectionalToObservableBindingAttribute then
-        GuiBinding.SetupComponentToObservable<Component, DomainObject>(
-          GuiComponent.FindComponent(Field.Name),
-          (Attribute as UnidirectionalToObservableBindingAttribute).SourceAttributeName,
-          (Attribute as UnidirectionalToObservableBindingAttribute).SourceEventName,
-          Observable,
-          (Attribute as UnidirectionalToObservableBindingAttribute).DestinationAttributeName);
-      if Attribute is BidirectionalToObservableBindingAttribute then
-        GuiBinding.SetupBidirectional(
-          Observable,
-          (Attribute as BidirectionalToObservableBindingAttribute).SourceAttributeName,
-          GuiComponent.FindComponent(Field.Name),
-          (Attribute as BidirectionalToObservableBindingAttribute).DestinationAttributeName,
-          (Attribute as BidirectionalToObservableBindingAttribute).DestinationEventName);
-    end;
+      TCollections.CreateList<TCustomAttribute>(Field.GetAttributes).ForEach(
+        procedure(const Attribute: TCustomAttribute)
+        begin
+          if Attribute is UnidirectionalToGuiBindingAttribute then
+            GuiBinding.SetupObservableToComponent(
+              Observable,
+              (Attribute as UnidirectionalToGuiBindingAttribute).SourceAttributeName,
+              GuiComponent.FindComponent(Field.Name),
+              (Attribute as UnidirectionalToGuiBindingAttribute).DestinationAttributeName);
+          if Attribute is UnidirectionalToObservableBindingAttribute then
+            GuiBinding.SetupComponentToObservable<Component, DomainObject>(
+              GuiComponent.FindComponent(Field.Name),
+              (Attribute as UnidirectionalToObservableBindingAttribute).SourceAttributeName,
+              (Attribute as UnidirectionalToObservableBindingAttribute).SourceEventName,
+              Observable,
+              (Attribute as UnidirectionalToObservableBindingAttribute).DestinationAttributeName);
+          if Attribute is BidirectionalToObservableBindingAttribute then
+            GuiBinding.SetupBidirectional(
+              Observable,
+              (Attribute as BidirectionalToObservableBindingAttribute).SourceAttributeName,
+              GuiComponent.FindComponent(Field.Name),
+              (Attribute as BidirectionalToObservableBindingAttribute).DestinationAttributeName,
+              (Attribute as BidirectionalToObservableBindingAttribute).DestinationEventName);
+        end);
+    end);
 
   for Index := 0 to GuiComponent.ComponentCount - 1 do
     GuiBinding.InternalObservableSetup(Owner, Observable, GuiComponent.Components[Index]);
@@ -259,21 +244,28 @@ class procedure GuiBinding.InternalMethodsSetup<Controller, Component>(
 var
   Ctx: TRttiContext;
   RttiType: TRttiType;
-  Field: TRttiField;
-  Attribute: TCustomAttribute;
-  Index: Integer;
 begin
   Ctx := TRttiContext.Create;
   RttiType := Ctx.GetType(GuiComponent.ClassType);
-  for Field in RttiType.GetFields do
-    for Attribute in Field.GetAttributes do
-      if Attribute is MethodToActionBindingAttribute then
-        AnonAction.Setup(
-          Owner,
-          GuiComponent.FindComponent(Field.Name) as TControl,
-          TheController,
-          (Attribute as MethodToActionBindingAttribute).ObservableMethodName,
-          (Attribute as MethodToActionBindingAttribute).OriginalEventExecutionType);
+
+  TCollections.CreateList<TRttiField>(RttiType.GetFields).ForEach(
+    procedure(const Field: TRttiField)
+    begin
+      TCollections.CreateList<TCustomAttribute>(Field.GetAttributes)
+        .Where(function(const Attribute: TCustomAttribute): Boolean
+          begin
+            Result := Attribute is MethodToActionBindingAttribute;
+          end)
+        .ForEach(procedure(const Attribute: TCustomAttribute)
+          begin
+            AnonAction.Setup(
+              Owner,
+              GuiComponent.FindComponent(Field.Name) as TControl,
+              TheController,
+              (Attribute as MethodToActionBindingAttribute).ObservableMethodName,
+              (Attribute as MethodToActionBindingAttribute).OriginalEventExecutionType);
+          end);
+    end);
 end;
 
 class procedure GuiBinding.Setup<DomainObject, Component>(

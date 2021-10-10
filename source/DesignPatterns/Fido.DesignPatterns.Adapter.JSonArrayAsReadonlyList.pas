@@ -41,7 +41,6 @@ type
   public
     constructor Create(const JsonArray: TJSONArray); overload;
     constructor Create(const JsonArray: TJSONArray; const TypeInfo: PTypeInfo); overload;
-
     destructor Destroy; override;
   end;
 
@@ -50,7 +49,6 @@ type
     FJsonArray: TJSONArray;
   public
     constructor Create(const JsonArray: TJSONArray); overload;
-    
     destructor Destroy; override;
   end;
 
@@ -72,7 +70,9 @@ begin
   FJsonArray := TJSONObject.ParseJSONValue(JsonArray.ToJSON) as TJSONArray;
 end;
 
-constructor TJsonArrayAsReadonlyInterfaceList<T>.Create(const JsonArray: TJSONArray; const TypeInfo: PTypeInfo);
+constructor TJsonArrayAsReadonlyInterfaceList<T>.Create(
+  const JsonArray: TJSONArray;
+  const TypeInfo: PTypeInfo);
 begin
   inherited Create(
     function: Integer

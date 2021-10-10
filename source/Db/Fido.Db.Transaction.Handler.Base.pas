@@ -37,7 +37,6 @@ type
     procedure TestNesting(const Commiting: boolean; const ID: integer);
   protected
     procedure RaiseError(const Msg: string; const Args: array of const);
-
     procedure DoStart; virtual;
     procedure DoCommit; virtual;
     procedure DoRollback; virtual;
@@ -114,7 +113,9 @@ begin
   Result := False; // return False in Null implementation; override in actual ones
 end;
 
-procedure TBaseTransactionHandler.RaiseError(const Msg: string; const Args: array of const);
+procedure TBaseTransactionHandler.RaiseError(
+  const Msg: string;
+  const Args: array of const);
 begin
   // log?
   raise EFidoTransactionError.CreateFmt(Msg, Args);
@@ -138,7 +139,9 @@ begin
   // Log?
 end;
 
-procedure TBaseTransactionHandler.TestNesting(const Commiting: boolean; const ID: integer);
+procedure TBaseTransactionHandler.TestNesting(
+  const Commiting: boolean;
+  const ID: integer);
 const
   ActionText: array[boolean] of string = ('Rolling back', 'Committing');
 begin

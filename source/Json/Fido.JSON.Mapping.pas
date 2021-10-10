@@ -92,39 +92,14 @@ type
   public const
     DefaultConfigurationName: string = 'Default';
   strict private
-    class procedure RegisterJSONMapping(
-      const TypInfo: pTypeInfo;
-      const From: TJSONMarhallingFromFunc;
-      const &To: TJSONUnmarhallingToFunc;
-      const ConfigurationName: string); static;
-
-    class procedure RegisterType<T>(
-      const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
-      const ConfigurationName: string); static;
-
-    class procedure RegisterNullableType<T>(
-      const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
-      const ConfigurationName: string); static;
-
+    class procedure RegisterJSONMapping(const TypInfo: pTypeInfo; const From: TJSONMarhallingFromFunc; const &To: TJSONUnmarhallingToFunc; const ConfigurationName: string); static;
+    class procedure RegisterType<T>(const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>; const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>; const ConfigurationName: string); static;
+    class procedure RegisterNullableType<T>(const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>; const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>; const ConfigurationName: string); static;
     class function SanitizeConfigurationName(const ConfigurationName: string): string; static;
   public
-    class procedure RegisterPrimitive<T>(
-      const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>;
-      const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>;
-      const ConfigurationName: string = ''); static;
-
-    class procedure RegisterEnumeratives(
-      const JSONMarhallingFromFunc: TJSONMarhallingFromFunc;
-      const JSONUnmarhallingToFunc: TJSONUnmarhallingToFunc;
-      const ConfigurationName: string = ''); static;
-
-    class function TryGetPrimitiveType(
-      const TypInfo: pTypeInfo;
-      out Mapping: TJSONMarshallingMapping;
-      const ConfigurationName: string): boolean; static;
-
+    class procedure RegisterPrimitive<T>(const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>; const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>; const ConfigurationName: string = ''); static;
+    class procedure RegisterEnumeratives(const JSONMarhallingFromFunc: TJSONMarhallingFromFunc; const JSONUnmarhallingToFunc: TJSONUnmarhallingToFunc; const ConfigurationName: string = ''); static;
+    class function TryGetPrimitiveType(const TypInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): boolean; static;
     class function TryGetEnumeratives(out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean; static;
   end;
 
@@ -144,7 +119,10 @@ begin
   FItems := Spring.Collections.TCollections.CreateDictionary<string, IDictionary<pTypeInfo, TJSONMarshallingMapping>>(Comparer);
 end;
 
-function MappingsUtilities.TJsonTypeMappingsDictionary.TryGet(const TInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean;
+function MappingsUtilities.TJsonTypeMappingsDictionary.TryGet(
+  const TInfo: pTypeInfo;
+  out Mapping: TJSONMarshallingMapping;
+  const ConfigurationName: string): Boolean;
 var
   Mappings: IDictionary<pTypeInfo, TJSONMarshallingMapping>;
   Found: Boolean;
@@ -166,7 +144,10 @@ begin
   end;
 end;
 
-procedure MappingsUtilities.TJsonTypeMappingsDictionary.AddOrSet(const TInfo: pTypeInfo; const Mapping: TJSONMarshallingMapping; const ConfigurationName: string);
+procedure MappingsUtilities.TJsonTypeMappingsDictionary.AddOrSet(
+  const TInfo: pTypeInfo;
+  const Mapping: TJSONMarshallingMapping;
+  const ConfigurationName: string);
 var
   Mappings: IDictionary<pTypeInfo, TJSONMarshallingMapping>;
   Found: Boolean;
@@ -200,7 +181,9 @@ end;
 
 { TJsonEnumerativeMappingsDictionary }
 
-procedure MappingsUtilities.TJsonEnumerativeMappingsDictionary.AddOrSet(const Mapping: TJSONMarshallingMapping; const ConfigurationName: string);
+procedure MappingsUtilities.TJsonEnumerativeMappingsDictionary.AddOrSet(
+  const Mapping: TJSONMarshallingMapping;
+  const ConfigurationName: string);
 begin
   FLock.BeginWrite;
   try
@@ -217,7 +200,9 @@ begin
   FItems := Spring.Collections.TCollections.CreateDictionary<string, TJSONMarshallingMapping>(Comparer);
 end;
 
-function MappingsUtilities.TJsonEnumerativeMappingsDictionary.TryGet(out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean;
+function MappingsUtilities.TJsonEnumerativeMappingsDictionary.TryGet(
+  out Mapping: TJSONMarshallingMapping;
+  const ConfigurationName: string): Boolean;
 begin
   FLock.BeginRead;
   try
@@ -248,7 +233,9 @@ begin
   JSONMappings.AddOrSet(TypInfo, TJSONMarshallingMapping.Create(From, &To), ConfigurationName);
 end;
 
-class function MappingsUtilities.TryGetEnumeratives(out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean;
+class function MappingsUtilities.TryGetEnumeratives(
+  out Mapping: TJSONMarshallingMapping;
+  const ConfigurationName: string): Boolean;
 var
   Config: string;
 begin

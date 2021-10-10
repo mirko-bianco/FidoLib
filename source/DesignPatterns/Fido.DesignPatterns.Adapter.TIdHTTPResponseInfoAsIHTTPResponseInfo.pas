@@ -54,10 +54,7 @@ type
 
     function Encoding: IIdTextEncoding;
   public
-    constructor Create(
-      const Context: TIdContext;
-      const RequestInfo: TIdHTTPRequestInfo;
-      const ResponseInfo: TIdHTTPResponseInfo); reintroduce;
+    constructor Create(const Context: TIdContext; const RequestInfo: TIdHTTPRequestInfo; const ResponseInfo: TIdHTTPResponseInfo); reintroduce;
     destructor Destroy; override;
 
     procedure SetContentStream(const Stream: TStream);
@@ -74,12 +71,9 @@ type
     procedure SetCustomHeaders(const Headers: IDictionary<string, string>);
     function RawHeaders: TStrings;
     function TransferFileEnabled: Boolean;
-
     procedure WriteBytesToWebSocket(const Buffer: TWSBytes);
-    procedure ReadBytesFromWebSocket(
-      var Buffer: TWSBytes; ByteCount: Integer; Append: Boolean = True);
+    procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; const ByteCount: Integer; const Append: Boolean = True);
     procedure DisconnectWebSocket;
-
     function GetWebSocketSignature(const Key: string): string;
   end;
 
@@ -153,7 +147,9 @@ begin
 end;
 
 procedure TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.ReadBytesFromWebSocket(
-  var Buffer: TWSBytes; ByteCount: Integer; Append: Boolean);
+  var Buffer: TWSBytes;
+  const ByteCount: Integer;
+  const Append: Boolean);
 begin
   FContext.Connection.IOHandler.ReadBytes(TIdBytes(Buffer), ByteCount, Append);
 end;

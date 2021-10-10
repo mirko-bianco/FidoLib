@@ -34,19 +34,16 @@ uses
 type
   IStatementExecutor = interface
     ['{63D2D54A-7BA4-42D5-8D5C-38B1D8D59155}']
+
     function GetIsBuilt: boolean;
     function GetFieldByName(const FieldName: string): TField;
     function GetParameterValue(const ParamName: string): Variant;
     function GetRowsAffected: integer;
-
     procedure AddParameter(const ParamName: string; const DataType: TFieldType; const ParamType: TParamType = ptInput);
     procedure SetParameterValue(const ParamName: string; const Value: Variant);
-
     procedure SetPaging(const PagingLimit: Integer; const PagingOffset: Integer);
-
     procedure BuildObject(const StatementType: TStatementType; const SQLData: string);
     procedure Prepare;
-
     function Open: TDataset;
     procedure Execute;
 

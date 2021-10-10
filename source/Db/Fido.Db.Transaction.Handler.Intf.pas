@@ -27,6 +27,7 @@ interface
 type
   ITransactionHandler = interface(IInvokable)
     ['{B7C0C72D-2946-4F33-A61D-D731B0D2A80D}']
+
     function  Start: integer;
     procedure Commit(const ID: Integer);
     procedure Rollback(const ID: Integer);

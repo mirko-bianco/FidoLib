@@ -43,7 +43,9 @@ implementation
 
 { TApiClientVirtualApiRequest }
 
-procedure TApiClientVirtualApiRequest.DoApplyURLSegments(const AParamList: TRestRequestParameterArray; var AURL: string);
+procedure TApiClientVirtualApiRequest.DoApplyURLSegments(
+  const AParamList: TRestRequestParameterArray;
+  var AURL: string);
 var
   Index: Integer;
 begin
