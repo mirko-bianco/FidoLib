@@ -251,9 +251,9 @@ begin
   FHttpResponse := HttpResponse;
 
   FHttpResponse.HeaderParams.Clear;
-  FHttpResponse.HeaderParams.AddOrSetValue('Upgrade', 'websocket');
-  FHttpResponse.HeaderParams.AddOrSetValue('Connection', 'Upgrade');
-  FHttpResponse.HeaderParams.AddOrSetValue('Sec-WebSocket-Accept', FHttpResponse.GetWebSocketSignature(Key));
+  FHttpResponse.HeaderParams['Upgrade'] := 'websocket';
+  FHttpResponse.HeaderParams['Connection'] :=  'Upgrade';
+  FHttpResponse.HeaderParams['Sec-WebSocket-Accept'] := FHttpResponse.GetWebSocketSignature(Key);
 
   FHttpResponse.SetResponseCode(101, 'Switching Protocols');
   FHttpResponse.WriteHeader;

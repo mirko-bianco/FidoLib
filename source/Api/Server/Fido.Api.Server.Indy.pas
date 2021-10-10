@@ -341,7 +341,7 @@ begin
         if ParameterIndex = -1 then
           Exit(False);
 
-        PathParams.AddOrSetValue(EndPointParamenter.Name, ParameterValue);
+        PathParams[EndPointParamenter.Name] := ParameterValue;
       end;
     end;
 end;
@@ -464,7 +464,7 @@ begin
               ApiResponse.SetBody(ConvertTValueToString(Params[ParameterIndex]))
             else
               ApiResponse.SetBody(ConvertResponseDtoToString(ApiResponse.MimeType, Params[ParameterIndex]));
-          mptHeader: ApiResponse.HeaderParams.AddOrSetValue(GetCurrent.Name, ConvertTValueToString(Params[ParameterIndex]));
+          mptHeader: ApiResponse.HeaderParams[GetCurrent.Name] := ConvertTValueToString(Params[ParameterIndex]);
         end;
       Inc(ParameterIndex);
     end;
@@ -789,8 +789,7 @@ begin
         FEndPoints.Add(RegExpPath, SubDictionary);
       end;
 
-      SubDictionary.AddOrSetValue(
-        ApiMethod,
+      SubDictionary[ApiMethod] :=
         TEndPoint.Create(
           Resource,
           Method.Name,
@@ -802,7 +801,7 @@ begin
           ResponseCode,
           ResponseText,
           PreProcessPipelineSteps,
-          PostProcessPipelineSteps));
+          PostProcessPipelineSteps);
     end;
   end;
 end;

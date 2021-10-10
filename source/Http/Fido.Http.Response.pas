@@ -119,7 +119,7 @@ begin
   Strings.Text := FResponseInfo.EncodeString(Strings.Text);
 
   for I := 0 to Strings.Count - 1 do
-    Dictionary.AddOrSetValue(Strings.Names[I], Strings.ValueFromIndex[I]);
+    Dictionary[Strings.Names[I]] := Strings.ValueFromIndex[I];
 end;
 
 procedure THttpResponse.WriteBytesToWebSocket(const Buffer: TWSBytes);

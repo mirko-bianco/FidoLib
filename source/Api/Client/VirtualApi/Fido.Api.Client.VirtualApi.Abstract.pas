@@ -253,7 +253,7 @@ begin
       Break
     end;
 
-  ConfigurationParams.AddOrSetValue(MethodName, ApiName);
+  ConfigurationParams[MethodName] := ApiName;
 end;
 
 class procedure TAbstractClientVirtualApi<T, IConfiguration>.ValidateMethods;
@@ -439,11 +439,11 @@ begin
     for RttiAttribute in RttiParameter.GetAttributes do
       if RttiAttribute is ApiParamAttribute then
       begin
-        Arguments.AddOrSetValue(ApiParamAttribute(RttiAttribute).ParamName, TPair<string, TValue>.Create(string(Args[Index + 1].TypeInfo.Name), Args[Index + 1]));
+        Arguments[ApiParamAttribute(RttiAttribute).ParamName] := TPair<string, TValue>.Create(string(Args[Index + 1].TypeInfo.Name), Args[Index + 1]);
         Break;
       end;
 
-    Arguments.AddOrSetValue(RttiParameter.Name, TPair<string, TValue>.Create(string(Args[Index + 1].TypeInfo.Name), Args[Index + 1]));
+    Arguments[RttiParameter.Name] := TPair<string, TValue>.Create(string(Args[Index + 1].TypeInfo.Name), Args[Index + 1]);
   end;
 end;
 
@@ -470,12 +470,12 @@ begin
         if MethodName.ToUpper.StartsWith('GET') then
           MethodName := Copy(MethodName, 4, Length(MethodName));
         ResultValue := RttiMethod.Invoke(MethodInstanceValue, []);
-        Arguments.AddOrSetValue(MethodName, TPair<string, TValue>.Create(string(ResultValue.TypeInfo.Name), ResultValue));
+        Arguments[MethodName] := TPair<string, TValue>.Create(string(ResultValue.TypeInfo.Name), ResultValue);
 
         for RttiAttribute in RttiMethod.GetAttributes do
           if RttiAttribute is ApiParamAttribute then
           begin
-            Arguments.AddOrSetValue(ApiParamAttribute(RttiAttribute).ParamName, TPair<string, TValue>.Create(string(ResultValue.TypeInfo.Name), ResultValue));
+            Arguments[ApiParamAttribute(RttiAttribute).ParamName] := TPair<string, TValue>.Create(string(ResultValue.TypeInfo.Name), ResultValue);
             Break
           end;
       end;
@@ -641,13 +641,13 @@ begin
         EndPoint := EndpointAttribute(Attribute).EndPoint;
       end
       else if Attribute is QueryParamAttribute then
-        QueryParams.AddOrSetValue(QueryParamAttribute(Attribute).MethodParam, QueryParamAttribute(Attribute).ApiParam)
+        QueryParams[QueryParamAttribute(Attribute).MethodParam] := QueryParamAttribute(Attribute).ApiParam
       else if Attribute is HeaderParamAttribute then
-        HeaderParams.AddOrSetValue(HeaderParamAttribute(Attribute).MethodParam, HeaderParamAttribute(Attribute).ApiParam)
+        HeaderParams[HeaderParamAttribute(Attribute).MethodParam] := HeaderParamAttribute(Attribute).ApiParam
       else if Attribute is FormParamAttribute then
-        FormParams.AddOrSetValue(FormParamAttribute(Attribute).MethodParam, FormParamAttribute(Attribute).ApiParam)
+        FormParams[FormParamAttribute(Attribute).MethodParam] := FormParamAttribute(Attribute).ApiParam
       else if Attribute is FileParamAttribute then
-        FileParams.AddOrSetValue(FileParamAttribute(Attribute).MethodParam, FileParamAttribute(Attribute).ApiParam)
+        FileParams[FileParamAttribute(Attribute).MethodParam] := FileParamAttribute(Attribute).ApiParam
       else if Attribute is RequestParamAttribute then
         RequestParam := RequestParamAttribute(Attribute).MethodParam
       else if Attribute is ContentAttribute then
@@ -676,7 +676,7 @@ begin
     ResponseHeaderParamInfo,
     ConvertResponseForErrorCodeInfo,
     HandleRedirects);
-  FEndPointInfo.AddOrSetValue(Method.Name, Result);
+  FEndPointInfo[Method.Name] := Result;
 end;
 
 function TAbstractClientVirtualApi<T, IConfiguration>.IsActive: Boolean;

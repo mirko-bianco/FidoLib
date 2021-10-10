@@ -152,14 +152,14 @@ begin
   for RttiProp in RttiType.GetProperties do
     if (RttiProp.Visibility = mvPublished) and
        RttiProp.IsReadable then
-      Result.AddOrSetValue(RttiProp.Name.ToUpper, RttiProp.GetValue(InstanceValue.AsPointer));
+      Result[RttiProp.Name.ToUpper] := RttiProp.GetValue(InstanceValue.AsPointer);
 
   for RttiMeth in RttiType.GetMethods do
     if (RttiMeth.Visibility = mvPublished) and
        (RttiMeth.MethodKind = mkFunction) and
        (Length(RttiMeth.GetParameters) = 0) and
        TryGetGetterMethodPropName(RttiMeth, PropertyName) then
-      Result.AddOrSetValue(PropertyName, RttiMeth.Invoke(InstanceValue, []));
+      Result[PropertyName] := RttiMeth.Invoke(InstanceValue, []);
 end;
 
 function Mappers.TMappers.SetInstanceValues<TB>(
@@ -248,8 +248,8 @@ begin
 
     ValueMapProc := ConvertMapProc<TA, TB>(MapProc);
 
-    Map.AddOrSetValue(DestTypeInfo, ValueMapProc);
-    FMappersMap.AddOrSetValue(SourceTypeInfo, Map);
+    Map[DestTypeInfo] := ValueMapProc;
+    FMappersMap[SourceTypeInfo] := Map;
   finally
     FLock.EndWrite;
   end;

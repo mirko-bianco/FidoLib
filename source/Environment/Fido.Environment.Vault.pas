@@ -56,7 +56,7 @@ class procedure TVault.Add(
   const Key: string;
   const Value: string);
 begin
-  Secrets.AddOrSetValue(CalculateKey(Environment, Key), Value);
+  Secrets[CalculateKey(Environment, Key)] :=  Value;
 end;
 
 constructor TVault.Create(const Environment: string);

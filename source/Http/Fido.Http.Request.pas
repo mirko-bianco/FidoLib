@@ -74,7 +74,7 @@ begin
   Guard.CheckNotNull(Dictionary, 'Dictionary');
 
   for I := 0 to Strings.Count - 1 do
-    Dictionary.AddOrSetValue(Strings.Names[I], Strings.ValueFromIndex[I]);
+    Dictionary[Strings.Names[I]] := Strings.ValueFromIndex[I];
 end;
 
 function THttpRequest.URI: string;
