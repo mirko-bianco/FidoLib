@@ -292,7 +292,7 @@ var
 begin
   List := TCollections.CreateList<Integer>([1, 2, 3, 4]);
 
-  Assert.AreEqual('[1,2,3,4]', JSONMarshaller.From<IReadOnlyList<Integer>>(List.AsReadOnlyList));
+  Assert.AreEqual('[1,2,3,4]', JSONMarshaller.From<IReadOnlyList<Integer>>(List.AsReadOnly));
 
   List2 := TCollections.CreateList<string>(['1', '2', '3', '4']);
 
@@ -455,7 +455,7 @@ begin
     TTest.Create(1, 'name 1'),
     TTest.Create(2, 'name 2')]);
 
-  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"}]', JSONMarshaller.From<IReadOnlyList<ITest>>(List.AsReadOnlyList));
+  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"}]', JSONMarshaller.From<IReadOnlyList<ITest>>(List.AsReadOnly));
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToInterfaceReadonlyList;

@@ -76,7 +76,7 @@ begin
   TestList := TDataSetAsReadonlyList<IType>.Create(DataSet);
 
 
-  Assert.AreEqual(2, TestList.Value.Count);
+  Assert.AreEqual(2, Length(TestList.Value.ToArray));
   Assert.AreEqual(1, TestList.Value.ElementAt(0).GetId);
   Assert.AreEqual('Name1', TestList.Value.ElementAt(0).GetName);
   Assert.AreEqual(2, TestList.Value.ElementAt(1).GetId);

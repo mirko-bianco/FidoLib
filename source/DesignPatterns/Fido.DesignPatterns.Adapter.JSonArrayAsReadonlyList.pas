@@ -73,7 +73,7 @@ begin
     begin
       Result := FJsonArray.Count;
     end,
-    function(Index: Integer): T
+    function(const Index: Integer): T
     begin
       Result := JSONUnmarshaller.To<T>((FJsonArray.Items[Index] as TJSONObject).ToJSON);
     end);
@@ -89,7 +89,7 @@ begin
     begin
       Result := FJsonArray.Count;
     end,
-    function(Index: Integer): T
+    function(const Index: Integer): T
     begin
       Result := JSONUnmarshaller.To((FJsonArray.Items[Index] as TJSONObject).ToJSON, TypeInfo).AsType<T>;
     end);
@@ -111,7 +111,7 @@ begin
     begin
       Result := FJsonArray.Count;
     end,
-    function(Index: Integer): T
+    function(const Index: Integer): T
     begin
        Result := JSONUnmarshaller.To<T>((FJsonArray.Items[Index] as TJSONObject).ToJSON);
     end);

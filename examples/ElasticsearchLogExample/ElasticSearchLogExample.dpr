@@ -41,7 +41,7 @@ var
 begin
   Container := TContainer.Create;
 
-  Container.Value.RegisterType<IElasticsearchDocumentApiConfiguration>.DelegateTo(
+  Container.Value.RegisterType<IElasticsearchDocumentApiConfiguration>(
     function: IElasticsearchDocumentApiConfiguration
     begin
       Result := TElasticsearchDocumentApiConfiguration.Create(
@@ -51,7 +51,7 @@ begin
     end).AsSingleton;
 
   Container.Value.RegisterType<IElasticsearchDocumentApi_DocumentRequest, TJSONClientVirtualApi<IElasticsearchDocumentApi_DocumentRequest, IElasticsearchDocumentApiConfiguration>>;
-  Container.Value.RegisterType<ILoggerController>.DelegateTo(
+  Container.Value.RegisterType<ILoggerController>(
     function: ILoggerController
     begin
       Result := TLoggerController.Create;
