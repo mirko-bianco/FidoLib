@@ -314,7 +314,7 @@ begin
           LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LRttiProp.PropertyType.AsInstance.Handle);
           if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
           begin
-            FTraversedTypeInfoMap.AddOrSetValue(LRttiProp.PropertyType.AsInstance.Handle, LTraverseCount + 1);
+            FTraversedTypeInfoMap[LRttiProp.PropertyType.AsInstance.Handle] := LTraverseCount + 1;
             InternalInitFieldDefsObjectClass(LRttiProp.PropertyType.AsInstance.Handle,
                                              Prefix + LRttiProp.Name + '.');
           end;
@@ -345,7 +345,7 @@ begin
           LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
           if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
           begin
-            FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
+            FTraversedTypeInfoMap[LMethodInfo.Handle] := LTraverseCount + 1;
             InternalInitFieldDefsObjectClass(LMethodInfo.Handle, Prefix + LMethodInfo.FieldName + '.');
           end;
         end
@@ -471,7 +471,7 @@ begin
           LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
           if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
           begin
-            FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
+            FTraversedTypeInfoMap[LMethodInfo.Handle] := LTraverseCount + 1;
             RecordToEntity(LVal, Prefix + LProp.Name + '.');
           end;
         end
@@ -532,7 +532,7 @@ begin
             LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
             if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
             begin
-              FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
+              FTraversedTypeInfoMap[LMethodInfo.Handle] := LTraverseCount + 1;
               RecordToEntity(LVal, Prefix + LMethodInfo.FieldName + '.');
             end;
           end;

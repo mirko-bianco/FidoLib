@@ -31,9 +31,12 @@ type
     [MethodToActionBinding('ShowSong', oeetBefore)]
     // The View observes the ViewModel and sets the Button.Enabled to ViewModel.IsModelNotEmpty
     // everytime there is a notification.
-    [UnidirectionalToGuiBindingAttribute('IsModelNotEmpty',  'Enabled')]
+    [UnidirectionalToGuiBinding('IsModelNotEmpty',  'Enabled')]
     ShowButton: TButton;
     SongsDataSource: TDataSource;
+    // The SongsGrid.OnTitleClick is bound to the ViewModel.SongsGridTitleClick method that returns the exact
+    // type for the event (TDBGridClickEvent).
+    [BindEvent('SongsGridTitleClick', 'OnTitleClick')]
     SongsGrid: TDBGrid;
     // When the user presses the button then the ViewModel.NewSong method is called
     // If the component is linked to an action then that action is triggered before the ViewModel method.
@@ -46,7 +49,7 @@ type
     [MethodToActionBinding('DeleteSong', oeetBefore)]
     // The View observes the ViewModel and sets the Button.Enabled to ViewModel.IsModelNotEmpty
     // everytime there is a notification.
-    [UnidirectionalToGuiBindingAttribute('IsModelNotEmpty',  'Enabled')]
+    [UnidirectionalToGuiBinding('IsModelNotEmpty',  'Enabled')]
     DeleteButton: TButton;
     actDeleteSong: TAction;
     procedure SongsGridDblClick(Sender: TObject);

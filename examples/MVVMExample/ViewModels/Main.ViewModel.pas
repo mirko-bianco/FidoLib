@@ -6,6 +6,7 @@ uses
   System.SysUtils,
   Data.DB,
   VCL.Dialogs,
+  Vcl.DBGrids,
 
   Spring,
   Spring.Collections,
@@ -37,6 +38,7 @@ type
     FDataSet: TListDataSetOfObservable<ISong>;
   protected
     procedure Notify(const Sender: IInterface; const Notification: INotification);
+    procedure DoSongsGridTitleClick(Column: TColumn);
   public
     constructor Create(
       const SongModel: ISongModel;
@@ -49,6 +51,8 @@ type
     procedure NewSong;
     procedure DeleteSong;
     function IsModelNotEmpty: Boolean;
+
+    function SongsGridTitleClick: TDBGridClickEvent;
   end;
 
 implementation
@@ -90,6 +94,11 @@ begin
   inherited;
 end;
 
+procedure TMainViewModel.DoSongsGridTitleClick(Column: TColumn);
+begin
+  ShowMessage(Format('You clicked the "%s" column', [Column.Title.Caption]));
+end;
+
 function TMainViewModel.GetSongDataset: TDataSet;
 begin
   Result := FDataSet;
@@ -116,6 +125,11 @@ end;
 procedure TMainViewModel.ShowSong;
 begin
   FSongViewFactoryFunc(FSongViewModelFactoryFunc(FDataSet.CurrentEntity.Id, FSongModel)).Show;
+end;
+
+function TMainViewModel.SongsGridTitleClick: TDBGridClickEvent;
+begin
+  Result := DoSongsGridTitleClick;
 end;
 
 end.
