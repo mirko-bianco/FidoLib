@@ -94,7 +94,7 @@ begin
     Mappers.Map<TStatement, TDto>(Statement, Item);
     List.Add(Item);
   end;
-  Result := List.AsReadOnlyList;
+  Result := List.AsReadOnly;
 end;
 
 constructor TBaseDBTest.Create(

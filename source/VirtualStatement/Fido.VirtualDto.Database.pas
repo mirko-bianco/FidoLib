@@ -90,7 +90,7 @@ begin
   inherited Create;
   FDataset := Utilities.CheckNotNullAndSet(Dataset, 'Dataset');
 
-  FRecordMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([doOwnsValues]);
+  FRecordMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([Spring.Collections.doOwnsValues]);
 end;
 
 procedure TDatabaseVirtualDto<T>.DoInvoke(

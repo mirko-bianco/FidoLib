@@ -144,7 +144,7 @@ end;
 
 function TClientVirtualApiCall.GetParameters: IReadOnlyList<TClientVirtualApiCallParameter>;
 begin
-  Result := FParameters.AsReadOnlyList;
+  Result := FParameters.AsReadOnly;
 end;
 
 procedure TClientVirtualApiCall.SetApiMethodName(const Value: string);

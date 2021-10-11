@@ -55,12 +55,14 @@ end;
 
 class function TCollections.GetListOfDeepObservable<T>(const Collection: IEnumerable<T>): IDeepObservableList<T>;
 begin
-  Result := TDeepObservableList<T>.Create(Collection);
+  Result := TDeepObservableList<T>.Create;
+  Result.AddRange(Collection);
 end;
 
 class function TCollections.GetListOfDeepObservable<T>(const Values: array of T): IDeepObservableList<T>;
 begin
-  Result := TDeepObservableList<T>.Create(Values);
+  Result := TDeepObservableList<T>.Create;
+  Result.AddRange(Values);
 end;
 
 class function TCollections.GetListOfDeepObservable<T>(const Comparer: IComparer<T>): IDeepObservableList<T>;
@@ -70,7 +72,7 @@ end;
 
 class function TCollections.GetListOfDeepObservable<T>(const Comparison: TComparison<T>): IDeepObservableList<T>;
 begin
-  Result := TDeepObservableList<T>.Create(Comparison);
+  Result := TDeepObservableList<T>.Create(TDelegatedComparer<T>.Create(Comparison));
 end;
 
 end.

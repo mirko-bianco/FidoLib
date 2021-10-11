@@ -77,7 +77,7 @@ class procedure Containers.RegisterVirtualQuery<TRecord, T>(
   const StatementExecutorServiceName: string);
 begin
   {$IFDEF MSWINDOWS}
-  Container.RegisterType<T>.DelegateTo(
+  Container.RegisterType<T>(
     function: T
     var
       RInterface: T;
@@ -101,7 +101,7 @@ class procedure Containers.RegisterVirtualStatement<T>(
   const StatementExecutorServiceName: string);
 begin
   {$IFDEF MSWINDOWS}
-  Container.RegisterType<T>.DelegateTo(
+  Container.RegisterType<T>(
     function: T
     var
       RInterface: T;
