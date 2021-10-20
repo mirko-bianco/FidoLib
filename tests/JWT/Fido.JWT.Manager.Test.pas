@@ -11,6 +11,7 @@ uses
 
   JOSE.Types.Bytes,
   JOSE.Core.JWT,
+  JOSE.Core.JWA,
 
   Fido.Testing.Mock.Utils,
   Fido.JWT.Manager;
@@ -45,7 +46,7 @@ var
 begin
   Seconds := MockUtils.SomeInteger;
 
-  Manager := TJWTManager.Create(MockUtils.SomeString, MockUtils.SomeString, Seconds);
+  Manager := TJWTManager.Create(MockUtils.SomeString, TJOSEAlgorithmId.HS256, MockUtils.SomeString, Seconds);
 
   Assert.AreEqual(Seconds, Manager.Value.ValidityInSecs);
 end;
@@ -60,7 +61,7 @@ var
 begin
   Duration := MockUtils.SomeInteger;
   Issuer := MockUtils.SomeString;
-  Manager := TJWTManager.Create(MockUtils.SomeString, Issuer, Duration);
+  Manager := TJWTManager.Create(MockUtils.SomeString, TJOSEAlgorithmId.HS256, Issuer, Duration);
 
   Check := Manager.Value.TryVerifyToken(MockUtils.SomeString, VerifiedToken);
 
@@ -77,7 +78,7 @@ var
 begin
   Duration := MockUtils.SomeInteger;
   Issuer := MockUtils.SomeString;
-  Manager := TJWTManager.Create(MockUtils.SomeString, Issuer, Duration);
+  Manager := TJWTManager.Create(MockUtils.SomeString, TJOSEAlgorithmId.HS256, Issuer, Duration);
 
   Token := Manager.Value.GenerateToken;
 
@@ -97,7 +98,7 @@ var
 begin
   Duration := MockUtils.SomeInteger;
   Issuer := MockUtils.SomeString;
-  Manager := TJWTManager.Create(MockUtils.SomeString, Issuer, Duration);
+  Manager := TJWTManager.Create(MockUtils.SomeString, TJOSEAlgorithmId.HS256, Issuer, Duration);
 
   Token := Manager.Value.GenerateToken;
 
@@ -123,7 +124,7 @@ var
 begin
   Duration := MockUtils.SomeInteger;
   Issuer := MockUtils.SomeString;
-  Manager := TJWTManager.Create(MockUtils.SomeString, Issuer, Duration);
+  Manager := TJWTManager.Create(MockUtils.SomeString, TJOSEAlgorithmId.HS256, Issuer, Duration);
 
   Token := Manager.Value.GenerateToken;
   SignedToken := Manager.Value.SignTokenAndReturn(Token);

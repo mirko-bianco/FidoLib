@@ -13,6 +13,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Types,
   Fido.Testing.Mock.Utils,
   Fido.JSON.Mapping,
   Fido.JSON.Marshalling;
@@ -189,6 +190,9 @@ type
 
     [Test]
     procedure JSONMarshallingFromInterfaceReadonlyList;
+
+    [Test]
+    procedure JSONMarshallingFromRecord;
 
     [Test]
     procedure TestCustomConfigurations;
@@ -477,6 +481,15 @@ begin
   Obj.Value.Id := 100;
 
   Assert.AreEqual('{"Id":100,"Name":null}', JSONMarshaller.From<TMyObject>(Obj));
+end;
+
+procedure TJSONMarshallingTests.JSONMarshallingFromRecord;
+var
+  Result: TResult<Integer>;
+begin
+  Result := TResult<Integer>.Create(False, 'There was an error', 100);
+
+  Assert.AreEqual('{"ErrorMessage":"There was an error","Success":false,"Value":100}', JSONMarshaller.&From<TResult<Integer>>(Result));
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToObject;

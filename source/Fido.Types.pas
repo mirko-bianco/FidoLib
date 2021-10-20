@@ -64,19 +64,20 @@ type
     property Precision: Integer read FPrecision;
   end;
 
+  {$M+}
   TResult = record
   strict private
     FSuccess: string;//use records types initialised by compiler.
     FErrorMessage: string;
-    function GetSuccess: Boolean;
+
     procedure SetSuccess(Value: Boolean);
   public
     constructor Create(const Success: Boolean; const ErrorMessage: string);
     class function CreateSuccess: TResult; static;
     constructor CreateFailure(const ErrorMessage: string);
 
-    property Success: Boolean read GetSuccess;
-    property ErrorMessage: string read FErrorMessage;
+    function Success: Boolean;
+    function ErrorMessage: string;
   end;
 
   TResult<T> = record
@@ -84,9 +85,6 @@ type
     FResult: TResult;
     FValue: T;
 
-    function GetErrorMessage: string;
-    function GetSuccess: Boolean;
-    function GetValue: T;
   public
     constructor Create(const Success: Boolean; const ErrorMessage: string; Value: T); overload;
     constructor Create(const Result: TResult; Value: T); overload;
@@ -95,10 +93,11 @@ type
 
     class operator Implicit(const value: TResult<T>): TResult; inline;
 
-    property Success: Boolean read GetSuccess;
-    property ErrorMessage: string read GetErrorMessage;
-    property Value: T read GetValue;
+    function ErrorMessage: string;
+    function Success: Boolean;
+    function Value: T;
   end;
+  {$M-}
 
   // left outside TVirtualStatement class since Delphi dies when trying to create dictionary of it
   // unless using fully-qualified name, which is a nightmare (TVirtualInterface<T>.TParamDescriptor)
@@ -176,7 +175,7 @@ begin
   FErrorMessage := ErrorMessage;
 end;
 
-function TResult.GetSuccess: Boolean;
+function TResult.Success: Boolean;
 begin
   Result := FSuccess <> '';
 end;
@@ -199,6 +198,11 @@ class function TResult.CreateSuccess: TResult;
 begin
   Result.FSuccess := 'Y';
   Result.FErrorMessage := '';
+end;
+
+function TResult.ErrorMessage: string;
+begin
+  Result := FErrorMessage;
 end;
 
 { TResult<T> }
@@ -232,17 +236,17 @@ begin
   Create(TResult.Create(False, ErrorMessage), Default(T));
 end;
 
-function TResult<T>.GetErrorMessage: string;
+function TResult<T>.ErrorMessage: string;
 begin
   Result := Self.FResult.ErrorMessage;
 end;
 
-function TResult<T>.GetSuccess: Boolean;
+function TResult<T>.Success: Boolean;
 begin
   Result := Self.FResult.Success;
 end;
 
-function TResult<T>.GetValue: T;
+function TResult<T>.Value: T;
 begin
   Result := Self.FValue;
 end;

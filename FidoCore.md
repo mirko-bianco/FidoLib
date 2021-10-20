@@ -73,6 +73,12 @@ The following types are supported:
 
   Any published one-parameter method and writeable property is unmarshalled.
 
+- Records (only marshalling) 
+
+  Any public field is marshalled.
+
+  Any public parameter-less function and readable property is marshalled.
+
 - Interfaces (any descendent of `IInterface`). 
 
   Any public parameter-less function and readable property is marshalled.
@@ -80,6 +86,7 @@ The following types are supported:
   Any public one-parameter method and writeable property is unmarshalled.
 
 - Lists of primitives (`Spring.Collections.IReadonlyList<T>` where T is one of the supported Primitives).
+
 - Lists of interfaces (`Spring.Collections.IReadonlyList<T: IInterface>` ).
 
 ##### Virtual JSON implementation of interfaces

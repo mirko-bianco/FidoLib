@@ -46,17 +46,19 @@ type
     FRestName: string;
     FType: TMethodParameterType;
     FClassType: TClass;
+    FIsInterface: Boolean;
     FTypeInfo: PTypeInfo;
     FIsNullable: Boolean;
     FTypeQualifiedName: string;
   public
-    constructor Create(const IsOut: Boolean; const Name: string; const RestName: string; const ClassType: TClass; const &Type: TMethodParameterType; const TypeInfo: PTypeInfo;
+    constructor Create(const IsOut: Boolean; const Name: string; const RestName: string; const ClassType: TClass; const IsInterface: Boolean; const &Type: TMethodParameterType; const TypeInfo: PTypeInfo;
       const IsNullable: Boolean; const TypeQualifiedName: string);
 
     property IsOut: Boolean read FIsOut;
     property Name: string read FName;
     property RestName: string read FRestName;
     property ClassType: TClass read FClassType;
+    property IsInterface: Boolean read FIsInterface;
     property &Type: TMethodParameterType read FType;
     property TypeInfo: PTypeInfo read FTypeInfo;
     property IsNullable: Boolean read FIsNullable;
@@ -142,6 +144,7 @@ constructor TEndPointParameter.Create(
   const Name: string;
   const RestName: string;
   const ClassType: TClass;
+  const IsInterface: Boolean;
   const &Type: TMethodParameterType;
   const TypeInfo: PTypeInfo;
   const IsNullable: Boolean;
@@ -151,6 +154,7 @@ begin
   FName := Name;
   FRestName := RestName;
   FClassType := ClassType;
+  FIsInterface := IsInterface;
   FType := &Type;
   FTypeInfo := TypeInfo;
   FIsNullable := IsNullable;

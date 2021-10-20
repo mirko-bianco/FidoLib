@@ -43,10 +43,11 @@ type
   TJWTManager = class(TInterfacedObject, IJWTManager)
   private
     FSecret: TJOSEBytes;
+    FAlgorithm: TJOSEAlgorithmId;
     FIssuer: string;
     FDefaultValidityInSecs: Integer;
   public
-    constructor Create(const Secret: TJOSEBytes; const Issuer: string; const DefaultValidityInSecs: Integer);
+    constructor Create(const Secret: TJOSEBytes; const Algorithm: TJOSEAlgorithmId; const Issuer: string; const DefaultValidityInSecs: Integer);
 
     function TryVerifyToken(const CompactToken: string; out Token: TJWT): Boolean;
     function GenerateToken: TJWT;
@@ -60,12 +61,14 @@ implementation
 
 constructor TJWTManager.Create(
   const Secret: TJOSEBytes;
+  const Algorithm: TJOSEAlgorithmId;
   const Issuer: string;
   const DefaultValidityInSecs: Integer);
 begin
   inherited Create;
 
   FSecret := Secret;
+  FAlgorithm := Algorithm;
   FIssuer := Issuer;
   FDefaultValidityInSecs := DefaultValidityInSecs;
 end;
@@ -107,7 +110,7 @@ begin
   Signer := TJWS.Create(Token);
   Key := TJWK.Create(FSecret);
   Signer.Value.SkipKeyValidation := True;
-  Signer.Value.Sign(Key, TJOSEAlgorithmId.HS256);
+  Signer.Value.Sign(Key, FAlgorithm);
   Signer.Value.VerifySignature;
 
   Result := Signer.Value.CompactToken;
