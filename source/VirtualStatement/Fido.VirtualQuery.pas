@@ -489,9 +489,13 @@ begin
 end;
 
 procedure TVirtualQuery<TRecord, T>.SetEnumeratorValue(out Result: TValue);
+var
+  LiveList: IReadonlyList<TRecord>;
 begin
   TestDatasetOpen('SetEnumeratorValue');
-  FList := TDataSetAsReadonlyList<TRecord>.Create(FDataset);
+  LiveList := TDataSetAsReadonlyList<TRecord>.Create(FDataset);
+
+  FList := TCollections.CreateList<TRecord>(LiveList.ToArray).AsReadOnlyList;
   Result := TValue.From<IReadOnlyList<TRecord>>(FList.Target);
 end;
 

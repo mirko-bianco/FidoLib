@@ -32,10 +32,12 @@ type
 
   TJSONUnQuotedString = class(TJSONString)
   public
+    {$IFNDEF DELPHIX_SYDNEY_UP}
     function EstimatedByteSize: Integer; override;
-    {$IFNDEF DELPHIX_RIO_UP}
     function ToBytes(const Data: TArray<Byte>; const Idx: Integer): Integer; override;
-    {$ELSEIF DELPHIX_RIO_UP}
+    {$ENDIF}
+    {$IFDEF DELPHIX_SYDNEY_UP}
+    function EstimatedByteSize: Integer; override;
     function ToBytes(const Data: TArray<Byte>; Offset: Integer): Integer; override;
     procedure ToChars(Builder: TStringBuilder; Options: TJSONAncestor.TJSONOutputOptions); override;
     {$ENDIF}
@@ -68,15 +70,7 @@ end;
 
 { TJSONUnQuotedString }
 
-function TJSONUnQuotedString.EstimatedByteSize: Integer;
-begin
-  if FIsNull then
-    Result := 4
-  else
-    Result := 6 * System.Length(FValue);
-end;
-
-{$IFNDEF DELPHIX_RIO_UP}
+{$IFNDEF DELPHIX_SYDNEY_UP}
 function TJSONUnQuotedString.EstimatedByteSize: Integer;
 begin
   if IsNull then
@@ -167,7 +161,16 @@ begin
   end;
   Result := Offset;
 end;
-{$ELSEIF DELPHIX_RIO_UP}
+{$ENDIF}
+{$IFDEF DELPHIX_SYDNEY_UP}
+function TJSONUnQuotedString.EstimatedByteSize: Integer;
+begin
+  if FIsNull then
+    Result := 4
+  else
+    Result := 6 * System.Length(FValue);
+end;
+
 function TJSONUnQuotedString.ToBytes(
   const Data: TArray<Byte>;
   Offset: Integer): Integer;

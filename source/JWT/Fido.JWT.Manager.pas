@@ -41,46 +41,27 @@ uses
 
 type
   TJWTManager = class(TInterfacedObject, IJWTManager)
-  private
-    FSecret: TJOSEBytes;
-    FAlgorithm: TJOSEAlgorithmId;
-    FIssuer: string;
-    FDefaultValidityInSecs: Integer;
   public
-    constructor Create(const Secret: TJOSEBytes; const Algorithm: TJOSEAlgorithmId; const Issuer: string; const DefaultValidityInSecs: Integer);
+    function TryVerifyToken(const CompactToken: string; const Secret: TJOSEBytes; out Token: TJWT): Boolean;
 
-    function TryVerifyToken(const CompactToken: string; out Token: TJWT): Boolean;
-    function GenerateToken: TJWT;
-    function SignTokenAndReturn(const Token: TJWT): string;
-    function ValidityInSecs: Integer;
+    function GenerateToken(const Issuer: string; const DefaultValidityInSecs: Integer): TJWT;
+
+    function SignTokenAndReturn(const Token: TJWT; const Algorithm: TJOSEAlgorithmId; const SigningSecret: TJOSEBytes; const VerificationSecret: TJOSEBytes): string;
   end;
 
 implementation
 
 { TJWTManager }
 
-constructor TJWTManager.Create(
-  const Secret: TJOSEBytes;
-  const Algorithm: TJOSEAlgorithmId;
-  const Issuer: string;
-  const DefaultValidityInSecs: Integer);
-begin
-  inherited Create;
-
-  FSecret := Secret;
-  FAlgorithm := Algorithm;
-  FIssuer := Issuer;
-  FDefaultValidityInSecs := DefaultValidityInSecs;
-end;
-
 function TJWTManager.TryVerifyToken(
   const CompactToken: string;
+  const Secret: TJOSEBytes;
   out Token: TJWT): Boolean;
 var
   Key: Shared<TJWK>;
 begin
   Result := False;
-  Key := TJWK.Create(FSecret);
+  Key := TJWK.Create(Secret);
   try
     Token := TJOSE.Verify(Key.Value, CompactToken);
     Result := Token.Verified;
@@ -89,29 +70,38 @@ begin
   end;
 end;
 
-function TJWTManager.ValidityInSecs: Integer;
-begin
-  Result := FDefaultValidityInSecs;
-end;
-
-function TJWTManager.GenerateToken: TJWT;
+function TJWTManager.GenerateToken(
+  const Issuer: string;
+  const DefaultValidityInSecs: Integer): TJWT;
 begin
   Result := TJWT.Create;
-  Result.Claims.Issuer := FIssuer;
+  Result.Claims.Issuer := Issuer;
   Result.Claims.IssuedAt := Now;
-  Result.Claims.Expiration := Result.Claims.IssuedAt + (FDefaultValidityInSecs / 60 / 60 / 24);
+  Result.Claims.Expiration := Result.Claims.IssuedAt + (DefaultValidityInSecs / 60 / 60 / 24);
 end;
 
-function TJWTManager.SignTokenAndReturn(const Token: TJWT): string;
+function TJWTManager.SignTokenAndReturn(
+  const Token: TJWT;
+  const Algorithm: TJOSEAlgorithmId;
+  const SigningSecret: TJOSEBytes;
+  const VerificationSecret: TJOSEBytes): string;
 var
   Signer: Shared<TJWS>;
-  Key: Shared<TJWK>;
+  SigningKey: Shared<TJWK>;
+  VerificationKey: Shared<TJWK>;
 begin
   Signer := TJWS.Create(Token);
-  Key := TJWK.Create(FSecret);
-  Signer.Value.SkipKeyValidation := True;
-  Signer.Value.Sign(Key, FAlgorithm);
-  Signer.Value.VerifySignature;
+  SigningKey := TJWK.Create(SigningSecret);
+
+  Signer.Value.SkipKeyValidation := False;
+  Signer.Value.Sign(SigningKey, Algorithm);
+
+  if VerificationSecret <> '' then
+    VerificationKey := TJWK.Create(VerificationSecret)
+  else
+    VerificationKey := TJWK.Create(SigningSecret);
+
+  Signer.Value.VerifySignature(VerificationKey, Signer.Value.CompactToken);
 
   Result := Signer.Value.CompactToken;
 end;
