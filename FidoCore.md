@@ -73,11 +73,11 @@ The following types are supported:
 
   Any published one-parameter method and writeable property is unmarshalled.
 
-- Records (only marshalling) 
+- Records (other than `Spring.Nullable<T>` )
 
-  Any public field is marshalled.
+  Any public field, public parameter-less function and readable property is marshalled.
 
-  Any public parameter-less function and readable property is marshalled.
+  Any public field, public parameter-less function and readable property is unmarshalled.
 
 - Interfaces (any descendent of `IInterface`). 
 

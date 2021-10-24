@@ -31,6 +31,11 @@ type
     property Name: Nullable<string> read FName write FName;
   end;
 
+  TMyRecord = record
+    Id: integer;
+    Name: Nullable<string>;
+  end;
+
   ISinger = interface(IInvokable)
     ['{DC5320BB-1338-4745-B958-8A0BBD74DAB5}']
     function Id: Integer;
@@ -193,6 +198,9 @@ type
 
     [Test]
     procedure JSONMarshallingFromRecord;
+
+    [Test]
+    procedure JSONUnmarshallingToRecord;
 
     [Test]
     procedure TestCustomConfigurations;
@@ -499,6 +507,16 @@ begin
   Obj := JSONUnmarshaller.&To<TMyObject>('{"Id":1}');
   Assert.AreEqual(1, Obj.Value.Id);
   Assert.AreEqual(False, Obj.Value.Name.HasValue);
+end;
+
+procedure TJSONMarshallingTests.JSONUnmarshallingToRecord;
+var
+  Rec: TMyRecord;
+begin
+  Rec := JSONUnmarshaller.&To<TMyRecord>('{"Id": 100, "Name": null}');
+
+  Assert.AreEqual(100, Rec.Id);
+  Assert.AreEqual(False, Rec.Name.HasValue);
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToSmallint;

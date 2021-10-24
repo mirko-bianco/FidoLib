@@ -98,6 +98,7 @@ type
     class function ToInterface(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): IInterface; overload; static;
     class function ToInterfaceAsValue(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
     class function ToObject(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
+    class function ToRecord(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
     class function ToReadonlyList(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
     class function ToPrimitive(const Value: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; static;
     class function ToEnumeration(const Value: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; static;
@@ -395,6 +396,54 @@ begin
   Result := CreateReadonlyListAsValue(ElementTypeInfo, ValuesArray, ConfigurationName);
 end;
 
+class function JSONUnmarshaller.ToRecord(
+  const JSONString: string;
+  const TypeInfo: PTypeInfo;
+  const ConfigurationName: string): TValue;
+var
+  RttiContext: TRttiContext;
+  RttiType: TRttiType;
+  Prop: TRttiProperty;
+  Method: TRttiMethod;
+  Field: TRttiField;
+  Param: TValue;
+  JSONObject: Shared<TJSONObject>;
+  Value: TValue;
+begin
+  JSONObject := TJSONObject.ParseJSONValue(JSONString) as TJSONObject;
+  TValue.Make(nil, TypeInfo, Value);
+
+  RttiContext := TRttiContext.Create;
+  RttiType := RttiContext.GetType(TypeInfo);
+  with JSONObject.Value.GetEnumerator do
+  begin
+    while MoveNext do
+    begin
+      Prop := RttiType.GetProperty(GetCurrent.JsonString.Value);
+      if Assigned(Prop) and Prop.IsWritable then
+        Prop.SetValue(Value.GetReferenceToRawData, JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Prop.PropertyType.Handle, ConfigurationName))
+      else
+      begin
+        Method := RttiType.GetMethod(Format('Set%s', [GetCurrent.JsonString.Value]));
+        if Assigned(Method) and (Method.MethodKind = mkProcedure) and (Length(Method.GetParameters) = 1) then
+        begin
+          Param := JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Method.GetParameters[0].ParamType.Handle, ConfigurationName);
+          Method.Invoke(Value, [Param]);
+        end
+        else
+        begin
+          Field := RttiType.GetField(GetCurrent.JsonString.Value);
+          if Assigned(Field) then
+            Field.SetValue(Value.GetReferenceToRawData, JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Field.FieldType.Handle, ConfigurationName));
+        end;
+      end;
+    end;
+    Free;
+  end;
+
+  Result := Value;
+end;
+
 class function JSONUnmarshaller.ToInterfaceAsValue(
   const JSONString: string;
   const TypeInfo: PTypeInfo;
@@ -492,7 +541,8 @@ begin
          string(TypeInfo.Name).ToLower.Equals(GuidName)then
         Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName)
       else
-        raise EJSONUnmarshaller.CreateFmt('JSONUnmarshaller.To<T> does not support type "%s"', [RttiType.QualifiedName]);
+        Result := JSONUnmarshaller.ToRecord(JSONString, RttiType.Handle, ConfigurationName);
+//        raise EJSONUnmarshaller.CreateFmt('JSONUnmarshaller.To<T> does not support type "%s"', [RttiType.QualifiedName]);
     end;
   end;
 end;
@@ -867,7 +917,7 @@ begin
         ReturnValue: TValue;
         MarshalledValue: TJSONValue;
       begin
-        ReturnValue := Prop.GetValue(LValue.AsPointer);
+        ReturnValue := Prop.GetValue(LValue.GetReferenceToRawData);
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
@@ -888,7 +938,7 @@ begin
         ReturnValue: TValue;
         MarshalledValue: TJSONValue;
       begin
-        ReturnValue := Field.GetValue(LValue.AsPointer);
+        ReturnValue := Field.GetValue(LValue.GetReferenceToRawData);
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Field.FieldType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
