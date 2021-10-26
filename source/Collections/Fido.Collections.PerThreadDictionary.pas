@@ -109,7 +109,8 @@ begin
     FItems.Keys.ForEach(
       procedure(const Id: TThreadId)
       begin
-        if not LiveThreads.Contains(Id) then
+        if not LiveThreads.Contains(Id) and
+           (Id <> Integer(MainThreadID)) then
           GarbageThreads.Add(Id);
       end);
 
