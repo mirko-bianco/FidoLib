@@ -35,7 +35,7 @@ object SongView: TSongView
     Height = 25
     Action = actClose
     Anchors = [akRight, akBottom]
-    Caption = 'Close'
+    Caption = 'Save'
     Kind = bkOK
     NumGlyphs = 2
     TabOrder = 1
