@@ -47,6 +47,7 @@ begin
   begin
     try
       Proc();
+      Exit;
     except
       on E: Exception do
       begin
@@ -70,6 +71,7 @@ begin
   begin
     try
       Result := Func();
+      Exit;
     except
       on E: Exception do
       begin
