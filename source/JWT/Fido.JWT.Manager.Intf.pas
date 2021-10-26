@@ -33,7 +33,7 @@ type
   IJWTManager = interface(IInvokable)
     ['{9D78F47A-99D9-49D6-9E14-732980F1D54B}']
 
-    function TryVerifyToken(const CompactToken: string; const Secret: TJOSEBytes; out Token: TJWT): Boolean;
+    function VerifyToken(const CompactToken: string; const Secret: TJOSEBytes): TJWT;
 
     function GenerateToken(const Issuer: string; const DefaultValidityInSecs: Integer): TJWT;
 

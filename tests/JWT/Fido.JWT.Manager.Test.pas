@@ -41,13 +41,11 @@ var
   Manager: Shared<TJWTManager>;
   Issuer: string;
   VerifiedToken: TJWT;
-  Check: Boolean;
 begin
   Issuer := MockUtils.SomeString;
 
-  Check := Manager.Value.TryVerifyToken(MockUtils.SomeString, MockUtils.SomeString, VerifiedToken);
+  VerifiedToken := Manager.Value.VerifyToken(MockUtils.SomeString, MockUtils.SomeString);
 
-  Assert.IsFalse(Check);
   Assert.IsNull(VerifiedToken);
 end;
 
@@ -105,7 +103,6 @@ var
   Issuer: string;
   SignedToken: string;
   VerifiedToken: TJWT;
-  Check: Boolean;
   Secret: string;
 begin
   Duration := MockUtils.SomeInteger;
@@ -116,10 +113,10 @@ begin
   Secret := MockUtils.SomeString;
   SignedToken := Manager.Value.SignTokenAndReturn(Token, TJOSEAlgorithmId.HS256, Secret, Secret);
 
-  Check := Manager.Value.TryVerifyToken(SignedToken, Secret, VerifiedToken);
+  VerifiedToken := Manager.Value.VerifyToken(SignedToken, Secret);
   try
 
-    Assert.IsTrue(Check);
+    Assert.IsNotNull(VerifiedToken);
     Assert.AreEqual(Token.Value.Verified, VerifiedToken.Verified);
     Assert.AreEqual(Token.Value.Claims.JSON.ToJSON, VerifiedToken.Claims.JSON.ToJSON);
 

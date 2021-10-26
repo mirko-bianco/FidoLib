@@ -42,7 +42,7 @@ uses
 type
   TJWTManager = class(TInterfacedObject, IJWTManager)
   public
-    function TryVerifyToken(const CompactToken: string; const Secret: TJOSEBytes; out Token: TJWT): Boolean;
+    function VerifyToken(const CompactToken: string; const Secret: TJOSEBytes): TJWT;
 
     function GenerateToken(const Issuer: string; const DefaultValidityInSecs: Integer): TJWT;
 
@@ -53,20 +53,20 @@ implementation
 
 { TJWTManager }
 
-function TJWTManager.TryVerifyToken(
+function TJWTManager.VerifyToken(
   const CompactToken: string;
-  const Secret: TJOSEBytes;
-  out Token: TJWT): Boolean;
+  const Secret: TJOSEBytes): TJWT;
 var
   Key: Shared<TJWK>;
+  Token: TJWT;
 begin
-  Result := False;
+  Result := nil;
   Key := TJWK.Create(Secret);
   try
     Token := TJOSE.Verify(Key.Value, CompactToken);
-    Result := Token.Verified;
+    if Token.Verified then
+      Result := Token;
   except
-    Token := nil;
   end;
 end;
 
