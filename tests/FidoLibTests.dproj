@@ -188,6 +188,7 @@
         <DCCReference Include="JWT\Fido.JWT.Manager.Test.pas"/>
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test.pas"/>
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas"/>
+        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Retries.Test.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -162,7 +162,8 @@ contains
   Fido.Db.DatasetFieldAttributes.Intf in 'Db\Fido.Db.DatasetFieldAttributes.Intf.pas',
   Fido.Db.DatasetFieldAttributes in 'Db\Fido.Db.DatasetFieldAttributes.pas',
   Fido.Immutable in 'Fido.Immutable.pas',
-  Fido.Web.Server.Null in 'Web\Server\Fido.Web.Server.Null.pas';
+  Fido.Web.Server.Null in 'Web\Server\Fido.Web.Server.Null.pas',
+  Fido.DesignPatterns.Retries in 'DesignPatterns\Fido.DesignPatterns.Retries.pas';
 
 end.
 

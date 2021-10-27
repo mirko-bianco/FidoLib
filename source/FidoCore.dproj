@@ -216,6 +216,7 @@
         <DCCReference Include="Db\Fido.Db.DatasetFieldAttributes.pas"/>
         <DCCReference Include="Fido.Immutable.pas"/>
         <DCCReference Include="Web\Server\Fido.Web.Server.Null.pas"/>
+        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Retries.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
