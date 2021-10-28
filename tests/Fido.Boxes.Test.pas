@@ -3,6 +3,7 @@ unit Fido.Boxes.Test;
 interface
 
 uses
+  System.Classes,
   System.SysUtils,
   System.Threading,
   DUnitX.TestFramework,
