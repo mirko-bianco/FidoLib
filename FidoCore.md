@@ -8,6 +8,7 @@ Below a list of the most important features:
 - [Virtual database features](#virtual-database-features)
 - [Client virtual Apis](#client-virtual-apis)
 - [Server virtual Apis](#server-virtual-apis)
+- [Boxes](#boxes)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -1012,3 +1013,51 @@ Example:
 ```pascal
   [ResponseMiddleware('Last decorator')]
 ```
+
+
+
+### Boxes
+
+Unit `Fido.Boxes`.
+
+Boxes are, well, boxes...
+
+Did you ever need to share a state between two or more pieces of code (possibly over different threads)?
+
+ You can achieve that in FidoLib using `IBox<T>` and `IReadonlyBox<T>`.
+
+##### Usage
+
+```pascal
+procedure Example;
+var
+  Box: IBox<Boolean>;
+  ROBox: IReadonlyBox<Boolean>;
+  Updater: TBoxUpdater<Boolean>;
+begin
+  Box := Box<Boolean>.Setup(True);
+
+  TTask.Run(
+    procedure
+    begin
+      WriteLn(Box.Value); // This would be True
+      Box.UpdateValue(False);
+    end).Wait;
+
+  WriteLn(Box.Value); //This would be False;
+
+  Box := Box<Boolean>.Setup(True, Updater);
+
+  TTask.Run(
+    procedure
+    begin
+      WriteLn(Box.Value); // This would be True
+      Updater(False);
+    end).Wait;
+
+  WriteLn(Box.Value); //This would be False;
+end;
+
+```
+
+#### 

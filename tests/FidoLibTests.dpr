@@ -34,7 +34,8 @@ uses
   Fido.JWT.Manager.Test in 'JWT\Fido.JWT.Manager.Test.pas',
   Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test.pas',
   Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas',
-  Fido.DesignPatterns.Retries.Test in 'DesignPatterns\Fido.DesignPatterns.Retries.Test.pas';
+  Fido.DesignPatterns.Retries.Test in 'DesignPatterns\Fido.DesignPatterns.Retries.Test.pas',
+  Fido.Boxes.Test in 'Fido.Boxes.Test.pas';
 
 var
   runner : ITestRunner;
