@@ -107,7 +107,6 @@ end;
 
 procedure TRetriesTests.RunProcCallsProcOnceWhenThereIsNoFailure;
 var
-  Result: Boolean;
   Count: Integer;
 begin
   Count := 0;
@@ -127,7 +126,6 @@ end;
 
 procedure TRetriesTests.RunProcDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
 var
-  Result: Boolean;
   Count: Integer;
 begin
   Count := 0;
@@ -147,7 +145,6 @@ end;
 
 procedure TRetriesTests.RunProcRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
 var
-  Result: Boolean;
   Count: Integer;
 begin
   Count := 0;
