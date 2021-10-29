@@ -542,7 +542,6 @@ begin
         Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName)
       else
         Result := JSONUnmarshaller.ToRecord(JSONString, RttiType.Handle, ConfigurationName);
-//        raise EJSONUnmarshaller.CreateFmt('JSONUnmarshaller.To<T> does not support type "%s"', [RttiType.QualifiedName]);
     end;
   end;
 end;
