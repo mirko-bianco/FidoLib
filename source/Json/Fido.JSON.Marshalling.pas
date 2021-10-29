@@ -51,22 +51,22 @@ uses
   Fido.VirtualDto.Abstract;
 
 type
-  TJSONDTOMethodDescriptor = class
-    OriginalName: string;     // original name of method
-    MappedName: string;       // mapped name of column or parameter of a method itself (not its pareameters)
-    Converter: TDataTypeDescriptor;
-    Category: TMethodCategory;
-    IsInterface: Boolean;
-    IsEnumeration: Boolean;
-    TypeInfo: PTypeInfo;
-    Value: TValue;
-
-    function IsArray: Boolean;
-  end;
-
   EJSONVirtualDto = class(EFidoException);
 
   TJSONVirtualDto = class(TVirtualInterface)
+  strict private type
+    TJSONDTOMethodDescriptor = class
+      OriginalName: string;     // original name of method
+      MappedName: string;       // mapped name of column or parameter of a method itself (not its pareameters)
+      Converter: TDataTypeDescriptor;
+      Category: TMethodCategory;
+      IsInterface: Boolean;
+      IsEnumeration: Boolean;
+      TypeInfo: PTypeInfo;
+      Value: TValue;
+
+      function IsArray: Boolean;
+    end;
   strict private const
     GetterPrefix = 'GET';
   strict private
@@ -98,6 +98,7 @@ type
     class function ToInterface(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): IInterface; overload; static;
     class function ToInterfaceAsValue(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
     class function ToObject(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
+    class function ToRecord(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
     class function ToReadonlyList(const JSONString: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; overload; static;
     class function ToPrimitive(const Value: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; static;
     class function ToEnumeration(const Value: string; const TypeInfo: PTypeInfo; const ConfigurationName: string): TValue; static;
@@ -110,6 +111,7 @@ type
 
   JSONMarshaller = class
   strict private
+    class function FromRecord(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string): Nullable<string>; static;
     class function FromObject(const Value: TObject; const TypInfo: PTypeInfo; const ConfigurationName: string): Nullable<string>; static;
     class function FromInterface(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string): Nullable<string>; static;
     class function FromPrimitive(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string): Nullable<string>; static;
@@ -124,7 +126,7 @@ type
 
 const
   ArrayInterfaceName = 'spring.collections.ireadonlylist<';
-  NullableName = 'spring.nullable';
+  NullableName = 'nullable';
   StringName = 'system.string';
   Int64Name = 'system.int64';
   IntegerName = 'system.integer';
@@ -133,7 +135,7 @@ const
   ExtendedName = 'system.extended';
   CurrencyName = 'system.currency';
   BooleanName = 'system.boolean';
-  GuidName = 'system.tguid';
+  GuidName = 'tguid';
   SmallintName = 'system.smallint';
 
 implementation
@@ -153,8 +155,6 @@ procedure TJSONVirtualDto.CacheColumns(
   const JSONObject: TJSONObject;
   const ConfigurationName: string);
 var
-//  D: TPair<string, TJSONDTOMethodDescriptor>;
-
   LJSONObject: Shared<TJSONObject>;
 begin
   LJSONObject := TJSONObject.Create;
@@ -396,6 +396,54 @@ begin
   Result := CreateReadonlyListAsValue(ElementTypeInfo, ValuesArray, ConfigurationName);
 end;
 
+class function JSONUnmarshaller.ToRecord(
+  const JSONString: string;
+  const TypeInfo: PTypeInfo;
+  const ConfigurationName: string): TValue;
+var
+  RttiContext: TRttiContext;
+  RttiType: TRttiType;
+  Prop: TRttiProperty;
+  Method: TRttiMethod;
+  Field: TRttiField;
+  Param: TValue;
+  JSONObject: Shared<TJSONObject>;
+  Value: TValue;
+begin
+  JSONObject := TJSONObject.ParseJSONValue(JSONString) as TJSONObject;
+  TValue.Make(nil, TypeInfo, Value);
+
+  RttiContext := TRttiContext.Create;
+  RttiType := RttiContext.GetType(TypeInfo);
+  with JSONObject.Value.GetEnumerator do
+  begin
+    while MoveNext do
+    begin
+      Prop := RttiType.GetProperty(GetCurrent.JsonString.Value);
+      if Assigned(Prop) and Prop.IsWritable then
+        Prop.SetValue(Value.GetReferenceToRawData, JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Prop.PropertyType.Handle, ConfigurationName))
+      else
+      begin
+        Method := RttiType.GetMethod(Format('Set%s', [GetCurrent.JsonString.Value]));
+        if Assigned(Method) and (Method.MethodKind = mkProcedure) and (Length(Method.GetParameters) = 1) then
+        begin
+          Param := JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Method.GetParameters[0].ParamType.Handle, ConfigurationName);
+          Method.Invoke(Value, [Param]);
+        end
+        else
+        begin
+          Field := RttiType.GetField(GetCurrent.JsonString.Value);
+          if Assigned(Field) then
+            Field.SetValue(Value.GetReferenceToRawData, JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Field.FieldType.Handle, ConfigurationName));
+        end;
+      end;
+    end;
+    Free;
+  end;
+
+  Result := Value;
+end;
+
 class function JSONUnmarshaller.ToInterfaceAsValue(
   const JSONString: string;
   const TypeInfo: PTypeInfo;
@@ -489,11 +537,11 @@ begin
     tkInt64: Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName);
 
     tkRecord: begin
-      if RttiType.QualifiedName.ToLower.StartsWith(NullableName) or
-         RttiType.QualifiedName.ToLower.Equals(GuidName)then
+      if string(TypeInfo.Name).ToLower.StartsWith(NullableName) or
+         string(TypeInfo.Name).ToLower.Equals(GuidName)then
         Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName)
       else
-        raise EJSONUnmarshaller.CreateFmt('JSONUnmarshaller.To<T> does not support type "%s"', [RttiType.QualifiedName]);
+        Result := JSONUnmarshaller.ToRecord(JSONString, RttiType.Handle, ConfigurationName);
     end;
   end;
 end;
@@ -592,7 +640,7 @@ begin
         Method := RttiType.GetMethod(Format('Set%s', [GetCurrent.JsonString.Value]));
         if Assigned(Method) and (Method.MethodKind = mkProcedure) and (Length(Method.GetParameters) = 1) then
         begin
-          Param := JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Prop.PropertyType.Handle, ConfigurationName);
+          Param := JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Method.GetParameters[0].ParamType.Handle, ConfigurationName);
           Method.Invoke(Result.AsObject, [Param]);
         end;
       end;
@@ -631,11 +679,14 @@ var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
   JSONObject: Shared<TJSONObject>;
+  LValue: TValue;
 begin
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypInfo);
 
   JSONObject := TJSONObject.Create;
+
+  LValue := Value;
 
   TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
     .Where(function(const Method: TRttiMethod): Boolean
@@ -647,7 +698,7 @@ begin
         ReturnValue: TValue;
         MarshalledValue: TJSONValue;
       begin
-        ReturnValue := Method.Invoke(Value, []);
+        ReturnValue := Method.Invoke(LValue, []);
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
@@ -668,7 +719,7 @@ begin
         ReturnValue: TValue;
         MarshalledValue: TJSONValue;
       begin
-        ReturnValue := Prop.GetValue(Value.AsInterface);
+        ReturnValue := Prop.GetValue(LValue.AsInterface);
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
@@ -786,12 +837,14 @@ class function JSONMarshaller.FromReadonlyListOfInterfaces(
   const ConfigurationName: string): string;
 var
   JsonArray: Shared<TJSONArray>;
-  Item: TValue;
+  Enum: IEnumerable;
 begin
   JsonArray := TJSONArray.Create;
 
-  for Item in Value.Convert(TypInfo).AsType<IEnumerable> do
-    JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromInterface(Item, ElementTypeInfo, ConfigurationName)));
+  Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
+  with Enum.GetEnumerator do
+    while MoveNext do
+      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromInterface(Current, ElementTypeInfo, ConfigurationName)));
 
   Result := JsonArray.Value.ToJSON;
 end;
@@ -803,16 +856,99 @@ class function JSONMarshaller.FromReadonlyListOfPrimitives(
   const ConfigurationName: string): string;
 var
   JsonArray: Shared<TJSONArray>;
-  Intf: IReadonlyList;
+  Enum: IEnumerable;
 begin
   JsonArray := TJSONArray.Create;
 
-  if Supports(Value.Convert(TypInfo).AsInterface, GetTypeData(TypInfo).GUID, Intf) then
-    with Intf.GetEnumerator do
-      while MoveNext do
-        JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromPrimitive(Current, ElementTypeInfo, ConfigurationName)));
+  Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
+  with Enum.GetEnumerator do
+    while MoveNext do
+      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromPrimitive(Current, ElementTypeInfo, ConfigurationName)));
 
   Result := JsonArray.Value.ToJSON;
+end;
+
+class function JSONMarshaller.FromRecord(
+  const Value: TValue;
+  const TypInfo: PTypeInfo;
+  const ConfigurationName: string): Nullable<string>;
+var
+  RttiContext: TRttiContext;
+  RttiType: TRttiType;
+  JSONObject: Shared<TJSONObject>;
+  LValue: TValue;
+begin
+  RttiContext := TRttiContext.Create;
+  RttiType := RttiContext.GetType(TypInfo);
+
+  JSONObject := TJSONObject.Create;
+
+  LValue := Value;
+
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+    .Where(function(const Method: TRttiMethod): Boolean
+      begin
+        Result := (Method.Visibility in [mvPublic]) and (Method.MethodKind = mkFunction) and (Length(Method.GetParameters) = 0);
+      end)
+    .ForEach(procedure(const Method: TRttiMethod)
+      var
+        ReturnValue: TValue;
+        MarshalledValue: TJSONValue;
+      begin
+        ReturnValue := Method.Invoke(LValue, []);
+        try
+          MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
+          if Assigned(MarshalledValue) then
+            JSONObject.Value.AddPair(Method.Name, MarshalledValue)
+          else
+            JSONObject.Value.AddPair(Method.Name, TJSONNull.Create);
+        except
+        end;
+      end);
+
+  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+    .Where(function(const Prop: TRttiProperty): Boolean
+      begin
+        Result := (Prop.Visibility in [mvPublic]) and Prop.IsReadable;
+      end)
+    .ForEach(procedure(const Prop: TRttiProperty)
+      var
+        ReturnValue: TValue;
+        MarshalledValue: TJSONValue;
+      begin
+        ReturnValue := Prop.GetValue(LValue.GetReferenceToRawData);
+        try
+          MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
+          if Assigned(MarshalledValue) then
+            JSONObject.Value.AddPair(Prop.Name, MarshalledValue)
+          else
+            JSONObject.Value.AddPair(Prop.Name, TJSONNull.Create);
+        except
+        end;
+      end);
+
+  TCollections.CreateList<TRttiField>(RttiType.GetFields)
+    .Where(function(const Field: TRttiField): Boolean
+      begin
+        Result := (Field.Visibility in [mvPublic]);
+      end)
+    .ForEach(procedure(const Field: TRttiField)
+      var
+        ReturnValue: TValue;
+        MarshalledValue: TJSONValue;
+      begin
+        ReturnValue := Field.GetValue(LValue.GetReferenceToRawData);
+        try
+          MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Field.FieldType.Handle, ConfigurationName);
+          if Assigned(MarshalledValue) then
+            JSONObject.Value.AddPair(Field.Name, MarshalledValue)
+          else
+            JSONObject.Value.AddPair(Field.Name, TJSONNull.Create);
+        except
+        end;
+      end);
+
+  Result := JSONObject.Value.ToJson;
 end;
 
 class function JSONMarshaller.InternalFrom(
@@ -881,7 +1017,7 @@ begin
           Result := TJSONUnQuotedString.Create(MarshalledValue);
     end;
     tkRecord: begin
-      if RttiType.QualifiedName.ToLower.StartsWith(NullableName) then
+      if string(TypInfo.Name).ToLower.StartsWith(NullableName) then
       begin
         MarshalledValue := JSONMarshaller.FromPrimitive(Value, RttiType.Handle, ConfigurationName);
         if MarshalledValue.HasValue then
@@ -892,21 +1028,25 @@ begin
           else
             Result := TJSONUnQuotedString.Create(MarshalledValue);
       end
-      else if RttiType.QualifiedName.ToLower.StartsWith(GuidName) then
+      else if string(TypInfo.Name).ToLower.StartsWith(GuidName) then
       begin
         MarshalledValue := JSONMarshaller.FromPrimitive(Value, RttiType.Handle, ConfigurationName);
         if MarshalledValue.HasValue then
           Result := TJSONString.Create(MarshalledValue);
       end
       else
-        raise EJSONMarshaller.CreateFmt('JSONMarshaller.From<T> does not support type "%s"', [RttiType.QualifiedName]);
+      begin
+        MarshalledValue := JSONMarshaller.FromRecord(Value, RttiType.Handle, ConfigurationName);
+        if MarshalledValue.HasValue then
+          Result := TJSONObject.ParseJSONValue(MarshalledValue) as TJSONObject;
+      end;
     end;
   end;
 end;
 
 { TJSONDTOMethodDescriptor }
 
-function TJSONDTOMethodDescriptor.IsArray: Boolean;
+function TJSONVirtualDto.TJSONDTOMethodDescriptor.IsArray: Boolean;
 var
   RttiContext: TRttiContext;
   RttiType: TRttiType;

@@ -53,10 +53,6 @@ type
 
   GuiBinding = class
   private
-    class procedure InternalObservableSetup<DomainObject: IObservable; Component: TComponent>(const Owner: TComponent; const Observable: DomainObject; const GuiComponent: Component); static;
-
-    class procedure InternalMethodsSetup<Controller: IInterface; Component: TComponent>(const Owner: TComponent; const TheController: Controller; const GuiComponent: Component); static;
-  public
     class procedure SetupObservableToComponent<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
       const DestinationAttributeName: string); overload; static;
 
@@ -66,6 +62,13 @@ type
     class procedure SetupBidirectional<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
       const DestinationAttributeName: string; const DestinationEventName: string); overload; static;
 
+    class procedure InternalObservableSetup<DomainObject: IObservable; Component: TComponent>(const Owner: TComponent; const Observable: DomainObject; const GuiComponent: Component); static;
+
+    class procedure InternalMethodsSetup<Controller: IInterface; Component: TComponent>(const Owner: TComponent; const TheController: Controller; const GuiComponent: Component); static;
+
+    class procedure InternalEventsSetup<Controller: IInterface; Component: TComponent>(const GuiComponent: TControl; const TheController: Controller;
+      const ObservableEventFunc: string; const ComponentEventName: string); static;
+  public
     class procedure Setup<DomainObject: IObservable; Component: TComponent>(const Observable: DomainObject; const GuiComponent: Component); overload; static;
 
     class procedure MethodsSetup<Controller: IInterface; Component: TComponent>(const TheController: Controller; const GuiComponent: Component); static;
@@ -230,6 +233,51 @@ begin
     GuiBinding.InternalObservableSetup(Owner, Observable, GuiComponent.Components[Index]);
 end;
 
+class procedure GuiBinding.InternalEventsSetup<Controller, Component>(
+  const GuiComponent: TControl;
+  const TheController: Controller;
+  const ObservableEventFunc: string;
+  const ComponentEventName: string);
+var
+  Ctx: TRttiContext;
+  GuiRttiType: TRttiType;
+  GuiField: TRttiField;
+  GuiProperty: TRttiProperty;
+  ControllerRttiType: TRttiType;
+  ControllerMethod: TRttiMethod;
+  ReturnType: TRttiType;
+begin
+  Ctx := TRttiContext.Create;
+
+  ControllerRttiType := Ctx.GetType(TypeInfo(Controller));
+
+  ControllerMethod := ControllerRttiType.GetMethod(ObservableEventFunc);
+  if not Assigned(ControllerMethod) then
+    Exit;
+
+  if ControllerMethod.MethodKind <> mkFunction then
+    Exit;
+
+  if Length(ControllerMethod.GetParameters) <> 0 then
+    Exit;
+
+  ReturnType := ControllerMethod.ReturnType;
+
+  GuiRttiType := Ctx.GetType(GuiComponent.ClassType);
+
+  GuiProperty := GuiRttiType.GetProperty(ComponentEventName);
+  if not Assigned(GuiProperty) then
+    Exit;
+
+  if not GuiProperty.IsWritable then
+    Exit;
+
+  if ReturnType <> GuiProperty.PropertyType then
+    Exit;
+
+  GuiProperty.SetValue(GuiComponent, ControllerMethod.Invoke(TValue.From<Controller>(TheController), []));
+end;
+
 class procedure GuiBinding.MethodsSetup<Controller, Component>(
   const TheController: Controller;
   const GuiComponent: Component);
@@ -264,6 +312,20 @@ begin
               TheController,
               (Attribute as MethodToActionBindingAttribute).ObservableMethodName,
               (Attribute as MethodToActionBindingAttribute).OriginalEventExecutionType);
+          end);
+
+      TCollections.CreateList<TCustomAttribute>(Field.GetAttributes)
+        .Where(function(const Attribute: TCustomAttribute): Boolean
+          begin
+            Result := Attribute is BindEventAttribute;
+          end)
+        .ForEach(procedure(const Attribute: TCustomAttribute)
+          begin
+            InternalEventsSetup<Controller, Component>(
+              GuiComponent.FindComponent(Field.Name) as TControl,
+              TheController,
+              (Attribute as BindEventAttribute).ObservableEventFunc,
+              (Attribute as BindEventAttribute).ComponentEvent);
           end);
     end);
 end;

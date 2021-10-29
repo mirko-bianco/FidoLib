@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *)
-
+{$I Jedi.inc}
 unit Fido.Json.Utilities;
 
 interface
@@ -32,9 +32,15 @@ type
 
   TJSONUnQuotedString = class(TJSONString)
   public
+    {$IFNDEF DELPHIX_SYDNEY_UP}
+    function EstimatedByteSize: Integer; override;
+    function ToBytes(const Data: TArray<Byte>; const Idx: Integer): Integer; override;
+    {$ENDIF}
+    {$IFDEF DELPHIX_SYDNEY_UP}
     function EstimatedByteSize: Integer; override;
     function ToBytes(const Data: TArray<Byte>; Offset: Integer): Integer; override;
     procedure ToChars(Builder: TStringBuilder; Options: TJSONAncestor.TJSONOutputOptions); override;
+    {$ENDIF}
 
   end;
 
@@ -64,6 +70,99 @@ end;
 
 { TJSONUnQuotedString }
 
+{$IFNDEF DELPHIX_SYDNEY_UP}
+function TJSONUnQuotedString.EstimatedByteSize: Integer;
+begin
+  if IsNull then
+    Result := 4
+  else
+    Result := 6 * System.Length(Value);
+end;
+
+function TJSONUnQuotedString.ToBytes(const Data: TArray<Byte>; const Idx: Integer): Integer;
+var
+  Offset: Integer;
+  Index: Integer;
+  Count: Integer;
+  CurrentChar: WideChar;
+  UnicodeValue: Integer;
+begin
+  Offset := Idx;
+  if Null then
+  begin
+    Data[IncrAfter(Offset)] := Ord('n');
+    Data[IncrAfter(Offset)] := Ord('u');
+    Data[IncrAfter(Offset)] := Ord('l');
+    Data[IncrAfter(Offset)] := Ord('l');
+  end
+  else
+  begin
+    Index := 0;
+    Count := FStrBuffer.Length;
+    while Index < Count do
+    begin
+      CurrentChar := FStrBuffer.Chars[IncrAfter(Index)];
+      case CurrentChar of
+        '"':
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('"');
+          end;
+        '\':
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('\');
+          end;
+        '/':
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('/');
+          end;
+        #$8:
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('b');
+          end;
+        #$c:
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('f');
+          end;
+        #$a:
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('n');
+          end;
+        #$d:
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('r');
+          end;
+        #$9:
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('t');
+          end;
+        else
+          if (CurrentChar < WideChar(32)) or (CurrentChar > WideChar(127)) then
+          begin
+            Data[IncrAfter(Offset)] := Ord('\');
+            Data[IncrAfter(Offset)] := Ord('u');
+            UnicodeValue := Ord(CurrentChar);
+            Data[IncrAfter(Offset)] := Hex((UnicodeValue and 61440) shr 12);
+            Data[IncrAfter(Offset)] := Hex((UnicodeValue and 3840) shr 8);
+            Data[IncrAfter(Offset)] := Hex((UnicodeValue and 240) shr 4);
+            Data[IncrAfter(Offset)] := Hex((UnicodeValue and 15));
+          end
+          else
+            Data[IncrAfter(Offset)] := Ord(CurrentChar);
+      end;
+    end;
+  end;
+  Result := Offset;
+end;
+{$ENDIF}
+{$IFDEF DELPHIX_SYDNEY_UP}
 function TJSONUnQuotedString.EstimatedByteSize: Integer;
 begin
   if FIsNull then
@@ -256,5 +355,6 @@ begin
       Builder.Append(FValue);
   end;
 end;
+{$ENDIF}
 
 end.

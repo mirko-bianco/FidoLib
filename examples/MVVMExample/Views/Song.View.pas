@@ -35,7 +35,7 @@ type
     edTitle: TLabeledEdit;
     // When the user presses the button then the ViewModel.Save method is called
     // If the component is linked to an action then that action is triggered before the ViewModel method.
-    [MethodToActionBinding('Save', oeetBefore)]
+    [MethodToActionBinding('Save', oeetAfter)]
     btnSave: TBitBtn;
     btnCancel: TBitBtn;
     ActionList: TActionList;

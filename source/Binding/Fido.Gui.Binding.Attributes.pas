@@ -86,6 +86,17 @@ type
     property OriginalEventExecutionType :TOriginalEventExecutionType read FOriginalEventExecutionType write FOriginalEventExecutionType;
   end;
 
+  BindEventAttribute = class(GuiBindingAttribute)
+  private
+    FObservableEventFunc: string;
+    FComponentEvent: string;
+  public
+    constructor Create(const ObservableEventFunc: string; const ComponentEvent: string);
+
+    property ObservableEventFunc: string read FObservableEventFunc;
+    property ComponentEvent: string read FComponentEvent;
+  end;
+
 implementation
 
 { BidirectionalToObservableBindingAttribute }
@@ -134,6 +145,16 @@ begin
   inherited Create;
   FObservableMethodName := ObservableMethodName;
   FOriginalEventExecutionType := OriginalEventExecutionType
+end;
+
+{ BindEventAttribute }
+
+constructor BindEventAttribute.Create(
+  const ObservableEventFunc: string;
+  const ComponentEvent: string);
+begin
+  FObservableEventFunc := ObservableEventFunc;
+  FComponentEvent := ComponentEvent;
 end;
 
 end.

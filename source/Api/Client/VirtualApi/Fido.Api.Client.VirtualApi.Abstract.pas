@@ -591,8 +591,7 @@ begin
       end;
 
   // Build the function result, if necessary
-  if (Method.MethodKind = mkFunction) and
-     (Method.ReturnType.TypeKind = tkInterface) then
+  if (Method.MethodKind = mkFunction) then
     Result := ConvertResponseToDto(Call.Value.ResponseContent, Method.ReturnType.Handle);
 
   if Assigned(ActiveConfig) then

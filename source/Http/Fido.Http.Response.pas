@@ -198,6 +198,8 @@ begin
 
   StringsToDictionary(RequestInfo.RawHeaders, FHeaderParams);
 
+  FHeaderParams.Remove('Content-Length');
+
   FResponseCode := ResponseInfo.ResponseCode;
   ResponseInfo.SetContentType(SMimeType[FMimeType]);
 end;

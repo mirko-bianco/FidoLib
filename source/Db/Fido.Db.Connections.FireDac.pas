@@ -41,6 +41,8 @@ type
     TFidoFireDacConnections = TUpdateablePerThreadDictionary<TFDConnection, TStrings>;
   private var
     FFireDacConnections: TFidoFireDacConnections;
+  private
+    procedure OnAfterDisconnect(Sender: TObject);
   public
     constructor Create(const Parameters: TStrings);
     destructor Destroy; override;
@@ -68,6 +70,7 @@ begin
         SizeMax := 16;
         TargetDataType := dtGUID;
       end;
+      Result.AfterDisconnect := OnAfterDisconnect;
     end,
     procedure(Connection: TFDConnection; Params: TStrings)
     begin
@@ -88,6 +91,11 @@ begin
   Result := FFireDacConnections.GetCurrent;
   if not Result.Connected then
     Result.Open;
+end;
+
+procedure TFireDacConnections.OnAfterDisconnect(Sender: TObject);
+begin
+  FFireDacConnections.ReleaseCurrent;
 end;
 
 end.

@@ -25,16 +25,19 @@ unit Fido.JWT.Manager.Intf;
 interface
 
 uses
+  JOSE.Types.Bytes,
+  JOSE.Core.JWA,
   JOSE.Core.JWT;
 
 type
   IJWTManager = interface(IInvokable)
     ['{9D78F47A-99D9-49D6-9E14-732980F1D54B}']
 
-    function TryVerifyToken(const CompactToken: string; out Token: TJWT): Boolean;
-    function GenerateToken: TJWT;
-    function SignTokenAndReturn(const Token: TJWT): string;
-    function ValidityInSecs: Integer;
+    function VerifyToken(const CompactToken: string; const Secret: TJOSEBytes): TJWT;
+
+    function GenerateToken(const Issuer: string; const DefaultValidityInSecs: Integer): TJWT;
+
+    function SignTokenAndReturn(const Token: TJWT; const Algorithm: TJOSEAlgorithmId; const SigningSecret: TJOSEBytes; const VerificationSecret: TJOSEBytes): string;
   end;
 
 implementation

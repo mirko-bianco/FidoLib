@@ -4,6 +4,7 @@ interface
 
 uses
   Data.DB,
+  Vcl.DBGrids,
 
   Fido.DesignPatterns.Observable.Intf;
 
@@ -17,6 +18,7 @@ type
     procedure DeleteSong;
 
     function IsModelNotEmpty: Boolean;
+    function SongsGridTitleClick: TDBGridClickEvent;
   end;
 
 implementation

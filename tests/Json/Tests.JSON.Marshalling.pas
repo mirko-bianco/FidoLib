@@ -13,6 +13,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Types,
   Fido.Testing.Mock.Utils,
   Fido.JSON.Mapping,
   Fido.JSON.Marshalling;
@@ -28,6 +29,11 @@ type
   published
     property Id: Integer read FId write FId;
     property Name: Nullable<string> read FName write FName;
+  end;
+
+  TMyRecord = record
+    Id: integer;
+    Name: Nullable<string>;
   end;
 
   ISinger = interface(IInvokable)
@@ -189,6 +195,12 @@ type
 
     [Test]
     procedure JSONMarshallingFromInterfaceReadonlyList;
+
+    [Test]
+    procedure JSONMarshallingFromRecord;
+
+    [Test]
+    procedure JSONUnmarshallingToRecord;
 
     [Test]
     procedure TestCustomConfigurations;
@@ -479,6 +491,15 @@ begin
   Assert.AreEqual('{"Id":100,"Name":null}', JSONMarshaller.From<TMyObject>(Obj));
 end;
 
+procedure TJSONMarshallingTests.JSONMarshallingFromRecord;
+var
+  Result: TResult<Integer>;
+begin
+  Result := TResult<Integer>.Create(False, 'There was an error', 100);
+
+  Assert.AreEqual('{"ErrorMessage":"There was an error","Success":false,"Value":100}', JSONMarshaller.&From<TResult<Integer>>(Result));
+end;
+
 procedure TJSONMarshallingTests.JSONUnmarshallingToObject;
 var
   Obj: Shared<TMyObject>;
@@ -486,6 +507,16 @@ begin
   Obj := JSONUnmarshaller.&To<TMyObject>('{"Id":1}');
   Assert.AreEqual(1, Obj.Value.Id);
   Assert.AreEqual(False, Obj.Value.Name.HasValue);
+end;
+
+procedure TJSONMarshallingTests.JSONUnmarshallingToRecord;
+var
+  Rec: TMyRecord;
+begin
+  Rec := JSONUnmarshaller.&To<TMyRecord>('{"Id": 100, "Name": null}');
+
+  Assert.AreEqual(100, Rec.Id);
+  Assert.AreEqual(False, Rec.Name.HasValue);
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToSmallint;

@@ -307,7 +307,10 @@ function TIndyApiServer.TrySetPathParams(
   const PathParams: IDictionary<string, string>): Boolean;
 var
   LResult: Boolean;
+  LEndPoint: TEndPoint;
 begin
+  LResult := true;
+  LEndPoint := EndPoint;
   EndPoint.Parameters
     .Where(
       function(const EndPointParameter: TEndPointParameter): Boolean
@@ -322,9 +325,9 @@ begin
         ParameterIndex: Integer;
         ParameterValue: string;
       begin
-        RegExpPath := StringReplace(EndPoint.Path, '/', '\/', [rfReplaceAll]);
+        RegExpPath := StringReplace(LEndPoint.Path, '/', '\/', [rfReplaceAll]);
 
-        Path := EndPoint.Path;
+        Path := LEndPoint.Path;
         ParameterIndex := -1;
         with TRegEx.Matches(RegExpPath, '{[\s\S][^{]+}').GetEnumerator do
         begin
@@ -373,7 +376,7 @@ var
   LResult: Boolean;
 begin
   LResult := True;
-  SetLength(Params, EndPoint.Parameters.Count);
+  SetLength(LParams, EndPoint.Parameters.Count);
 
   ParameterIndex := 0;
   EndPoint.Parameters.ForEach(
@@ -453,14 +456,14 @@ begin
             LParams[ParameterIndex] := Value;
           end;
           mptBody: begin
-            if Assigned(Item.ClassType) then
+            if Assigned(Item.ClassType) or Item.IsInterface then
               LParams[ParameterIndex] := ConvertRequestToDto(ApiRequest.MimeType, ApiRequest.Body, Item.TypeInfo);
           end;
         end
       end
       else
       begin
-        if Assigned(Item.ClassType) then
+        if Assigned(Item.ClassType) or Item.IsInterface then
           LParams[ParameterIndex] := ConvertRequestToDto(ApiRequest.MimeType, '', Item.TypeInfo)
         else
           LParams[ParameterIndex] := ConvertTValueToString('');
@@ -494,7 +497,7 @@ begin
       begin
         case Item.&Type of
           mptBody:
-            if not Assigned(Item.ClassType) then
+            if not (Assigned(Item.ClassType) or Item.IsInterface) then
               ApiResponse.SetBody(ConvertTValueToString(LParams[ParameterIndex]))
             else
               ApiResponse.SetBody(ConvertResponseDtoToString(ApiResponse.MimeType, LParams[ParameterIndex]));
@@ -765,6 +768,7 @@ begin
         procedure(const Parameter: TRttiParameter)
         var
           ClassType: TClass;
+          IsInterface: Boolean;
           IsNullable: Boolean;
           OutParameter: Boolean;
           ParameterType: TMethodParameterType;
@@ -775,6 +779,7 @@ begin
           if Parameter.ParamType.IsInstance then
             ClassType := Parameter.ParamType.AsInstance.MetaclassType;
           IsNullable := Parameter.ParamType.ToString.ToUpper.Contains('NULLABLE<');
+          IsInterface := Parameter.ParamType.TypeKind = tkInterface;
 
           TypeQualifiedName := Parameter.QualifiedClassName;
 
@@ -821,6 +826,7 @@ begin
               Parameter.Name,
               ApiParameterName,
               ClassType,
+              IsInterface,
               ParameterType,
               Parameter.ParamType.Handle,
               IsNullable,

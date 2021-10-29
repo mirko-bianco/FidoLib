@@ -27,11 +27,15 @@ interface
 uses
   {$ifdef MSWINDOWS}
   Windows,
+  Winapi.PsAPI,
+  Winapi.TlHelp32,
   {$endif}
   {$ifdef POSIX}
   Posix.Pthread,
   {$endif}
+
   System.SysUtils,
+  System.Classes,
 
   Spring,
   Spring.Collections;
@@ -44,10 +48,15 @@ type
   strict private
     FLock: IReadWriteSync;
     FFactoryFunc: TFunc<T>;
+    FGarbageThread: TThread;
   protected
     FItems: IDictionary<TThreadId, T>;
+
+    function GetThreadsList: TArray<TThreadId>;
+    procedure PerformGarbageCollection;
   public
     constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>); reintroduce;
+    destructor Destroy; override;
 
     function GetCurrent: T;
     procedure ReleaseCurrent;
@@ -56,6 +65,64 @@ type
 implementation
 
 { TPerThreadDictionary<T> }
+
+function TPerThreadDictionary<T>.GetThreadsList: TArray<TThreadId>;
+var
+  SnapProcHandle: THandle;
+  NextProc: Boolean;
+  TThreadEntry: TThreadEntry32;
+  PID: Cardinal;
+begin
+  PID := MainThreadID;
+  SnapProcHandle := CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+  if not (SnapProcHandle <> INVALID_HANDLE_VALUE) then
+    Exit;
+
+  try
+    TThreadEntry.dwSize := SizeOf(TThreadEntry);
+    NextProc := Thread32First(SnapProcHandle, TThreadEntry);
+    while NextProc do
+    begin
+      if TThreadEntry.th32OwnerProcessID = PID then
+      begin
+        SetLength(Result, Length(Result) + 1);
+        Result[High(Result)] := TThreadEntry.th32ThreadID;
+      end;
+
+      NextProc := Thread32Next(SnapProcHandle, TThreadEntry);
+    end;
+  finally
+    CloseHandle(SnapProcHandle);
+  end;
+end;
+
+procedure TPerThreadDictionary<T>.PerformGarbageCollection;
+var
+  LiveThreads: ISet<TThreadId>;
+  GarbageThreads: ISet<TThreadId>;
+begin
+  LiveThreads := TCollections.CreateSet<TThreadId>(GetThreadsList);
+  GarbageThreads := TCollections.CreateSet<TThreadId>;
+
+  FLock.BeginWrite;
+  try
+    FItems.Keys.ForEach(
+      procedure(const Id: TThreadId)
+      begin
+        if not LiveThreads.Contains(Id) and
+           (Id <> Integer(MainThreadID)) then
+          GarbageThreads.Add(Id);
+      end);
+
+    GarbageThreads.ForEach(
+      procedure(const Id: TThreadId)
+      begin
+        FItems.Remove(Id);
+      end);
+  finally
+    FLock.EndWrite;
+  end;
+end;
 
 constructor TPerThreadDictionary<T>.Create(
   const Ownership: TDictionaryOwnerships;
@@ -66,6 +133,23 @@ begin
   FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<Integer, T>(Ownership);
   FFactoryFunc := FactoryFunc;
+  FGarbageThread := TThread.CreateAnonymousThread(
+    procedure
+    begin
+      while true do
+      begin
+        Sleep(10000);
+        PerformGarbageCollection;
+      end;
+    end);
+    FGarbageThread.NameThreadForDebugging('TPerThreadDictionary<T>.GarbageCollection');
+    FGarbageThread.Start;
+end;
+
+destructor TPerThreadDictionary<T>.Destroy;
+begin
+  FGarbageThread.Free;
+  inherited;
 end;
 
 function TPerThreadDictionary<T>.GetCurrent: T;
@@ -75,7 +159,7 @@ var
 begin
   FLock.BeginRead;
   try
-     Found := FItems.TryGetValue(GetCurrentThreadId, Item);
+    Found := FItems.TryGetValue(GetCurrentThreadId, Item);
   finally
     FLock.EndRead;
   end;

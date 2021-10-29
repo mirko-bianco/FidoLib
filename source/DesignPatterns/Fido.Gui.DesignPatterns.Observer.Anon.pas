@@ -74,7 +74,7 @@ var
 begin
   Guard.CheckNotNull(Target, 'Target');
   Guard.CheckTrue(Assigned(NotifyProc), 'NotifyProc is not assigned.');
-  FTarget := Weak<T>.Create(Target);
+  FTarget := Target;
   FNotifyProc := NotifyProc;
 
   FObservers.Add(Self);

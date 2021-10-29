@@ -33,7 +33,8 @@ uses
   Fido.Mappers.Test in 'Fido.Mappers.Test.pas',
   Fido.JWT.Manager.Test in 'JWT\Fido.JWT.Manager.Test.pas',
   Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test.pas',
-  Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas';
+  Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas',
+  Fido.DesignPatterns.Retries.Test in 'DesignPatterns\Fido.DesignPatterns.Retries.Test.pas';
 
 var
   runner : ITestRunner;

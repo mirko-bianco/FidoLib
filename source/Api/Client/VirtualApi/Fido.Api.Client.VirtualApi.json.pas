@@ -63,6 +63,7 @@ var
   ApiResponse: Shared<TRestResponse>;
   Pair: TPair<string, string>;
   Parameter: TClientVirtualApiCallParameter;
+  RestParam: TREstRequestPArameter;
 begin
   inherited;
 
@@ -90,7 +91,10 @@ begin
       pkForm:
         ApiRequest.Value.AddParameter(Parameter.Name, Parameter.Value);
       pkHeader:
-        ApiRequest.Value.Params.AddHeader(Parameter.Name, Parameter.Value);
+      begin
+        RestParam := ApiRequest.Value.Params.AddHeader(Parameter.Name, Parameter.Value);
+        RestParam.Options := [poDoNotEncode];
+      end;
       pkFile:
         ; // unimplemented
     end;

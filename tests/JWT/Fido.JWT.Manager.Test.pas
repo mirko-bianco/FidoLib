@@ -11,6 +11,7 @@ uses
 
   JOSE.Types.Bytes,
   JOSE.Core.JWT,
+  JOSE.Core.JWA,
 
   Fido.Testing.Mock.Utils,
   Fido.JWT.Manager;
@@ -18,9 +19,6 @@ uses
 type
   [TestFixture]
   TJWTManagerTests = class
-    [Test]
-    procedure JWTManagerReturnsValidityInSecs;
-
     [Test]
     procedure JWTManagerGeneratesACorrectToken;
 
@@ -38,33 +36,16 @@ implementation
 
 { TJWTManagerTests }
 
-procedure TJWTManagerTests.JWTManagerReturnsValidityInSecs;
-var
-  Manager: Shared<TJWTManager>;
-  Seconds: Integer;
-begin
-  Seconds := MockUtils.SomeInteger;
-
-  Manager := TJWTManager.Create(MockUtils.SomeString, MockUtils.SomeString, Seconds);
-
-  Assert.AreEqual(Seconds, Manager.Value.ValidityInSecs);
-end;
-
 procedure TJWTManagerTests.JWTManagerDoesNotVerifyAnInvalidToken;
 var
   Manager: Shared<TJWTManager>;
-  Duration: Integer;
   Issuer: string;
   VerifiedToken: TJWT;
-  Check: Boolean;
 begin
-  Duration := MockUtils.SomeInteger;
   Issuer := MockUtils.SomeString;
-  Manager := TJWTManager.Create(MockUtils.SomeString, Issuer, Duration);
 
-  Check := Manager.Value.TryVerifyToken(MockUtils.SomeString, VerifiedToken);
+  VerifiedToken := Manager.Value.VerifyToken(MockUtils.SomeString, MockUtils.SomeString);
 
-  Assert.IsFalse(Check);
   Assert.IsNull(VerifiedToken);
 end;
 
@@ -77,9 +58,9 @@ var
 begin
   Duration := MockUtils.SomeInteger;
   Issuer := MockUtils.SomeString;
-  Manager := TJWTManager.Create(MockUtils.SomeString, Issuer, Duration);
+  Manager := TJWTManager.Create;
 
-  Token := Manager.Value.GenerateToken;
+  Token := Manager.Value.GenerateToken(Issuer, Duration);
 
   Sleep(100);
 
@@ -97,14 +78,17 @@ var
 begin
   Duration := MockUtils.SomeInteger;
   Issuer := MockUtils.SomeString;
-  Manager := TJWTManager.Create(MockUtils.SomeString, Issuer, Duration);
+  Manager := TJWTManager.Create;
 
-  Token := Manager.Value.GenerateToken;
+  Token := Manager.Value.GenerateToken(Issuer, Duration);
 
   Assert.WillNotRaiseAny(
     procedure
+    var
+      Secret: string;
     begin
-      SignedToken := Manager.Value.SignTokenAndReturn(Token);
+      Secret := MockUtils.SomeString;
+      SignedToken := Manager.Value.SignTokenAndReturn(Token, TJOSEAlgorithmId.HS256, Secret, Secret);
     end
   );
 
@@ -119,19 +103,20 @@ var
   Issuer: string;
   SignedToken: string;
   VerifiedToken: TJWT;
-  Check: Boolean;
+  Secret: string;
 begin
   Duration := MockUtils.SomeInteger;
   Issuer := MockUtils.SomeString;
-  Manager := TJWTManager.Create(MockUtils.SomeString, Issuer, Duration);
+  Manager := TJWTManager.Create;
 
-  Token := Manager.Value.GenerateToken;
-  SignedToken := Manager.Value.SignTokenAndReturn(Token);
+  Token := Manager.Value.GenerateToken(Issuer, Duration);
+  Secret := MockUtils.SomeString;
+  SignedToken := Manager.Value.SignTokenAndReturn(Token, TJOSEAlgorithmId.HS256, Secret, Secret);
 
-  Check := Manager.Value.TryVerifyToken(SignedToken, VerifiedToken);
+  VerifiedToken := Manager.Value.VerifyToken(SignedToken, Secret);
   try
 
-    Assert.IsTrue(Check);
+    Assert.IsNotNull(VerifiedToken);
     Assert.AreEqual(Token.Value.Verified, VerifiedToken.Verified);
     Assert.AreEqual(Token.Value.Claims.JSON.ToJSON, VerifiedToken.Claims.JSON.ToJSON);
 

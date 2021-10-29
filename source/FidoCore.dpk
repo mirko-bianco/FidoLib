@@ -142,9 +142,6 @@ contains
   Fido.Api.Server.Indy in 'Api\Server\Fido.Api.Server.Indy.pas',
   Fido.Api.Server.Intf in 'Api\Server\Fido.Api.Server.Intf.pas',
   Fido.Api.Server.Resource.Attributes in 'Api\Server\Resources\Fido.Api.Server.Resource.Attributes.pas',
-  Fido.Api.Server.Resources.JWT.Types in 'Api\Server\Resources\JWTAuthorization\Fido.Api.Server.Resources.JWT.Types.pas',
-  Fido.Api.Server.Resources.JWTAuthorization.Abstract in 'Api\Server\Resources\JWTAuthorization\Fido.Api.Server.Resources.JWTAuthorization.Abstract.pas',
-  Fido.Api.Server.Resources.JWT.Dto.Request in 'Api\Server\Resources\JWTAuthorization\Dto\Fido.Api.Server.Resources.JWT.Dto.Request.pas',
   Fido.Db.Connections.FireDac in 'Db\Fido.Db.Connections.FireDac.pas',
   Fido.Db.ListDataset in 'Db\Fido.Db.ListDataset.pas',
   Fido.Db.Migrations.Model.Intf in 'Db\Fido.Db.Migrations.Model.Intf.pas',
@@ -165,7 +162,8 @@ contains
   Fido.Db.DatasetFieldAttributes.Intf in 'Db\Fido.Db.DatasetFieldAttributes.Intf.pas',
   Fido.Db.DatasetFieldAttributes in 'Db\Fido.Db.DatasetFieldAttributes.pas',
   Fido.Immutable in 'Fido.Immutable.pas',
-  Fido.Web.Server.Null in 'Web\Server\Fido.Web.Server.Null.pas';
+  Fido.Web.Server.Null in 'Web\Server\Fido.Web.Server.Null.pas',
+  Fido.DesignPatterns.Retries in 'DesignPatterns\Fido.DesignPatterns.Retries.pas';
 
 end.
 

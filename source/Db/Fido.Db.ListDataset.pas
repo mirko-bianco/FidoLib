@@ -218,10 +218,12 @@ var
   LMethod: TRttiMethod;
   LResult: Boolean;
   LValue: Variant;
+  LEntity: TValue;
 begin
   LResult := False;
   LValue := Null;
   Context := TRttiContext.Create;
+  LEntity := Entity;
 
   LType := Context.GetType(Entity.TypeInfo);
   if Length(LType.GetDeclaredProperties) <> 0 then
@@ -236,7 +238,7 @@ begin
         begin
           if ContainsText(FieldName, Prefix + LProp.Name + '.') then
           begin
-            LVar := LProp.GetValue(Entity.AsPointer);
+            LVar := LProp.GetValue(LEntity.AsPointer);
             if not LVar.IsEmpty then
               LResult := GetEntityFieldValue(LVar, Prefix + LProp.Name + '.', FieldName, LValue);
           end;
@@ -248,9 +250,9 @@ begin
           begin
             LResult := True;
             if DataTypeConverter.GotDescriptor(LProp.PropertyType, DataTypeDescriptor) then
-              LValue := DataTypeDescriptor.GetAsVariant(LProp.GetValue(Entity.AsObject))
+              LValue := DataTypeDescriptor.GetAsVariant(LProp.GetValue(LEntity.AsObject))
             else
-              LValue := LProp.GetValue(Entity.AsObject).AsVariant;
+              LValue := LProp.GetValue(LEntity.AsObject).AsVariant;
           end;
         end;
       end)
@@ -266,7 +268,7 @@ begin
         if TryGetGetterMethodInfo(LMethod, LMethodInfo) then
         begin
           LField := Fields.FindField(Prefix + LMethodInfo.FieldName);
-          LVar := LMethod.Invoke(Entity, []);
+          LVar := LMethod.Invoke(LEntity, []);
           if LVar.IsInterface and
              ContainsText(FieldName, Prefix + LMethodInfo.FieldName + '.') and
              not LVar.IsEmpty then
@@ -314,7 +316,7 @@ begin
           LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LRttiProp.PropertyType.AsInstance.Handle);
           if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
           begin
-            FTraversedTypeInfoMap.AddOrSetValue(LRttiProp.PropertyType.AsInstance.Handle, LTraverseCount + 1);
+            FTraversedTypeInfoMap[LRttiProp.PropertyType.AsInstance.Handle] := LTraverseCount + 1;
             InternalInitFieldDefsObjectClass(LRttiProp.PropertyType.AsInstance.Handle,
                                              Prefix + LRttiProp.Name + '.');
           end;
@@ -345,7 +347,7 @@ begin
           LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
           if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
           begin
-            FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
+            FTraversedTypeInfoMap[LMethodInfo.Handle] := LTraverseCount + 1;
             InternalInitFieldDefsObjectClass(LMethodInfo.Handle, Prefix + LMethodInfo.FieldName + '.');
           end;
         end
@@ -471,7 +473,7 @@ begin
           LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
           if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
           begin
-            FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
+            FTraversedTypeInfoMap[LMethodInfo.Handle] := LTraverseCount + 1;
             RecordToEntity(LVal, Prefix + LProp.Name + '.');
           end;
         end
@@ -532,7 +534,7 @@ begin
             LTraverseCount := FTraversedTypeInfoMap.GetValueOrDefault(LMethodInfo.Handle);
             if LTraverseCount < MAX_TRAVERSEOBJECT - 1 then
             begin
-              FTraversedTypeInfoMap.AddOrSetValue(LMethodInfo.Handle, LTraverseCount + 1);
+              FTraversedTypeInfoMap[LMethodInfo.Handle] := LTraverseCount + 1;
               RecordToEntity(LVal, Prefix + LMethodInfo.FieldName + '.');
             end;
           end;

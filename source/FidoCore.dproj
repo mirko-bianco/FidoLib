@@ -195,9 +195,6 @@
         <DCCReference Include="Api\Server\Fido.Api.Server.Indy.pas"/>
         <DCCReference Include="Api\Server\Fido.Api.Server.Intf.pas"/>
         <DCCReference Include="Api\Server\Resources\Fido.Api.Server.Resource.Attributes.pas"/>
-        <DCCReference Include="Api\Server\Resources\JWTAuthorization\Fido.Api.Server.Resources.JWT.Types.pas"/>
-        <DCCReference Include="Api\Server\Resources\JWTAuthorization\Fido.Api.Server.Resources.JWTAuthorization.Abstract.pas"/>
-        <DCCReference Include="Api\Server\Resources\JWTAuthorization\Dto\Fido.Api.Server.Resources.JWT.Dto.Request.pas"/>
         <DCCReference Include="Db\Fido.Db.Connections.FireDac.pas"/>
         <DCCReference Include="Db\Fido.Db.ListDataset.pas"/>
         <DCCReference Include="Db\Fido.Db.Migrations.Model.Intf.pas"/>
@@ -219,6 +216,7 @@
         <DCCReference Include="Db\Fido.Db.DatasetFieldAttributes.pas"/>
         <DCCReference Include="Fido.Immutable.pas"/>
         <DCCReference Include="Web\Server\Fido.Web.Server.Null.pas"/>
+        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Retries.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

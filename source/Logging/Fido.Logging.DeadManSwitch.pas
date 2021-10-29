@@ -103,7 +103,7 @@ begin
       TLogEvent.Create(
         TLogLevel.Info,
         TLogEventType.Text,
-        Format('"%s" executed in %d hours, %d minutes, %d seconds, %d milliseconds.', [FMethodName, H, M, S, MS]),
+        Format('"%s.%s" executed in %d hours, %d minutes, %d seconds, %d milliseconds.', [FClassName, FMethodName, H, M, S, MS]),
         nil,
         TDurationData.Create(FClassName, FMethodName, H, M, S, MS)
       ));
