@@ -80,6 +80,13 @@ type
     function ErrorMessage: string;
   end;
 
+  IResult = interface(IInvokable)
+    ['{BFC2A459-7B1B-4A83-B064-C15805F5EDC4}']
+
+    function ErrorMessage: string;
+    function Success: Boolean;
+  end;
+
   TResult<T> = record
   strict private
     FResult: TResult;
@@ -92,6 +99,14 @@ type
     constructor CreateFailure(const ErrorMessage: string); overload;
 
     class operator Implicit(const value: TResult<T>): TResult; inline;
+
+    function ErrorMessage: string;
+    function Success: Boolean;
+    function Value: T;
+  end;
+
+  IResult<T> = interface(IInvokable)
+    ['{E997C149-7248-428E-881D-7B176B93789C}']
 
     function ErrorMessage: string;
     function Success: Boolean;
