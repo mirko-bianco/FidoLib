@@ -993,7 +993,7 @@ Example:
   [WebSocketPath('/')]
 ```
 
-###### [RequestMiddleware(Name)]
+###### [RequestMiddleware(Name, CommaSeparatedParams = '')]
 
 The **RequestMiddleware** attribute is used to instruct the server that the decorated method will use the named middleware on the request before the method itself is called.
 
@@ -1003,7 +1003,7 @@ Example:
   [RequestMiddleware('First decorator')]
 ```
 
-###### [ResponseMiddleware(Name)]
+###### [ResponseMiddleware(Name, CommaSeparatedParams = '')]
 
 The **ResponseMiddleware** attribute is used to instruct the server that the decorated method will use the named middleware on the response before the method itself is called.
 

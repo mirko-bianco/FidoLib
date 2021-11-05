@@ -36,9 +36,9 @@ uses
 
 type
   {$M+}
-  TRequestMiddlewareFunc = reference to function(const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
+  TRequestMiddlewareFunc = reference to function(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
 
-  TResponseMiddlewareProc = reference to procedure(const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
+  TResponseMiddlewareProc = reference to procedure(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
 
   IApiServer = interface(IInvokable)
     ['{AA282BB3-418E-4835-8752-73D8DCCD326A}']

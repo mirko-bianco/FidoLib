@@ -575,7 +575,7 @@ begin
       var
         Params: TArray<TValue>;
         Param: TValue;
-        Step: string;
+        Step: TPair<string, string>;
         PApiepFunc: TRequestMiddlewareFunc;
         PostStepProc: TResponseMiddlewareProc;
         ResponseCode: Integer;
@@ -596,9 +596,9 @@ begin
 
         try
           for Step in Endpoint.PreProcessPipelineSteps do
-            if not FRequestMiddlewares.TryGetValue(Step, PApiepFunc) then
-              raise EFidoApiException.Create('RequestMiddleware ' + Step + ' not found.')
-            else if not PApiepFunc(ApiRequest, ResponseCode, ResponseText) then
+            if not FRequestMiddlewares.TryGetValue(Step.Key, PApiepFunc) then
+              raise EFidoApiException.Create('RequestMiddleware ' + Step.Key + ' not found.')
+            else if not PApiepFunc(Step.Value, ApiRequest, ResponseCode, ResponseText) then
             begin
               ApiResponse.SetResponseCode(ResponseCode, ResponseText);
               Exit;
@@ -609,9 +609,9 @@ begin
 
           for Step in Endpoint.PostProcessPipelineSteps do
           begin
-            if not FResponseMiddlewares.TryGetValue(Step, PostStepProc) then
-              raise EFidoApiException.Create('ResponseMiddleware ' + Step + ' not found.');
-            PostStepProc(ApiRequest, ApiResponse)
+            if not FResponseMiddlewares.TryGetValue(Step.Key, PostStepProc) then
+              raise EFidoApiException.Create('ResponseMiddleware ' + Step.Key + ' not found.');
+            PostStepProc(Step.Value, ApiRequest, ApiResponse)
           end;
 
         except
@@ -729,8 +729,8 @@ begin
     procedure(const Method: TRttiMethod)
     var
       Parameters: IList<TEndPointParameter>;
-      PreProcessPipelineSteps: IList<string>;
-      PostProcessPipelineSteps: IList<string>;
+      PreProcessPipelineSteps: IList<TPair<string, string>>;
+      PostProcessPipelineSteps: IList<TPair<string, string>>;
     begin
       ResponseCode := 200;
       ResponseText := 'OK';
@@ -738,8 +738,8 @@ begin
       ApiMethod := rmUnknown;
       MethodPath := '';
       Parameters := TCollections.CreateList<TEndPointParameter>;
-      PreProcessPipelineSteps := TCollections.CreateList<string>;
-      PostProcessPipelineSteps := TCollections.CreateList<string>;
+      PreProcessPipelineSteps := TCollections.CreateList<TPair<string, string>>;
+      PostProcessPipelineSteps := TCollections.CreateList<TPair<string, string>>;
 
       TCollections.CreateList<TCustomAttribute>(Method.GetAttributes).ForEach(
         procedure(const Attribute: TCustomAttribute)
@@ -755,9 +755,9 @@ begin
             ResponseText := (Attribute as ResponseCodeAttribute).ResponseText;
           end
           else if Attribute is RequestMiddlewareAttribute then
-            PreProcessPipelineSteps.Add((Attribute as RequestMiddlewareAttribute).StepName)
+            PreProcessPipelineSteps.Add(TPair<string, string>.Create((Attribute as RequestMiddlewareAttribute).StepName, (Attribute as RequestMiddlewareAttribute).CommaSeparatedParams))
           else if Attribute is ResponseMiddlewareAttribute then
-            PostProcessPipelineSteps.Add((Attribute as ResponseMiddlewareAttribute).StepName);
+            PostProcessPipelineSteps.Add(TPair<string, string>.Create((Attribute as ResponseMiddlewareAttribute).StepName, (Attribute as ResponseMiddlewareAttribute).CommaSeparatedParams));
         end);
 
       if (MethodPath.IsEmpty) and
