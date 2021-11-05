@@ -209,6 +209,9 @@ type
     procedure WithNoCustomConfigurationItRevertsToDefault;
   end;
 
+type
+  IReadOnlyListSystemstring = IReadOnlyList<System.string>;
+
 implementation
 
 
@@ -232,10 +235,15 @@ end;
 procedure TJSONMarshallingTests.JSONMarshallingFromIntegerReadonlyList;
 var
   List: IList<Integer>;
+  List2: IList<string>;
 begin
   List := TCollections.CreateList<Integer>([1, 2, 3, 4]);
 
   Assert.AreEqual('[1,2,3,4]', JSONMarshaller.From<IReadOnlyList<Integer>>(List.AsReadOnlyList));
+
+  List2 := TCollections.CreateList<string>(['1', '2', '3', '4']);
+
+  Assert.AreEqual('["1","2","3","4"]', JSONMarshaller.From<IReadOnlyList<string>>(List2.AsReadOnlyList));
 end;
 
 procedure TJSONMarshallingTests.JSONMarshallingFromNullableInt64;

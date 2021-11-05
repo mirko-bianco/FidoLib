@@ -854,6 +854,30 @@ class function JSONMarshaller.FromReadonlyListOfPrimitives(
   const TypInfo: PTypeInfo;
   const ElementTypeInfo: PTypeInfo;
   const ConfigurationName: string): string;
+
+  function Convert(const Value: TValue): TJSONValue;
+  var
+    NullValue: Nullable<string>;
+    StrValue: string;
+  begin
+    NullValue := JSONMarshaller.FromPrimitive(Value, ElementTypeInfo, ConfigurationName);
+    if not NullValue.HasValue then
+      Exit(TJSONNull.Create);
+
+    StrValue := NullValue.Value;
+
+    if not (string(TypInfo.Name).ToLower.Contains('integer') or
+            string(TypInfo.Name).ToLower.Contains('int64') or
+            String(TypInfo.Name).ToLower.Contains('smallint') or
+            String(TypInfo.Name).ToLower.Contains('extended') or
+            String(TypInfo.Name).ToLower.Contains('double') or
+            String(TypInfo.Name).ToLower.Contains('currency') or
+            String(TypInfo.Name).ToLower.Contains('boolean')) then
+      Result := TJSONObject.ParseJSONValue(StrValue.QuotedString('"'))
+    else
+      Result := TJSONObject.ParseJSONValue(StrValue);
+  end;
+
 var
   JsonArray: Shared<TJSONArray>;
   Enum: IEnumerable;
@@ -863,7 +887,9 @@ begin
   Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
   with Enum.GetEnumerator do
     while MoveNext do
-      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromPrimitive(Current, ElementTypeInfo, ConfigurationName)));
+    begin
+      JsonArray.Value.AddElement(Convert(Current));
+    end;
 
   Result := JsonArray.Value.ToJSON;
 end;
