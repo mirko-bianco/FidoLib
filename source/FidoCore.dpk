@@ -164,7 +164,9 @@ contains
   Fido.Immutable in 'Fido.Immutable.pas',
   Fido.Web.Server.Null in 'Web\Server\Fido.Web.Server.Null.pas',
   Fido.DesignPatterns.Retries in 'DesignPatterns\Fido.DesignPatterns.Retries.pas',
-  Fido.Boxes in 'Fido.Boxes.pas';
+  Fido.Boxes in 'Fido.Boxes.pas',
+  Fido.Async.Funcs in 'Async\Fido.Async.Funcs.pas',
+  Fido.Async.Procs in 'Async\Fido.Async.Procs.pas';
 
 end.
 

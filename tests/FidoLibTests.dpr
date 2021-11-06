@@ -35,7 +35,9 @@ uses
   Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test.pas',
   Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas',
   Fido.DesignPatterns.Retries.Test in 'DesignPatterns\Fido.DesignPatterns.Retries.Test.pas',
-  Fido.Boxes.Test in 'Fido.Boxes.Test.pas';
+  Fido.Boxes.Test in 'Fido.Boxes.Test.pas',
+  Fido.Async.Funcs.Test in 'Async\Fido.Async.Funcs.Test.pas',
+  Fido.Async.Procs.Test in 'Async\Fido.Async.Procs.Test.pas';
 
 var
   runner : ITestRunner;
