@@ -218,6 +218,8 @@
         <DCCReference Include="Web\Server\Fido.Web.Server.Null.pas"/>
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Retries.pas"/>
         <DCCReference Include="Fido.Boxes.pas"/>
+        <DCCReference Include="Async\Fido.Async.Funcs.pas"/>
+        <DCCReference Include="Async\Fido.Async.Procs.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
