@@ -37,14 +37,16 @@ uses
 
 type
   Containers = record
-    class procedure RegisterVirtualStatement<T: IVirtualStatement>(const Container: TContainer); static;
+    class procedure RegisterVirtualStatement<T: IVirtualStatement>(const Container: TContainer; const StatementExecutorServiceName: string = ''); static;
 
-    class procedure RegisterVirtualQuery<TRecord: IInterface; T: IVirtualQuery>(const Container: TContainer); static;
+    class procedure RegisterVirtualQuery<TRecord: IInterface; T: IVirtualQuery>(const Container: TContainer; const StatementExecutorServiceName: string = ''); static;
   end;
 
 implementation
 
-class procedure Containers.RegisterVirtualQuery<TRecord, T>(const Container: TContainer);
+class procedure Containers.RegisterVirtualQuery<TRecord, T>(
+  const Container: TContainer;
+  const StatementExecutorServiceName: string);
 begin
   Container.RegisterType<T>.DelegateTo(
     function: T
@@ -53,12 +55,14 @@ begin
       LIntf: TGUID;
     begin
       LIntf := GetTypeData(TypeInfo(T))^.Guid;
-      Supports(TVirtualQuery<TRecord, T>.GetInstance(Container), LIntf, RInterface);
+      Supports(TVirtualQuery<TRecord, T>.GetInstance(Container, StatementExecutorServiceName), LIntf, RInterface);
       Result := RInterface;
     end);
 end;
 
-class procedure Containers.RegisterVirtualStatement<T>(const Container: TContainer);
+class procedure Containers.RegisterVirtualStatement<T>(
+  const Container: TContainer;
+  const StatementExecutorServiceName: string);
 begin
   Container.RegisterType<T>.DelegateTo(
     function: T
@@ -67,7 +71,7 @@ begin
       LIntf: TGUID;
     begin
       LIntf := GetTypeData(TypeInfo(T))^.Guid;
-      Supports(TVirtualStatement<T>.GetInstance(Container), LIntf, RInterface);
+      Supports(TVirtualStatement<T>.GetInstance(Container, StatementExecutorServiceName), LIntf, RInterface);
       Result := RInterface;
     end);
 end;
