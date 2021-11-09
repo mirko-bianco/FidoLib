@@ -166,7 +166,8 @@ contains
   Fido.DesignPatterns.Retries in 'DesignPatterns\Fido.DesignPatterns.Retries.pas',
   Fido.Boxes in 'Fido.Boxes.pas',
   Fido.Async.Funcs in 'Async\Fido.Async.Funcs.pas',
-  Fido.Async.Procs in 'Async\Fido.Async.Procs.pas';
+  Fido.Async.Procs in 'Async\Fido.Async.Procs.pas',
+  Fido.Api.Server.Abstract in 'Api\Server\Fido.Api.Server.Abstract.pas';
 
 end.
 
