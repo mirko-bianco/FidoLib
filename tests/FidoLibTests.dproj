@@ -189,6 +189,9 @@
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.Test.pas"/>
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas"/>
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Retries.Test.pas"/>
+        <DCCReference Include="Fido.Boxes.Test.pas"/>
+        <DCCReference Include="Async\Fido.Async.Funcs.Test.pas"/>
+        <DCCReference Include="Async\Fido.Async.Procs.Test.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

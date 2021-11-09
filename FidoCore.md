@@ -8,6 +8,9 @@ Below a list of the most important features:
 - [Virtual database features](#virtual-database-features)
 - [Client virtual Apis](#client-virtual-apis)
 - [Server virtual Apis](#server-virtual-apis)
+- [Boxes](#boxes)
+- [Async procedures](#async-procedures)
+- [Async functions](#async-functions)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -1012,3 +1015,161 @@ Example:
 ```pascal
   [ResponseMiddleware('Last decorator')]
 ```
+
+
+
+### Boxes
+
+Unit `Fido.Boxes`.
+
+Boxes are, well, boxes...
+
+Did you ever need to share a state between two or more pieces of code (possibly over different threads)?
+
+ You can achieve that in FidoLib using `IBox<T>` and `IReadonlyBox<T>`.
+
+##### Usage
+
+```pascal
+procedure Example;
+var
+  Box: IBox<Boolean>;
+  ROBox: IReadonlyBox<Boolean>;
+  Updater: TBoxUpdater<Boolean>;
+begin
+  Box := Box<Boolean>.Setup(True);
+
+  TTask.Run(
+    procedure
+    begin
+      WriteLn(Box.Value); // This would be True
+      Box.UpdateValue(False);
+    end).Wait;
+
+  WriteLn(Box.Value); //This would be False;
+
+  Box := Box<Boolean>.Setup(True, Updater);
+
+  TTask.Run(
+    procedure
+    begin
+      WriteLn(Box.Value); // This would be True
+      Updater(False);
+    end).Wait;
+
+  WriteLn(Box.Value); //This would be False;
+end;
+
+```
+
+
+
+### Async procedures
+
+Unit `Fido.Async.Procs`.
+
+Async procedures let you run a procedure or a sequence of procedures in a separate thread. You can use three different approaches:
+
+- *fire and forget*. A separate task is created and executed without the caller having any control of how and when it will terminate.
+- *fire and get ITask*. A separate task is created and executed and the caller gets an `ITask` that the caller can use.
+- *fire and wait*. A separate task is created and executed and the caller waits for the `Resolve` method to finish to know the final status of the async procedure.
+
+##### Usage
+
+```pascal
+var
+  AsyncProc: IAsyncProc;
+  Task: ITask;
+  FinalStatus: TAsyncProcStatus;
+begin
+  AsyncProc := AsyncProcs.
+    Queue(
+      procedure
+      begin
+        //First step
+      end).
+    &Then(
+      procedure
+      begin
+        //Second step
+      end). 
+    &Then(
+      procedure
+      begin
+        //Third step
+      end).
+    Within(100, //Ms
+      procedure
+      begin
+        //What to do if it expires
+      end).
+    Catch(
+      procedure(const E: Exception)
+      begin
+        //What to do in case of exception
+      end);
+
+  AsyncProc.Run; //Fire and forget
+  
+  AsyncProc.Run.Task; //Fire and get ITask
+  
+  FinalStatus := AsyncProc.Run.Resolve; //Fire and wait
+end;
+```
+
+
+
+### Async functions
+
+Unit `Fido.Async.Funcs`.
+
+Async functions let you run a function or a sequence of functions in a separate thread. You can use three different approaches:
+
+- *fire and forget*. A separate task is created and executed without the caller having any control of how and when it will terminate.
+- *fire and get ITask*. A separate task is created and executed and the caller gets an `ITask` that the caller can use.
+- *fire and wait*. A separate task is created and executed and the caller waits for the `Resolve` method to finish to know the final status and value of the async function.
+
+##### Usage
+
+```pascal
+var
+  AsyncFunc: IAsyncFunc<Integer, string>;
+  Future: ITask;
+  FuncResult: TAsyncFuncResult<string>;
+begin
+  AsyncFunc := AsyncFunc<Integer, string>.
+    Queue(
+      AsyncFuncMapping.Action<Integer, Integer>(function(const Value: Integer): Extended
+      begin
+        //First Step from Integer (input type) to Extended
+      end)).
+    &Then(
+      AsyncFuncMapping.Action<Extended, Boolean>(function(const Value: Extended): Boolean
+      begin
+        //Second Step from Extended to Boolean
+      end)). 
+    &Then(
+      AsyncFuncMapping.Action<Boolean, string>(function(const Value: Boolean): string
+      begin
+        //Final Step from Boolean to string (result type)
+      end)).
+    Within(100, //Ms
+      function: string
+      begin
+        //What to do and/or return if it expires.
+        //If the function raises an exception then the status will still be expired, otherwise it will be finished
+      end).
+    Catch(
+      function(const E: Exception): string
+      begin
+        //What to do and/or return in case of exception
+      end);
+
+  AsyncFunc.Run(100); //Fire and forget
+  
+  AsyncFunc.Run(100).Task; //Fire and get ITask
+  
+  FuncResult := AsyncProc.Run(100).Resolve; //Fire and wait
+end;
+```
+
