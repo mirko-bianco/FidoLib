@@ -78,10 +78,12 @@ type
   MiddlewareAttribute = class abstract (WebAttribute)
   private
     FStepName: string;
+    FCommaSeparatedParams: string;
   public
-    constructor Create(const StepName: string);
+    constructor Create(const StepName: string; const CommaSeparatedParams: string = '');
 
     property StepName: string read FStepName;
+    property CommaSeparatedParams: string read FCommaSeparatedParams;
   end;
 
   ParamAttribute = class abstract(WebAttribute)
@@ -156,9 +158,10 @@ end;
 
 { PipelineStepAttribute }
 
-constructor MiddlewareAttribute.Create(const StepName: string);
+constructor MiddlewareAttribute.Create(const StepName: string; const CommaSeparatedParams: string);
 begin
   FStepName := StepName;
+  FCommaSeparatedParams := CommaSeparatedParams;
 end;
 
 { WebSocketPathAttribute }
