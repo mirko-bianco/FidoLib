@@ -324,12 +324,14 @@ class function TVirtualQuery<TRecord, T>.GetInstance(
   const Container: TContainer;
   const StatementExecutorServiceName: string): TVirtualQuery<TRecord, T>;
 begin
-  Result := TVirtualQuery<TRecord, T>.Create(
-    Container.Resolve<IStringResourceReader>,
-    Utilities.IfThen<IStatementExecutor>(
-      StatementExecutorServiceName.IsEmpty,
-      Container.Resolve<IStatementExecutor>,
-      Container.Resolve<IStatementExecutor>(StatementExecutorServiceName)));
+  if StatementExecutorServiceName.IsEmpty() then
+    Result := TVirtualQuery<TRecord, T>.Create(
+      Container.Resolve<IStringResourceReader>,
+      Container.Resolve<IStatementExecutor>)
+  else
+    result := TVirtualQuery<TRecord, T>.Create(
+      Container.Resolve<IStringResourceReader>,
+      Container.Resolve<IStatementExecutor>(StatementExecutorServiceName));
 end;
 
 function TVirtualQuery<TRecord, T>.GetIsDefined: boolean;
