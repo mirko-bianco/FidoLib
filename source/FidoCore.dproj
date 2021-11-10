@@ -221,6 +221,7 @@
         <DCCReference Include="Async\Fido.Async.Funcs.pas"/>
         <DCCReference Include="Async\Fido.Async.Procs.pas"/>
         <DCCReference Include="Api\Server\Fido.Api.Server.Abstract.pas"/>
+        <DCCReference Include="Logging\Fido.Logging.Appenders.PermanentFile.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
