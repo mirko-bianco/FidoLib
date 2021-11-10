@@ -434,12 +434,14 @@ class function TVirtualStatement<T>.GetInstance(
   const Container: TContainer;
   const StatementExecutorServiceName: string): TVirtualStatement<T>;
 begin
-  Result := TVirtualStatement<T>.Create(
-    Container.Resolve<IStringResourceReader>,
-    Utilities.IfThen<IStatementExecutor>(
-      StatementExecutorServiceName.IsEmpty,
-      Container.Resolve<IStatementExecutor>,
-      Container.Resolve<IStatementExecutor>(StatementExecutorServiceName)));
+  if StatementExecutorServiceName.IsEmpty() then
+    Result := TVirtualStatement<T>.Create(
+      Container.Resolve<IStringResourceReader>,
+      Container.Resolve<IStatementExecutor>)
+  else
+    result := TVirtualStatement<T>.Create(
+      Container.Resolve<IStringResourceReader>,
+      Container.Resolve<IStatementExecutor>(StatementExecutorServiceName));
 end;
 
 function TVirtualStatement<T>.GetIsDefined: boolean;
