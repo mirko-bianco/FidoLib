@@ -535,6 +535,50 @@ begin
 end;
 ```
 
+##### Using multiple databases
+
+If you need to connect to multiple database in your application, just register the `TXXXConnections`' and the `IStatementExecutor`s using  service  names and then register the virtual statements and virtual query using the appropriate service name.
+
+```pascal
+var
+  FireDacDatabaseParamsFirstDatabase: TStrings;
+  FireDacDatabaseParamsSecondDatabase: TStrings;
+begin
+  FireDacDatabaseParamsFirstDatabase := TStringList.Create;
+  FireDacDatabaseParamsSecondDatabase := TStringList.Create;
+  
+  // Set FireDAC parameters
+  ...
+ 
+  Container.RegisterType<TFireDacConnections>('First_Database').DelegateTo(
+    function: TFireDacConnections
+    begin
+      Result := TFireDacConnections.Create(FireDacDatabaseParamsFirstDatabase);
+    end).AsSingleton;
+  Container.RegisterType<IStatementExecutor>('First_Database_Connector').DelegateTo(
+    function: IStatementExecutor
+    begin
+      Result := TFireDacStatementExecutor.Create(Container.Resolve<TFireDacConnections>(First_Database));
+    end);
+    
+   Container.RegisterType<TFireDacConnections>('Second_Database').DelegateTo(
+    function: TFireDacConnections
+    begin
+      Result := TFireDacConnections.Create(FireDacDatabaseParamsSecondDatabase);
+    end).AsSingleton;
+  Container.RegisterType<IStatementExecutor>('Second_Database_Connector').DelegateTo(
+    function: IStatementExecutor
+    begin
+      Result := TFireDacStatementExecutor.Create(Container.Resolve<TFireDacConnections>(First_Database));
+    end);
+  
+  ...
+  
+  Containers.RegisterVirtualQuery<ISongRecord, ISongListQuery>(Container, 'First_Database_Connector');
+  Containers.RegisterVirtualStatement<ISongUpdateByIdCommand>(Container, 'Second_Database_Connector');
+end;
+```
+
 ### Virtual Api clients
 
 Virtual Api clients are interfaces that represent services endpoints and are enriched by means of attributes in order to allow the Fido library to work properly.
