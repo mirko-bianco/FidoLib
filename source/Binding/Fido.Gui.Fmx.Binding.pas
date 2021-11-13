@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
- unit Fido.Gui.Binding;
+ unit Fido.Gui.Fmx.Binding;
 
 interface
 
@@ -29,13 +29,8 @@ uses
   System.SysUtils,
   System.TypInfo,
   System.Classes,
-{$IF not declared(FireMonkeyVersion)}
-  Vcl.Forms,
-  Vcl.Controls,
-{$ELSE}
   Fmx.Forms,
   Fmx.Controls,
-{$IFEND}
 
   Spring.Collections,
 
@@ -43,10 +38,10 @@ uses
   Fido.DesignPatterns.Observable.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
   Fido.Gui.Types,
-  Fido.Gui.DesignPatterns.Observer.Anon,
-  Fido.Gui.NotifyEvent.Delegated,
-  Fido.Gui.Action.Anon,
-  Fido.Gui.Binding.Attributes;
+  Fido.Gui.Binding.Attributes,
+  Fido.Gui.Fmx.DesignPatterns.Observer.Anon,
+  Fido.Gui.Fmx.NotifyEvent.Delegated,
+  Fido.Gui.Fmx.Action.Anon;
 
 type
   EFidoGuiBindingException = class(EFidoException);

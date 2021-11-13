@@ -85,13 +85,8 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="rtl.dcp"/>
-        <DCCReference Include="Fmx.dcp"/>
         <DCCReference Include="Spring.Base.dcp"/>
         <DCCReference Include="FidoCore.dcp"/>
-        <DCCReference Include="Actions\Fido.Gui.Action.Anon.pas"/>
-        <DCCReference Include="Binding\Fido.Gui.Binding.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.Gui.DesignPatterns.Observer.Anon.pas"/>
-        <DCCReference Include="Events\Fido.Gui.NotifyEvent.Delegated.pas"/>
         <DCCReference Include="Binding\Fido.Gui.Binding.Attributes.pas"/>
         <DCCReference Include="Fido.Gui.Types.pas"/>
         <BuildConfiguration Include="Debug">

@@ -1,4 +1,4 @@
-package FidoGui;
+package FidoFMX;
 
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
@@ -13,8 +13,8 @@ package FidoGui;
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION OFF}
-{$OVERFLOWCHECKS OFF}
-{$RANGECHECKS OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
 {$STACKFRAMES ON}
@@ -30,11 +30,15 @@ package FidoGui;
 
 requires
   rtl,
-  Spring.Base,
-  FidoCore;
+  fmx,
+  spring.core,
+  fidocore,
+  fidogui;
 
 contains
-  Fido.Gui.Binding.Attributes in 'Binding\Fido.Gui.Binding.Attributes.pas',
-  Fido.Gui.Types in 'Fido.Gui.Types.pas';
+  Fido.Gui.Fmx.Action.Anon in 'Actions\Fido.Gui.Fmx.Action.Anon.pas',
+  Fido.Gui.Fmx.DesignPatterns.Observer.Anon in 'DesignPatterns\Fido.Gui.Fmx.DesignPatterns.Observer.Anon.pas',
+  Fido.Gui.Fmx.NotifyEvent.Delegated in 'Events\Fido.Gui.Fmx.NotifyEvent.Delegated.pas',
+  Fido.Gui.Fmx.Binding in 'Binding\Fido.Gui.Fmx.Binding.pas';
 
 end.

@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.Gui.NotifyEvent.Delegated;
+unit Fido.Gui.Vcl.NotifyEvent.Delegated;
 
 interface
 
@@ -30,13 +30,8 @@ uses
   System.Classes,
   System.Sysutils,
 
-{$IF not declared(FireMonkeyVersion)}
   VCL.Controls,
   VCL.ActnList,
-{$ELSE}
-  Fmx.Controls,
-  Fmx.ActnList,
-{$IFEND}
 
   Spring,
 

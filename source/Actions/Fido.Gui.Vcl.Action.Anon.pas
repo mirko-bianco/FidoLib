@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
- unit Fido.Gui.Action.Anon;
+ unit Fido.Gui.Vcl.Action.Anon;
 
 interface
 
@@ -30,16 +30,11 @@ uses
   System.Rtti,
   System.TypInfo,
   System.AnsiStrings,
-{$IF not declared(FireMonkeyVersion)}
   Vcl.ActnList,
   Vcl.Controls,
-{$ELSE}
-  Fmx.ActnList,
-  Fmx.Controls,
-{$IFEND}
 
   Fido.Gui.Types,
-  Fido.Gui.NotifyEvent.Delegated;
+  Fido.Gui.Vcl.NotifyEvent.Delegated;
 
 type
   AnonAction = class
