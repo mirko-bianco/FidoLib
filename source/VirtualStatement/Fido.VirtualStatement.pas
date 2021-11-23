@@ -439,7 +439,7 @@ begin
       Container.Resolve<IStringResourceReader>,
       Container.Resolve<IStatementExecutor>)
   else
-    result := TVirtualStatement<T>.Create(
+    Result := TVirtualStatement<T>.Create(
       Container.Resolve<IStringResourceReader>,
       Container.Resolve<IStatementExecutor>(StatementExecutorServiceName));
 end;
