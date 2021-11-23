@@ -199,6 +199,7 @@ begin
   StringsToDictionary(RequestInfo.RawHeaders, FHeaderParams);
 
   FHeaderParams.Remove('Content-Length');
+  FHeaderParams.Remove('Content-type');
 
   FResponseCode := ResponseInfo.ResponseCode;
   ResponseInfo.SetContentType(SMimeType[FMimeType]);

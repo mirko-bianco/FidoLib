@@ -36,6 +36,7 @@ uses
   Spring.Collections,
   Spring.Collections.Base,
 
+  Fido.Utilities,
   Fido.Exceptions,
   Fido.Db.TypeConverter,
   Fido.Resource.StringReader.Intf,
@@ -92,7 +93,7 @@ type
   public
     constructor Create(const ResReader: IStringResourceReader; const StatementExecutor: IStatementExecutor);
 
-    class function GetInstance(const Container: TContainer): TVirtualQuery<TRecord, T>; static;
+    class function GetInstance(const Container: TContainer; const StatementExecutorServiceName: string = ''): TVirtualQuery<TRecord, T>; static;
     // IVirtualQueryMetadata
     function GetDescription: string;
     function GetSQLResource: string;
@@ -319,11 +320,18 @@ begin
   Result := FDescription;
 end;
 
-class function TVirtualQuery<TRecord, T>.GetInstance(const Container: TContainer): TVirtualQuery<TRecord, T>;
+class function TVirtualQuery<TRecord, T>.GetInstance(
+  const Container: TContainer;
+  const StatementExecutorServiceName: string): TVirtualQuery<TRecord, T>;
 begin
-  Result := TVirtualQuery<TRecord, T>.Create(
-    Container.Resolve<IStringResourceReader>,
-    Container.Resolve<IStatementExecutor>);
+  if StatementExecutorServiceName.IsEmpty() then
+    Result := TVirtualQuery<TRecord, T>.Create(
+      Container.Resolve<IStringResourceReader>,
+      Container.Resolve<IStatementExecutor>)
+  else
+    result := TVirtualQuery<TRecord, T>.Create(
+      Container.Resolve<IStringResourceReader>,
+      Container.Resolve<IStatementExecutor>(StatementExecutorServiceName));
 end;
 
 function TVirtualQuery<TRecord, T>.GetIsDefined: boolean;

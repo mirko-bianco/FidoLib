@@ -106,16 +106,17 @@ begin
   try
     ApiRequest.Value.HandleRedirects := Call.HandleRedirects;
     ApiRequest.Value.Execute;
+    Call.Finish(ApiResponse.Value.StatusCode, ApiResponse.Value.Content, ApiResponse.Value.Headers);
   except
+    on E: Exception do
+      Call.Finish(-1, E.Message, ApiResponse.Value.Headers);
   end;
-
-  Call.Finish(ApiResponse.Value.StatusCode, ApiResponse.Value.Content, ApiResponse.Value.Headers);
 end;
 
 function TJSONClientVirtualApi<T, IConfiguration>.ConvertRequestDtoToString(const Value: TValue): string;
 begin
   inherited;
-  Result := JSONMarshaller.From(Value.AsObject, Value.TypeInfo);
+  Result := JSONMarshaller.From(Value, Value.TypeInfo);
 end;
 
 function TJSONClientVirtualApi<T, IConfiguration>.ConvertResponseToDto(

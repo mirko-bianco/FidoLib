@@ -35,6 +35,7 @@ uses
   Spring.Collections,
   Spring.Collections.Base,
 
+  Fido.Utilities,
   Fido.Exceptions,
   Fido.Db.TypeConverter,
   Fido.Resource.StringReader.Intf,
@@ -95,7 +96,7 @@ type
   public
     constructor Create(const ResReader: IStringResourceReader; const StatementExecutor: IStatementExecutor);
 
-    class function GetInstance(const Container: TContainer): TVirtualStatement<T>; static;
+    class function GetInstance(const Container: TContainer; const StatementExecutorServiceName: string = ''): TVirtualStatement<T>; static;
     // IVirtualStatementMetadata
     function GetDescription: string;
     function GetIsScalar: boolean;
@@ -429,11 +430,18 @@ begin
   Result := FDescription;
 end;
 
-class function TVirtualStatement<T>.GetInstance(const Container: TContainer): TVirtualStatement<T>;
+class function TVirtualStatement<T>.GetInstance(
+  const Container: TContainer;
+  const StatementExecutorServiceName: string): TVirtualStatement<T>;
 begin
-  Result := TVirtualStatement<T>.Create(
-    Container.Resolve<IStringResourceReader>,
-    Container.Resolve<IStatementExecutor>);
+  if StatementExecutorServiceName.IsEmpty() then
+    Result := TVirtualStatement<T>.Create(
+      Container.Resolve<IStringResourceReader>,
+      Container.Resolve<IStatementExecutor>)
+  else
+    Result := TVirtualStatement<T>.Create(
+      Container.Resolve<IStringResourceReader>,
+      Container.Resolve<IStatementExecutor>(StatementExecutorServiceName));
 end;
 
 function TVirtualStatement<T>.GetIsDefined: boolean;

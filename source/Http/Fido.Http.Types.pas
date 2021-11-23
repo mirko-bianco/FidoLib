@@ -26,6 +26,7 @@ interface
 
 uses
   System.SysUtils,
+  System.Generics.Collections,
   System.Rtti,
   REST.Types,
 
@@ -76,12 +77,12 @@ type
     FProduces: TArray<TMimeType>;
     FResponseCode: Integer;
     FResponseText: string;
-    FPreProcessPipelineSteps: IList<string>;
-    FPostProcessPipelineSteps: IList<string>;
+    FPreProcessPipelineSteps: IList<TPair<string, string>>;
+    FPostProcessPipelineSteps: IList<TPair<string, string>>;
   public
     constructor Create(const Instance: TValue; const MethodName: string; const Path: string; const HttpMethod: THttpMethod; const Parameters: IList<TEndPointParameter>;
-      const Consumes: TArray<TMimeType>; const Produces: TArray<TMimeType>; const ResponseCode: Integer; const ResponseText: string; const PreProcessPipelineSteps: IList<string>;
-      const PostProcessPipelineSteps: IList<string>);
+      const Consumes: TArray<TMimeType>; const Produces: TArray<TMimeType>; const ResponseCode: Integer; const ResponseText: string; const PreProcessPipelineSteps: IList<TPair<string, string>>;
+      const PostProcessPipelineSteps: IList<TPair<string, string>>);
 
     property Instance: TValue read FInstance;
     property MethodName: string read FMethodName;
@@ -92,8 +93,8 @@ type
     property Produces: TArray<TMimeType> read FProduces;
     property ResponseCode: Integer read FResponseCode;
     property ResponseText: string read FResponseText;
-    property PreProcessPipelineSteps: IList<string> read FPreProcessPipelineSteps;
-    property PostProcessPipelineSteps: IList<string> read FPostProcessPipelineSteps;
+    property PreProcessPipelineSteps: IList<TPair<string, string>> read FPreProcessPipelineSteps;
+    property PostProcessPipelineSteps: IList<TPair<string, string>> read FPostProcessPipelineSteps;
   end;
 
   TSSLCertData = record
@@ -173,8 +174,8 @@ constructor TEndPoint.Create(
   const Produces: TArray<TMimeType>;
   const ResponseCode: Integer;
   const ResponseText: string;
-  const PreProcessPipelineSteps: IList<string>;
-  const PostProcessPipelineSteps: IList<string>);
+  const PreProcessPipelineSteps: IList<TPair<string, string>>;
+  const PostProcessPipelineSteps: IList<TPair<string, string>>);
 begin
   Guard.CheckNotNull(Instance, 'Instance');
 
