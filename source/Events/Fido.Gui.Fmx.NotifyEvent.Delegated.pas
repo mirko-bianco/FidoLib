@@ -35,9 +35,12 @@ uses
 
   Spring,
 
+  Fido.Exceptions,
   Fido.Gui.Types;
 
 type
+  EDelegatedNotifyEvent = class(EFidoException);
+
   DelegatedNotifyEvent = class
   private type
     TNotifyEventWrapper = class(TComponent)
@@ -99,7 +102,7 @@ begin
   Ctx := TRttiContext.Create;
   Prop := Ctx.GetType(Control.ClassType).GetProperty('Action');
   if not Assigned(Prop) then
-    Exit;
+    raise EDelegatedNotifyEvent.CreateFmt('Property "%s.Action" does not exist', [Control.Name]);
 
   LocalAction := Prop.GetValue(Control).AsType<TBasicAction>;
 
@@ -134,9 +137,9 @@ var
 begin
   LProperty := Context.GetType(Owner.ClassType).GetProperty(EventName);
   if not Assigned(LProperty) then
-    Exit;
+    raise EDelegatedNotifyEvent.CreateFmt('Property "%s.%s" does not exist', [Owner.Name, EventName]);
   if LProperty.PropertyType.TypeKind <> tkMethod then
-    Exit;
+    raise EDelegatedNotifyEvent.CreateFmt('Property "%s.%s" is not a method', [Owner.Name, EventName]);
 
   OriginalEvent := nil;
   Value := LProperty.GetValue(Owner);

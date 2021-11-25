@@ -33,10 +33,13 @@ uses
   Vcl.ActnList,
   Vcl.Controls,
 
+  Fido.Exceptions,
   Fido.Gui.Types,
   Fido.Gui.Vcl.NotifyEvent.Delegated;
 
 type
+  EAnonAction = class(EFidoException);
+
   AnonAction = class
     class procedure Setup(const Owner: TComponent; const Control: TControl; const OnExecuteProc: TProc<TObject>; const OnExecuteProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore;
       const OnChangeProc: TProc<TObject> = nil; const OnChangeProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore; const OnStateChangeProc: TProc<TObject> = nil; const OnStateChangeProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore; const OnUpdateProc: TProc<TObject> = nil; const OnUpdateProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore); overload; static;
@@ -95,11 +98,11 @@ var
 begin
   Method := Context.GetType(TypeInfo(T)).GetMethod(ExecuterMethodName);
   if not Assigned(Method) then
-    Exit;
+    raise EAnonAction.CreateFmt('Method "%s.%s" does not exists.', [Control.Name, ExecuterMethodName]);
   if Method.MethodKind <> mkProcedure then
-    Exit;
+    raise EAnonAction.CreateFmt('Method "%s.%s" must be a procedure.', [Control.Name, ExecuterMethodName]);
   if Length(Method.GetParameters) <> 0 then
-    Exit;
+    raise EAnonAction.CreateFmt('Method "%s.%s" must be a parameterless procedure.', [Control.Name, ExecuterMethodName]);
 
   Setup(
     Owner,

@@ -35,9 +35,12 @@ uses
 
   Spring,
 
+  Fido.Exceptions,
   Fido.Gui.Types;
 
 type
+  EDelegatedNotifyEvent = class(EFidoException);
+
   DelegatedNotifyEvent = class
   private type
     TNotifyEventWrapper = class(TComponent)
@@ -120,9 +123,9 @@ var
 begin
   LProperty := Context.GetType(Owner.ClassType).GetProperty(EventName);
   if not Assigned(LProperty) then
-    Exit;
+    raise EDelegatedNotifyEvent.CreateFmt('Property "%s.%s" does not exist', [Owner.Name, EventName]);
   if LProperty.PropertyType.TypeKind <> tkMethod then
-    Exit;
+    raise EDelegatedNotifyEvent.CreateFmt('Property "%s.%s" is not a method', [Owner.Name, EventName]);
 
   OriginalEvent := nil;
   Value := LProperty.GetValue(Owner);

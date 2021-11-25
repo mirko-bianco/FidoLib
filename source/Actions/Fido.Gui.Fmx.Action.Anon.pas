@@ -34,10 +34,13 @@ uses
   Fmx.Controls,
   Fmx.Types,
 
+  Fido.Exceptions,
   Fido.Gui.Types,
   Fido.Gui.Fmx.NotifyEvent.Delegated;
 
 type
+  EAnonAction = class(EFidoException);
+
   AnonAction = class
   private type
     TExFmxObject = class(TFmxObject)
@@ -78,7 +81,7 @@ begin
   Ctx := TRttiContext.Create;
   ActionProp := Ctx.GetType(Control.ClassType).GetProperty('Action');
   if not Assigned(ActionProp) then
-    Exit;
+    raise EAnonAction.CreateFmt('Class "%s" does not have an "Action" property.', [Control.Name]);
 
   CaptionProp := Ctx.GetType(Control.ClassType).GetProperty('Text');
   if Assigned(CaptionProp) then
@@ -114,11 +117,11 @@ var
 begin
   Method := Context.GetType(TypeInfo(T)).GetMethod(ExecuterMethodName);
   if not Assigned(Method) then
-    Exit;
+    raise EAnonAction.CreateFmt('Method "%s.%s" does not exists.', [Control.Name, ExecuterMethodName]);
   if Method.MethodKind <> mkProcedure then
-    Exit;
+    raise EAnonAction.CreateFmt('Method "%s.%s" must be a procedure.', [Control.Name, ExecuterMethodName]);
   if Length(Method.GetParameters) <> 0 then
-    Exit;
+    raise EAnonAction.CreateFmt('Method "%s.%s" must be a parameterless procedure.', [Control.Name, ExecuterMethodName]);
 
   Setup(
     Owner,
