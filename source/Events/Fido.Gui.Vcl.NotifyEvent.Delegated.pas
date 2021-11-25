@@ -133,7 +133,7 @@ begin
   begin
     MethodRecPtr := Value.GetReferenceToRawData;
     if not(Value.TypeInfo = TypeInfo(TNotifyEvent)) then
-      Exit;
+      raise EDelegatedNotifyEvent.CreateFmt('Property "%s.%s" is not compatible with the event', [Owner.Name, EventName]);
 
     OriginalEvent := TNotifyEvent(MethodRecPtr^);
   end;
