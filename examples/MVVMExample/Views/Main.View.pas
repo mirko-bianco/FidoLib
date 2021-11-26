@@ -19,7 +19,7 @@ uses
   Spring,
 
   Fido.Gui.Binding.Attributes,
-  Fido.Gui.Binding,
+  Fido.Gui.Vcl.Binding,
   Fido.Gui.Types,
 
   Main.ViewModel.Intf;

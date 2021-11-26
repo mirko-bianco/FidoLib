@@ -1,6 +1,6 @@
 # Fido Gui documentation
 
-Fido Gui contains features related to the binding of view models to VCL and Firemonkey components.
+Fido Gui contains features related to the binding of view models to VCL (FidoVcl) and Firemonkey (FidoFmx) components.
 
 I love the [MVVM](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel) architectural pattern and I am not a great fan of the live bindings technology that's shipped with Delphi.
 

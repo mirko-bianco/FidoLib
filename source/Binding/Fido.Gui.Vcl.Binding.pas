@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
- unit Fido.Gui.Binding;
+ unit Fido.Gui.Vcl.Binding;
 
 interface
 
@@ -29,13 +29,8 @@ uses
   System.SysUtils,
   System.TypInfo,
   System.Classes,
-{$IF not declared(FireMonkeyVersion)}
   Vcl.Forms,
   Vcl.Controls,
-{$ELSE}
-  Fmx.Forms,
-  Fmx.Controls,
-{$IFEND}
 
   Spring.Collections,
 
@@ -43,10 +38,10 @@ uses
   Fido.DesignPatterns.Observable.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
   Fido.Gui.Types,
-  Fido.Gui.DesignPatterns.Observer.Anon,
-  Fido.Gui.NotifyEvent.Delegated,
-  Fido.Gui.Action.Anon,
-  Fido.Gui.Binding.Attributes;
+  Fido.Gui.Binding.Attributes,
+  Fido.Gui.Vcl.DesignPatterns.Observer.Anon,
+  Fido.Gui.Vcl.NotifyEvent.Delegated,
+  Fido.Gui.Vcl.Action.Anon;
 
 type
   EFidoGuiBindingException = class(EFidoException);
@@ -96,7 +91,7 @@ begin
     SourceProperty := nil;
 
   if not Assigned(SourceProperty) then
-    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s" does not exist for "%s".', [SourceAttributeName, Source.Name]);
+    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s.%s" does not exist.', [Source.Name, SourceAttributeName]);
 
   DestinationMethod := nil;
   DestinationProperty := nil;
@@ -147,7 +142,7 @@ begin
     DestinationProperty := nil;
 
   if not Assigned(DestinationProperty) then
-    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s" does not exist for "%s".', [DestinationAttributeName, Destination.Name]);
+    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s.%s" does not exist.', [Destination.Name, DestinationAttributeName]);
 
   SourceMethod := nil;
   SourceProperty := nil;
@@ -253,13 +248,13 @@ begin
 
   ControllerMethod := ControllerRttiType.GetMethod(ObservableEventFunc);
   if not Assigned(ControllerMethod) then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Method "%s" does not exists.', [ObservableEventFunc]);
 
   if ControllerMethod.MethodKind <> mkFunction then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Method "%s" is not a function.', [ObservableEventFunc]);
 
   if Length(ControllerMethod.GetParameters) <> 0 then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Method "%s" is not a parameterless function.', [ObservableEventFunc]);
 
   ReturnType := ControllerMethod.ReturnType;
 
@@ -267,13 +262,13 @@ begin
 
   GuiProperty := GuiRttiType.GetProperty(ComponentEventName);
   if not Assigned(GuiProperty) then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Property "%s" does not exists.', [ComponentEventName]);
 
   if not GuiProperty.IsWritable then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Property "%s" is not writable.', [ComponentEventName]);
 
   if ReturnType <> GuiProperty.PropertyType then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Property "%s" Type is not compatible.', [ComponentEventName]);
 
   GuiProperty.SetValue(GuiComponent, ControllerMethod.Invoke(TValue.From<Controller>(TheController), []));
 end;
