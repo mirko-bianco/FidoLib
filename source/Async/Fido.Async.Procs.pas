@@ -32,9 +32,11 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Exceptions,
   Fido.Boxes;
 
 type
+  EAsyncProcs = class(EFidoException);
 
   TAsyncProcStatus = (NotStarted, Running, Expired, Failed, Finished);
 
@@ -107,7 +109,7 @@ begin
   FCatch :=
     procedure(const E: Exception)
     begin
-      raise Exception.Create(E.Message);
+      raise EAsyncProcs.Create(E.Message);
     end;
   FWhenExpired :=
     procedure
@@ -174,7 +176,7 @@ begin
               nil,
               procedure
               begin
-                raise Exception.Create(LException.ToString);
+                raise EAsyncProcs.Create(LException.ToString);
               end);
             LException.Free;
           end

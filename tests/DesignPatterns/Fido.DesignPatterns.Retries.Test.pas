@@ -8,6 +8,7 @@ uses
 
   Spring,
 
+  Fido.Exceptions,
   Fido.DesignPatterns.Retries;
 
 type
@@ -18,26 +19,26 @@ type
     procedure RunFuncCallsFuncOnceWhenThereIsNoFailure;
 
     [Test]
-    procedure RunFuncDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
+    procedure RunFuncDoesNotRaiseEFidoTestExceptionWhenThereAreLessFailuresThanMax;
 
     [Test]
-    procedure RunFuncRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+    procedure RunFuncRaisesEFidoTestExceptionWhenThereAreMoreOrEqualFailuresThanMax;
 
     [Test]
     procedure RunProcCallsProcOnceWhenThereIsNoFailure;
 
     [Test]
-    procedure RunProcDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
+    procedure RunProcDoesNotRaiseEFidoTestExceptionWhenThereAreLessFailuresThanMax;
 
     [Test]
-    procedure RunProcRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+    procedure RunProcRaisesEFidoTestExceptionWhenThereAreMoreOrEqualFailuresThanMax;
   end;
 
 implementation
 
 { TRetriesTests }
 
-procedure TRetriesTests.RunFuncDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
+procedure TRetriesTests.RunFuncDoesNotRaiseEFidoTestExceptionWhenThereAreLessFailuresThanMax;
 var
   Result: Boolean;
   Count: Integer;
@@ -52,7 +53,7 @@ begin
         begin
           Inc(Count);
           if Count < 3 then
-            raise Exception.Create('Error Message');
+            raise EFidoTestException.Create('Error Message');
           Result := True;
         end);
     end);
@@ -60,7 +61,7 @@ begin
   Assert.AreEqual(True, Result);
 end;
 
-procedure TRetriesTests.RunFuncRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+procedure TRetriesTests.RunFuncRaisesEFidoTestExceptionWhenThereAreMoreOrEqualFailuresThanMax;
 var
   Result: Boolean;
   Count: Integer;
@@ -75,12 +76,12 @@ begin
         begin
           Inc(Count);
           if Count <= 3 then
-            raise Exception.Create('Error Message');
+            raise EFidoTestException.Create('Error Message');
           Result := True;
 
         end);
     end,
-    Exception);
+    EFidoTestException);
 end;
 
 procedure TRetriesTests.RunFuncCallsFuncOnceWhenThereIsNoFailure;
@@ -124,7 +125,7 @@ begin
   Assert.AreEqual(1, Count);
 end;
 
-procedure TRetriesTests.RunProcDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
+procedure TRetriesTests.RunProcDoesNotRaiseEFidoTestExceptionWhenThereAreLessFailuresThanMax;
 var
   Count: Integer;
 begin
@@ -138,12 +139,12 @@ begin
         begin
           Inc(Count);
           if Count < 3 then
-            raise Exception.Create('Error Message');
+            raise EFidoTestException.Create('Error Message');
         end);
     end);
 end;
 
-procedure TRetriesTests.RunProcRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+procedure TRetriesTests.RunProcRaisesEFidoTestExceptionWhenThereAreMoreOrEqualFailuresThanMax;
 var
   Count: Integer;
 begin
@@ -157,10 +158,10 @@ begin
         begin
           Inc(Count);
           if Count <= 3 then
-            raise Exception.Create('Error Message');
+            raise EFidoTestException.Create('Error Message');
         end);
     end,
-    Exception);
+    EFidoTestException);
 end;
 
 initialization

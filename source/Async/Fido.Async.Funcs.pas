@@ -32,9 +32,12 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Exceptions,
   Fido.Boxes;
 
 type
+  EAsyncFuncs = class(EFidoException);
+
   TAsyncFuncStatus = (NotStarted, Running, Expired, Failed, Finished);
 
   TAsyncFuncResult<T> = record
@@ -122,7 +125,7 @@ begin
   FCatch :=
     function(const E: Exception): TTo
     begin
-      raise Exception.Create(E.Message);
+      raise EAsyncFuncs.Create(E.Message);
     end;
   FWhenExpired :=
     function: TTo
@@ -200,7 +203,7 @@ begin
               nil,
               procedure
               begin
-                raise Exception.Create(LException.ToString);
+                raise EAsyncFuncs.Create(LException.ToString);
               end);
             LException.Free;
           end
