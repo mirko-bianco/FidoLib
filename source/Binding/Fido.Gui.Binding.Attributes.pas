@@ -35,8 +35,20 @@ type
 
 
 
-  // Unidirectional binding from Observable to Gui component
-  UnidirectionalToGuiBindingAttribute = class(GuiBindingAttribute)
+  // Unidirectional binding from Observable to Gui component that requires Synchronization
+  UnidirectionalToSyncGUIBindingAttribute = class(GuiBindingAttribute)
+  private
+    FSourceAttributeName: string;
+    FDestinationAttributeName: string;
+  public
+    constructor Create(const SourceAttributeName: string; const DestinationAttributeName: string);
+
+    property SourceAttributeName: string read FSourceAttributeName;
+    property DestinationAttributeName: string read FDestinationAttributeName;
+  end;
+
+  // Unidirectional binding from Observable to Gui component that does not require Synchronization
+  UnidirectionalToNoSyncGUIBindingAttribute = class(GuiBindingAttribute)
   private
     FSourceAttributeName: string;
     FDestinationAttributeName: string;
@@ -102,9 +114,9 @@ implementation
 { BidirectionalToObservableBindingAttribute }
 
 constructor BidirectionalToObservableBindingAttribute.Create(
-  const SourceAttributeName,
-        DestinationAttributeName,
-        DestinationEventName: string);
+  const SourceAttributeName: string;
+  const DestinationAttributeName: string;
+  const DestinationEventName: string);
 begin
   inherited Create;
   FSourceAttributeName := SourceAttributeName;
@@ -112,11 +124,11 @@ begin
   FDestinationEventName := DestinationEventName;
 end;
 
-{ UnidirectionalToVclBindingAttribute }
+{ UnidirectionalToSyncGUIBindingAttribute }
 
-constructor UnidirectionalToGuiBindingAttribute.Create(
-  const SourceAttributeName,
-        DestinationAttributeName: string);
+constructor UnidirectionalToSyncGUIBindingAttribute.Create(
+  const SourceAttributeName: string;
+  const DestinationAttributeName: string);
 begin
   inherited Create;
   FSourceAttributeName := SourceAttributeName;
@@ -126,9 +138,9 @@ end;
 { UnidirectionalToObservableBindingAttribute }
 
 constructor UnidirectionalToObservableBindingAttribute.Create(
-  const SourceAttributeName,
-        SourceEventName,
-        DestinationAttributeName: string);
+  const SourceAttributeName: string;
+  const SourceEventName: string;
+  const DestinationAttributeName: string);
 begin
   inherited Create;
   FSourceAttributeName := SourceAttributeName;
@@ -155,6 +167,17 @@ constructor BindEventAttribute.Create(
 begin
   FObservableEventFunc := ObservableEventFunc;
   FComponentEvent := ComponentEvent;
+end;
+
+{ UnidirectionalToNoSyncGUIBindingAttribute }
+
+constructor UnidirectionalToNoSyncGUIBindingAttribute.Create(
+  const SourceAttributeName: string;
+  const DestinationAttributeName: string);
+begin
+  inherited Create;
+  FSourceAttributeName := SourceAttributeName;
+  FDestinationAttributeName := DestinationAttributeName;
 end;
 
 end.

@@ -222,7 +222,7 @@ begin
       Exit;
 
     FObservers.Add(Observer);
-    FNeedsSync := FNeedsSync or Supports(Observer, IGUIObserver);
+    FNeedsSync := FNeedsSync or Supports(Observer, ISyncObserver);
   finally
     FLock.EndWrite;
   end;
@@ -300,7 +300,7 @@ begin
         if not IsAlive or (Target = Observer) then
           FObservers.Delete(I)
         else
-          FNeedsSync := FNeedsSync or Supports(Target, IGUIObserver);
+          FNeedsSync := FNeedsSync or Supports(Target, ISyncObserver);
   finally
     FLock.EndWrite;
   end;
