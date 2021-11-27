@@ -12,7 +12,7 @@ The `MVVMExample` project shows how binding can be achieved, the main points are
 
 - Make use of  the `TDelegateObservable` as base for the view model that will consume the Entity.
 
-- Decorate the forms components that need binding with the `UnidirectionalToGuiBinding`, `UnidirectionalToObservableBinding` or `BidirectionalToObservableBinding` attributes you can find in `Fido.Gui.Binding.Attributes`.
+- Decorate the forms components that need binding with the `UnidirectionalToSyncGuiBinding` (when the component needs synchronization), `UnidirectionalToNoSyncGuiBinding` (when the component doesn't need synchronization), `UnidirectionalToObservableBinding` or `BidirectionalToObservableBinding` attributes you can find in `Fido.Gui.Binding.Attributes`.
 
 - Decorate the forms actions that need binding with the `MethodToActionBinding` attribute you can find in `Fido.Gui.Binding.Attributes`.
 
