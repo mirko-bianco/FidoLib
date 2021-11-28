@@ -11,6 +11,7 @@ Below a list of the most important features:
 - [Boxes](#boxes)
 - [Async procedures](#async-procedures)
 - [Async functions](#async-functions)
+- [Signals and slots](#signals-and-slots)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -1217,3 +1218,118 @@ begin
 end;
 ```
 
+## Signals and slots
+
+Unit: `Fido.Slots.Intf`.
+
+When you work with MVVM it it easy to consume the View model from the View and the binding functionalities from [FidoGui](./FidoGui.md) allows you to easily to bind components and entities (or other components). But, in order to be really workable, a solution should also provide a mechanism to link without coupling the View model to the View (or two components that are not supposed to see each other.
+
+We based our functionalities on the signal and slots from the Qt C++ library.
+
+##### The mechanism
+
+The mechanism is pretty simple:
+
+- Signals are messages broadcasted by an `IObserver` 
+- Signals values must be formatted as `TArray<TValue>`
+- Slots can be either a `Spring.TAction<TArray<TValue>>`, or a `public` procedure whose parameters are compatible with the signal. If the signal values are not in the same format there is the possibility to map the values to the parameters the slot requires.  
+
+##### Usage
+
+```pascal
+type
+  TMainView = class(TForm)
+    ...
+  private
+    FSlots: ISlots;
+    FViewModel: IMainViewModel;
+
+    ...
+    procedure SetupTokenSchedulerSlots;
+    procedure SetupViewModelSlots;
+  public
+    ...
+    procedure SetMemo(const Text: string);
+    procedure OnLogStatusChanged(const Logged: Boolean);
+  end;
+  
+implementation
+
+...
+
+procedure TMainView.SetupTokenSchedulerSlots;
+begin
+  // When the FTokenScheduler broadcasts the LOGGED_MESSAGE message the MainView.OnLogStatusChanged procedure will be called
+  Slots.RegisterWithClass<TMainView>(
+    GetSlots,
+    FTokenScheduler,
+    LOGGED_MESSAGE,
+    ftSynched,
+    Self,
+    'OnLogStatusChanged',
+    function(params: TArray<TValue>): TArray<TValue>
+    begin
+      SetLength(Result, 1);
+      Result[0] := Params[0].AsType<Integer> = 1; // Converts from Integer to Boolean; 
+    end);
+    
+  // When the FTokenScheduler broadcasts the TOKEN_CHANGED_MESSAGE message the MainView.SetMemo procedure will be called
+  Slots.RegisterWithClass<TMainView>(
+    GetSlots,
+    FTokenScheduler,
+    TOKEN_CHANGED_MESSAGE,
+    ftSynched,
+    Self,
+    'SetMemo');
+
+  // When the FTokenScheduler broadcasts the TOKEN_REFRESH_FAILED_MESSAGE message the anonymous action will be called.
+  FSlots.Register(
+    FTokenScheduler,
+    TOKEN_REFRESH_FAILED_MESSAGE,
+    ftSynched,
+    procedure(const Params: TArray<TValue>)
+    var
+      Exc: Exception;
+    begin
+      Exc := Params[0].AsType<Exception>;
+      if Exc is EFidoClientApiException then
+        TDialogService.MessageDialog(
+          Format('[%d] %s', [(Exc as EFidoClientApiException).ErrorCode, (Exc as EFidoClientApiException).ErrorMessage]),
+          TMsgDlgType.mtError,
+          [TMsgDlgBtn.mbOK],
+          TMsgDlgBtn.mbOK,
+          0,
+          nil)
+      else
+        TDialogService.MessageDialog(
+          Exc.Message,
+          TMsgDlgType.mtError,
+          [TMsgDlgBtn.mbOK],
+          TMsgDlgBtn.mbOK,
+          0,
+          nil)
+    end);
+end;
+
+procedure TMainView.SetupViewModelSlots;
+begin
+  // When theFViewModel broadcasts the VIEW_BUSY_MESSAGE message the anonymous action will be called.
+  FSlots.Register(
+    FViewModel,
+    VIEW_BUSY_MESSAGE,
+    ftSynched,
+    procedure(const Params: TArray<TValue>)
+    var
+      Busy: Boolean;
+    begin
+      Busy := Params[0].AsType<Boolean>;
+
+      MainToolBar.Enabled := not Busy;
+
+      if Busy then
+        Self.OnCloseQuery := FormCloseQueryNo
+      else
+        Self.OnCloseQuery := FormCloseQueryYes;
+    end);
+end;
+```
