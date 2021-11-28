@@ -55,7 +55,7 @@ type
     procedure Notify(const Sender: IInterface; const Notification: INotification);
   end;
 
-  TAnonGUIObserver<T: class> = class(TAnonObserver<T>, IGUIObserver);
+  TAnonSyncObserver<T: class> = class(TAnonObserver<T>, ISyncObserver);
 
 implementation
 
