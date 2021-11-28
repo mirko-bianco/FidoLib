@@ -30,6 +30,9 @@ uses
 type
   EFidoException = class(Exception);
 
+  // To be used with tests. Then you can ignore them while debugging tests.
+  EFidoTestException = class(EFidoException);
+
 implementation
 
 end.

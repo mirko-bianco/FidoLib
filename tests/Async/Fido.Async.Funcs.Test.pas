@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   System.Rtti,
 
+  Fido.Exceptions,
   Fido.Boxes,
   Fido.Async.Funcs;
 
@@ -24,19 +25,19 @@ type
     procedure AsyncFuncsWithOneStepAndResolveSetsStatusToCancelledWhenItExpires;
 
     [Test]
-    procedure AsyncFuncsWithOneStepAndResolveThatRaisesAnExceptionSetStatusToFailed;
+    procedure AsyncFuncsWithOneStepAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 
     [Test]
-    procedure AsyncFuncsWithOneStepAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinishedAndReturnsTheManagedValue;
+    procedure AsyncFuncsWithOneStepAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinishedAndReturnsTheManagedValue;
 
     [Test]
     procedure AsyncFuncsWithMultipleStepsAndResolveWaitsFinishesAndReturnsTheCorrectValue;
 
     [Test]
-    procedure AsyncFuncsWithMultipleStepsAndResolveThatRaisesAnExceptionSetStatusToFailed;
+    procedure AsyncFuncsWithMultipleStepsAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 
     [Test]
-    procedure AsyncFuncsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinishedAndReturnsTheManagedValue;
+    procedure AsyncFuncsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinishedAndReturnsTheManagedValue;
 
     [Test]
     procedure AsyncFuncsWithMultipleStepsAndResolveSetsStatusToCancelledWhenItExpires;
@@ -103,7 +104,7 @@ begin
   Assert.AreEqual('200', Result.Value.Value);
 end;
 
-procedure TAsyncFuncsTests.AsyncFuncsWithOneStepAndResolveThatRaisesAnExceptionSetStatusToFailed;
+procedure TAsyncFuncsTests.AsyncFuncsWithOneStepAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 var
   Result: TAsyncFuncResult<string>;
 begin
@@ -111,7 +112,7 @@ begin
     Queue(
       AsyncFuncMapping.Action<Integer, string>(function(const Value: Integer): string
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end)).
     Run(100).
     Resolve;
@@ -120,7 +121,7 @@ begin
   Assert.AreEqual(False, Result.Value.HasValue);
 end;
 
-procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndResolveThatRaisesAnExceptionSetStatusToFailed;
+procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 var
   Result: TAsyncFuncResult<Integer>;
 begin
@@ -132,7 +133,7 @@ begin
       end)).
     &Then(AsyncFuncMapping.Action<Integer, Integer>(function(const Value: Integer): Integer
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end)).
     Run(100).
     Resolve;
@@ -141,7 +142,7 @@ begin
   Assert.AreEqual(False, Result.Value.HasValue);
 end;
 
-procedure TAsyncFuncsTests.AsyncFuncsWithOneStepAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinishedAndReturnsTheManagedValue;
+procedure TAsyncFuncsTests.AsyncFuncsWithOneStepAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinishedAndReturnsTheManagedValue;
 var
   Result: TAsyncFuncResult<string>;
 begin
@@ -149,7 +150,7 @@ begin
     Queue(
       AsyncFuncMapping.Action<Integer, string>(function(const Value: Integer): string
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end)).
     Catch(
       function(const E: Exception): string
@@ -163,7 +164,7 @@ begin
   Assert.AreEqual('Managed result', Result.Value.Value);
 end;
 
-procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinishedAndReturnsTheManagedValue;
+procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinishedAndReturnsTheManagedValue;
 var
   Result: TAsyncFuncResult<string>;
 begin
@@ -176,7 +177,7 @@ begin
     &Then(
       AsyncFuncMapping.Action<Integer, Integer>(function(const Value: Integer): Integer
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end)).
     Catch(
       function(const E: Exception): string

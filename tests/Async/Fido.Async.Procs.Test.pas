@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   System.Rtti,
 
+  Fido.Exceptions,
   Fido.Boxes,
   Fido.Async.Procs;
 
@@ -21,19 +22,19 @@ type
     procedure AsyncProcsWithOneStepAndResolveSetsStatusToCancelledWhenItExpires;
 
     [Test]
-    procedure AsyncProcsWithOneStepAndResolveThatRaisesAnExceptionSetStatusToFailed;
+    procedure AsyncProcsWithOneStepAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 
     [Test]
-    procedure AsyncProcsWithOneStepAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinished;
+    procedure AsyncProcsWithOneStepAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinished;
 
     [Test]
     procedure AsyncProcsWithMultipleStepsAndResolveWaitsAndFinishes;
 
     [Test]
-    procedure AsyncProcsWithMultipleStepsAndResolveThatRaisesAnExceptionSetStatusToFailed;
+    procedure AsyncProcsWithMultipleStepsAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 
     [Test]
-    procedure AsyncProcsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinished;
+    procedure AsyncProcsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinished;
 
     [Test]
     procedure AsyncProcsWithMultipleStepsAndResolveSetsStatusToCancelledWhenItExpires;
@@ -80,7 +81,7 @@ begin
   Assert.AreEqual(TAsyncProcstatus.Finished, Result);
 end;
 
-procedure TAsyncProcsTests.AsyncProcsWithOneStepAndResolveThatRaisesAnExceptionSetStatusToFailed;
+procedure TAsyncProcsTests.AsyncProcsWithOneStepAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 var
   Result: TAsyncProcStatus;
 begin
@@ -88,7 +89,7 @@ begin
     Queue(
       procedure
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end).
     Run.
     Resolve;
@@ -96,7 +97,7 @@ begin
   Assert.AreEqual(TAsyncProcstatus.Failed, Result);
 end;
 
-procedure TAsyncProcsTests.AsyncProcsWithMultipleStepsAndResolveThatRaisesAnExceptionSetStatusToFailed;
+procedure TAsyncProcsTests.AsyncProcsWithMultipleStepsAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 var
   Result: TAsyncProcStatus;
 begin
@@ -109,7 +110,7 @@ begin
     &Then(
       procedure
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end).
     Run.
     Resolve;
@@ -117,7 +118,7 @@ begin
   Assert.AreEqual(TAsyncProcstatus.Failed, Result);
 end;
 
-procedure TAsyncProcsTests.AsyncProcsWithOneStepAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinished;
+procedure TAsyncProcsTests.AsyncProcsWithOneStepAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinished;
 var
   Result: TAsyncProcStatus;
 begin
@@ -125,7 +126,7 @@ begin
     Queue(
       procedure
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end).
     Catch(
       procedure(const E: Exception)
@@ -137,7 +138,7 @@ begin
   Assert.AreEqual(TAsyncProcstatus.Finished, Result);
 end;
 
-procedure TAsyncProcsTests.AsyncProcsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinished;
+procedure TAsyncProcsTests.AsyncProcsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinished;
 var
   Result: TAsyncProcStatus;
 begin
@@ -150,7 +151,7 @@ begin
     &Then(
       procedure
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end).
     Catch(
       procedure(const E: Exception)
