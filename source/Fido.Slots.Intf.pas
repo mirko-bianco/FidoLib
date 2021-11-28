@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
- unit Fido.Flow.Intf;
+ unit Fido.Slots.Intf;
 
 interface
 
@@ -33,49 +33,53 @@ uses
   Fido.DesignPatterns.Observable.Intf;
 
 type
-  IFlow = interface(IObserver)
+  TSlotType = (ftSynched, ftNotSynched);
+
+  ISlots = interface(IObserver)
     ['{72785413-37E9-41EE-B3BA-FCBFDFE8BFFF}']
 
-    procedure RegisterInteraction(const SignalActor: IObservable; const Message: string; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
+    procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure RegisterInteraction(const SignalActor: IObservable; const Message: string; const SlotActor: IInterface; const TypInfo: pTypeInfo; const MethodName: string;
+    procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: IInterface; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure RegisterInteraction(const SignalActor: IObservable; const Message: string; const Slot: Spring.TAction<TArray<TValue>>); overload;
+    procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
 
-    procedure Unregister(const SignalActor: IObservable);
+    procedure UnregisterSignalActor(const SignalActor: IObservable);
   end;
 
-  Flows = record
-    class procedure RegisterInteractionWithClass<T: class>(const Flow: IFlow; const SignalActor: IObservable; const Message: string; const SlotActor: T; const MethodName: string;
+  Slots = record
+    class procedure RegisterWithClass<T: class>(const TheSlots: ISlots; const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: T; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload; static;
-    class procedure RegisterInteractionWithInterface<T: IInterface>(const Flow: IFlow; const SignalActor: IObservable; const Message: string; const SlotActor: T; const MethodName: string;
-      const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload; static;
+    class procedure RegisterWithInterface<T: IInterface>(const TheSlots: ISlots; const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: T;
+      const MethodName: string; const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload; static;
   end;
 
 implementation
 
-{ Flows }
+{ Slots }
 
-class procedure Flows.RegisterInteractionWithClass<T>(
-  const Flow: IFlow;
+class procedure Slots.RegisterWithClass<T>(
+  const TheSlots: ISlots;
   const SignalActor: IObservable;
   const Message: string;
+  const FlowType: TSlotType;
   const SlotActor: T;
   const MethodName: string;
   const MapParams: TFunc<TArray<TValue>, TArray<TValue>>);
 begin
-  Flow.RegisterInteraction(SignalActor, Message, SlotActor, TypeInfo(T), MethodName, MapParams);
+  TheSlots.Register(SignalActor, Message, FlowType, SlotActor, TypeInfo(T), MethodName, MapParams);
 end;
 
-class procedure Flows.RegisterInteractionWithInterface<T>(
-  const Flow: IFlow;
+class procedure Slots.RegisterWithInterface<T>(
+  const TheSlots: ISlots;
   const SignalActor: IObservable;
   const Message: string;
+  const FlowType: TSlotType;
   const SlotActor: T;
   const MethodName: string;
   const MapParams: TFunc<TArray<TValue>, TArray<TValue>>);
 begin
-  Flow.RegisterInteraction(SignalActor, Message, SlotActor, TypeInfo(T), MethodName, MapParams);
+  TheSlots.Register(SignalActor, Message, FlowType, SlotActor, TypeInfo(T), MethodName, MapParams);
 end;
 
 end.

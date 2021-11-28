@@ -169,8 +169,8 @@ contains
   Fido.Async.Procs in 'Async\Fido.Async.Procs.pas',
   Fido.Api.Server.Abstract in 'Api\Server\Fido.Api.Server.Abstract.pas',
   Fido.Logging.Appenders.PermanentFile in 'Logging\Fido.Logging.Appenders.PermanentFile.pas',
-  Fido.Flow.Intf in 'Fido.Flow.Intf.pas',
-  Fido.Flow in 'Fido.Flow.pas';
+  Fido.Slots.Intf in 'Fido.Slots.Intf.pas',
+  Fido.Slots in 'Fido.Slots.pas';
 
 end.
 

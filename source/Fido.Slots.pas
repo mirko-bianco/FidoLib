@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
- unit Fido.Flow;
+ unit Fido.Slots;
 
 interface
 
@@ -36,40 +36,42 @@ uses
   Fido.DesignPatterns.Observer.Intf,
   Fido.DesignPatterns.Observable.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
-  Fido.Flow.Intf;
+  Fido.Slots.Intf;
 
 type
-  EFlow = class(Exception);
+  ESlots = class(Exception);
 
-  TFlow = class(TInterfacedObject, IFlow, IObserver)
+  TSlots = class(TInterfacedObject, ISlots, IObserver)
   private type
-    TInteraction = record
+    TSignalSlot = record
     private
       FSignalActor: Weak<IObservable>;
       FMessage: string;
       FSlot: Spring.TAction<TArray<TValue>>;
+      FSlotType: TSlotType;
     public
-      constructor Create(const SignalActor: IObservable; const Message: string; const Slot: Spring.TAction<TArray<TValue>>);
+      constructor Create(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>);
 
       function SignalActor: IObservable;
       function Message: string;
+      function SlotType: TSlotType;
       function Slot: Spring.TAction<TArray<TValue>>;
     end;
   private
     FLock: IReadWriteSync;
     FObservables: ISet<Weak<IObservable>>;
-    FInteractions: IList<TInteraction>;
+    FSignalSlots: IList<TSignalSlot>;
   public
     constructor Create;
     destructor Destroy; override;
 
-    procedure RegisterInteraction(const SignalActor: IObservable; const Message: string; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
+    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure RegisterInteraction(const SignalActor: IObservable; const Message: string; const SlotActor: IInterface; const TypInfo: pTypeInfo; const MethodName: string;
+    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: IInterface; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure RegisterInteraction(const SignalActor: IObservable; const Message: string; const Slot: Spring.TAction<TArray<TValue>>); overload;
+    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
 
-    procedure Unregister(const SignalActor: IObservable);
+    procedure UnregisterSignalActor(const SignalActor: IObservable);
 
     // IObserver
     procedure Notify(const Sender: IInterface; const Notification: INotification);
@@ -77,18 +79,18 @@ type
 
 implementation
 
-{ TFlow }
+{ TSlots }
 
-constructor TFlow.Create;
+constructor TSlots.Create;
 begin
   inherited;
 
   FLock := TMREWSync.Create;
-  FInteractions := TCollections.CreateList<TInteraction>;
+  FSignalSlots := TCollections.CreateList<TSignalSlot>;
   FObservables := TCollections.CreateSet<Weak<IObservable>>;
 end;
 
-destructor TFlow.Destroy;
+destructor TSlots.Destroy;
 begin
   FLock.BeginRead;
   try
@@ -106,35 +108,44 @@ begin
   inherited;
 end;
 
-procedure TFlow.Notify(
+procedure TSlots.Notify(
   const Sender: IInterface;
   const Notification: INotification);
 begin
   FLock.BeginRead;
   try
-    FInteractions.Where(
-      function(const Interaction: TInteraction): Boolean
+    FSignalSlots.Where(
+      function(const SignalSlot: TSignalSlot): Boolean
       begin
-        Result := (Interaction.SignalActor as IInterface = Sender) and
-          (Notification.GetDescription = Interaction.FMessage);
+        Result :=
+          (SignalSlot.SignalActor as IInterface = Sender) and
+          (Notification.GetDescription = SignalSlot.FMessage);
       end).ForEach(
-      procedure(const Interaction: TInteraction)
+      procedure(const SignalSlot: TSignalSlot)
+      var
+        Params: TArray<TValue>;
       begin
-        TThread.Synchronize(
-          nil,
-          procedure
-          begin
-            Interaction.FSlot(Notification.GetData.AsType<TArray<TValue>>)
-          end);
+        Params := Notification.GetData.AsType<TArray<TValue>>;
+        case SignalSlot.SlotType of
+          ftSynched:
+            TThread.Synchronize(
+              nil,
+              procedure
+              begin
+                SignalSlot.FSlot(Params)
+              end);
+          ftNotSynched: SignalSlot.FSlot(Params);
+        end;
       end);
   finally
     FLock.EndRead;
   end;
 end;
 
-procedure TFlow.RegisterInteraction(
+procedure TSlots.Register(
   const SignalActor: IObservable;
   const Message: string;
+  const SlotType: TSlotType;
   const Slot: Spring.TAction<TArray<TValue>>);
 begin
   if FObservables.Add(SignalActor) then
@@ -142,46 +153,47 @@ begin
 
   FLock.BeginWrite;
   try
-    FInteractions.Add(TInteraction.Create(SignalActor, Message, Slot));
+    FSignalSlots.Add(TSignalSlot.Create(SignalActor, Message, SlotType, Slot));
 
   finally
     FLock.EndWrite;
   end;
 end;
 
-procedure TFlow.Unregister(const SignalActor: IObservable);
+procedure TSlots.UnregisterSignalActor(const SignalActor: IObservable);
 var
-  ToBeDeleted: IEnumerable<TInteraction>;
+  ToBeDeleted: IEnumerable<TSignalSlot>;
 begin
   FLock.BeginWrite;
   try
-    ToBeDeleted := FInteractions.Where(
-      function(const Interaction: TInteraction): Boolean
+    ToBeDeleted := FSignalSlots.Where(
+      function(const SignalSlot: TSignalSlot): Boolean
       begin
-        Result := Interaction.SignalActor = SignalActor;
+        Result := SignalSlot.SignalActor = SignalActor;
       end);
 
     ToBeDeleted.ForEach(
-      procedure(const Interaction: TInteraction)
+      procedure(const SignalSlot: TSignalSlot)
       var
         Observable: IObservable;
       begin
-        if not Supports(Interaction.SignalActor, IObservable, Observable) then
-          raise EFlow.Create('SignalActor must be an IObservable');
+        if not Supports(SignalSlot.SignalActor, IObservable, Observable) then
+          raise ESlots.Create('SignalActor must be an IObservable');
 
         Observable.UnregisterObserver(Self);
       end);
 
-    FInteractions.ExtractRange(ToBeDeleted.ToArray);
+    FSignalSlots.ExtractRange(ToBeDeleted.ToArray);
   finally
     FLock.EndWrite;
   end;
 
 end;
 
-procedure TFlow.RegisterInteraction(
+procedure TSlots.Register(
   const SignalActor: IObservable;
   const Message: string;
+  const SlotType: TSlotType;
   const SlotActor: TObject;
   const TypInfo: pTypeInfo;
   const MethodName: string;
@@ -194,10 +206,10 @@ begin
   Method := Ctx.GetType(TypInfo).GetMethod(MethodName);
 
   if not Assigned(Method) then
-    raise EFlow.CreateFmt('Method %s not found', [MethodName]);
+    raise ESlots.CreateFmt('Method %s not found', [MethodName]);
 
   if Method.MethodKind <> TMethodKind.mkProcedure then
-    raise EFlow.CreateFmt('Method %s is not a procedure', [MethodName]);
+    raise ESlots.CreateFmt('Method %s is not a procedure', [MethodName]);
 
   Proc := procedure(const Values: TArray<TValue>)
     var
@@ -212,16 +224,17 @@ begin
         Method.Invoke(SlotActor, MappedValues);
       except
         on E: Exception do
-          raise EFlow.CreateFmt('Interaction failed. Error Message: %s', [E.Message]);
+          raise ESlots.CreateFmt('Interaction failed. Error Message: %s', [E.Message]);
       end;
     end;
 
-  RegisterInteraction(SignalActor, Message, Proc);
+  Register(SignalActor, Message, SlotType, Proc);
 end;
 
-procedure TFlow.RegisterInteraction(
+procedure TSlots.Register(
   const SignalActor: IObservable;
   const Message: string;
+  const SlotType: TSlotType;
   const SlotActor: IInterface;
   const TypInfo: pTypeInfo;
   const MethodName: string;
@@ -235,10 +248,10 @@ begin
   Method := Ctx.GetType(TypInfo).GetMethod(MethodName);
 
   if not Assigned(Method) then
-    raise EFlow.CreateFmt('Method %s not found', [MethodName]);
+    raise ESlots.CreateFmt('Method %s not found', [MethodName]);
 
   if Method.MethodKind <> TMethodKind.mkProcedure then
-    raise EFlow.CreateFmt('Method %s is not a procedure', [MethodName]);
+    raise ESlots.CreateFmt('Method %s is not a procedure', [MethodName]);
 
   Proc := procedure(const Values: TArray<TValue>)
     var
@@ -254,35 +267,45 @@ begin
         Method.Invoke(Value, MappedValues);
       except
         on E: Exception do
-          raise EFlow.CreateFmt('Interaction failed. Error Message: %s', [E.Message]);
+          raise ESlots.CreateFmt('Interaction failed. Error Message: %s', [E.Message]);
       end;
     end;
 
-  RegisterInteraction(SignalActor, Message, Proc);
+  Register(SignalActor, Message, SlotType, Proc);
 end;
 
-{ TFlow.TInteraction }
+{ TSlots.TSignalSlot }
 
-constructor TFlow.TInteraction.Create(const SignalActor: IObservable; const Message: string; const Slot: Spring.TAction<TArray<TValue>>);
+constructor TSlots.TSignalSlot.Create(
+  const SignalActor: IObservable;
+  const Message: string;
+  const SlotType: TSlotType;
+  const Slot: Spring.TAction<TArray<TValue>>);
 begin
   FSignalActor := SignalActor;
   FMessage := Message;
   FSlot := Slot;
+  FSlotType := SlotType;
 end;
 
-function TFlow.TInteraction.Message: string;
+function TSlots.TSignalSlot.Message: string;
 begin
   Result := FMessage;
 end;
 
-function TFlow.TInteraction.SignalActor: IObservable;
+function TSlots.TSignalSlot.SignalActor: IObservable;
 begin
   Result := FSignalActor;
 end;
 
-function TFlow.TInteraction.Slot: Spring.TAction<TArray<TValue>>;
+function TSlots.TSignalSlot.Slot: Spring.TAction<TArray<TValue>>;
 begin
   Result := FSlot;
+end;
+
+function TSlots.TSignalSlot.SlotType: TSlotType;
+begin
+  Result := FSlotType;
 end;
 
 end.
