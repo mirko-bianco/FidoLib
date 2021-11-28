@@ -56,9 +56,9 @@ The Fido Library is made of 3 main packages
 
 - **[FidoCore](./FidoCore.md)** - Contains the core functionalities that are not linked or dependent on any specific OS.
 
-- **[FidoWin](./FidoWin.md)** - Contains the functionalities that are linked to Windows, such as the ADO implementation of the DB interfaces.
+- **[FidoWin](./FidoWin.md)** - Contains the functionalities linked to Windows, such as the ADO implementation of the DB interfaces.
 
-- **[FidoGui/FidoVcl/FidoFmx](./FidoGui.md)** - Contains the functionalities related to the UI, such as the binding of viewmodels to VCL and Firemonkey components.
+- **[FidoGui/FidoVcl/FidoFmx](./FidoGui.md)** - Contains the functionalities related to the UI, such as the binding of view models to VCL and FireMonkey components.
 
   
 

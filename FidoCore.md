@@ -2,7 +2,7 @@
 
 Fido Core contains several features that can help developers improve the quality of their code.
 
-Below a list of the most important features:
+Below is a list of the most important features:
 - [Mappers](#mappers)
 - [JSON marshalling and unmarshalling](#json-marshalling-and-unmarshalling)
 - [Virtual database features](#virtual-database-features)
@@ -20,7 +20,7 @@ Mappers are useful when it is required to transform from one type to another.
 
 ##### Registration
 
-The mappings are registered into the global `mappers` structure, and can be registered as following: 
+The mappings are registered into the global `mappers` structure and can be registered as following: 
 
 ```pascal
   Mappers.RegisterMapper<ISongRecord, ISong>(
@@ -33,9 +33,9 @@ The mappings are registered into the global `mappers` structure, and can be regi
 
 ##### Automapping
 
-Please note that in the previous case the registration is redundant, given that properties and methods in `ISongRecord` and `ISong` are of the same type.
+Please note that in the previous case, the registration is redundant, given that properties and methods in `ISongRecord` and `ISong` are of the same type.
 
-In case you need to migrate to and from types that have this similarities an auto mapping functionality will be used, adopting the following rules:
+In case you need to migrate to and from types that have these similarities, an auto-mapping functionality will be used, adopting the following rules:
 
 - Only published methods and properties are used
 - Only functions with no parameters are used
@@ -63,7 +63,7 @@ Both parameters of the `Map` method needs to be already instantiated.
 
 Unit `Fido.Json.Marshalling`.
 
-By using the `JSONUnmarshaller` and `JSONMarshaller` tools the developer can convert to and from JSON.
+By using the `JSONUnmarshaller` and `JSONMarshaller` tools, the developer can convert to and from JSON.
 
 The following types are supported:
 
@@ -73,21 +73,21 @@ The following types are supported:
 
 - Objects (any descendent of `TObject`). 
 
-  Any published parameter-less function and readable property is marshalled.
+  Any published parameter-less function and readable property are marshalled.
 
-  Any published one-parameter method and writeable property is unmarshalled.
+  Any published one-parameter method and writeable property are unmarshalled.
 
 - Records (other than `Spring.Nullable<T>` )
 
-  Any public field, public parameter-less function and readable property is marshalled.
+  Any public field, public parameter-less function and readable property are marshalled.
 
-  Any public field, public parameter-less function and readable property is unmarshalled.
+  Any public field, public parameter-less function and readable property are unmarshalled.
 
 - Interfaces (any descendent of `IInterface`). 
 
-  Any public parameter-less function and readable property is marshalled.
+  Any public parameter-less function and readable property are marshalled.
 
-  Any public one-parameter method and writeable property is unmarshalled.
+  Any public one-parameter method and writeable property are unmarshalled.
 
 - Lists of primitives (`Spring.Collections.IReadonlyList<T>` where T is one of the supported Primitives).
 
@@ -95,9 +95,9 @@ The following types are supported:
 
 ##### Virtual JSON implementation of interfaces
 
-It is worth noting that when it comes to the unmarshalling to interfaces the developer doesn't need to provide an implementation for the interfaces.
+It is worth noting that when it comes to the unmarshalling of interfaces, the developer doesn't need to implement the interfaces.
 
-Fido library will use the `TJSONVirtualDto` class to virtually implement the interface and expose the JSON values.
+Fido library will use the `TJSONVirtualDto` class to implement the interface virtually and expose the JSON values.
 
 ##### Aggregates
 
@@ -181,13 +181,13 @@ begin
 end;
 ```
 
-You will have access to an interface instance that expressed the JSON. And that's what I mean when I say that the Fido library philosophy is "**describe behaviour instead of coding it, whenever is possible**".
+You will have access to an interface instance that expresses the JSON. And that's what I mean when I say that the Fido library philosophy is "**describe behaviour instead of coding it, whenever is possible**".
 
 
 
 ##### Registration and overriding of the JSON mappings
 
-The JSON mappings are registered into a global structure, and can be added or overridden by using the `MappingsUtilities`.
+The JSON mappings are registered into a global structure and can be added or overridden using the `MappingsUtilities`.
 
 Let's say you don't want to encode your datetimes in ISO8601 (the standard mapping), but in another way, you can simply call:
 
@@ -241,7 +241,7 @@ You can also override the default mapping for enumeratives (that by default uses
 
 ##### Mapping classes and interfaces
 
-Fido library will unmarshall classes and interfaces, adopting the following rules:
+Fido library will unmarshal classes and interfaces, adopting the following rules:
 
 - Classes constructors must be parameter-less  
 - Only procedures called `Set<NAME_OF_JSON_VALUE>` with one parameter are used
@@ -259,7 +259,7 @@ Fido library will marshall classes, adopting the following rules:
 
 ##### Usage
 
-The usage is straight forward, to convert from JSON to type:
+The usage is straightforward, to convert from JSON to type:
 
 ```pascal
 procedure UnmarshallSong(const SongJson: string);
@@ -289,7 +289,7 @@ end;
 
 FidoLib registers for you standard primitive type conversions rules, but you could have the need for supporting multiple configurations. 
 
-Let's say you connect to two separate APIs and each of them have a different date and time format. In this case it is enough to register mappings with the  configuration name, for example:
+Let's say you connect to two separate APIs, and each of them has a different date and time format. In this case, it is enough to register mappings with the  configuration name, for example:
 
 ```pascal
   uses
@@ -309,7 +309,7 @@ Let's say you connect to two separate APIs and each of them have a different dat
 
 
 
- And the usage is again straight forward, to convert from JSON to type:
+ And the usage is again straightforward, to convert from JSON to type:
 
 ```pascal
 procedure UnmarshallSong(const SongJson: string);
@@ -337,14 +337,14 @@ end;
 
 ## Virtual database features
 
-The virtual database clients are interfaces that represent database statements (query, commands, sequences, stored procedures) and are enriched by means of attributes in order to allow the Fido library to work properly.
+The virtual database clients are interfaces that represent database statements (query, commands, sequences, stored procedures) and are enriched using attributes to allow the Fido library to work properly.
 
 ##### Connectivity
 
 Fido library enables the connection to databases through implementations of the `IStatementExecutor` interface.
 In FidoCore the FireDAC implementation is already available through the classes `TFireDacStatementExecutor` and `TFireDacConnections`.
 
-The virtual database clients will use the `IStatementExecutor` internally to reach the database. All of this possible when registering the classes into the DI container (I said DI container, not global container...). 
+The virtual database clients will use the `IStatementExecutor` internally to reach the database. All of this is possible when registering the classes into the DI container (I said DI container, not global container...). 
 
 ##### Registration in the DI container
 
@@ -370,9 +370,9 @@ end;
 
 ##### SQL queries and commands as resources
 
-Fido library treats the SQL queries and commands as resources, and as such you should provide those resources.
+Fido library treats the SQL queries and commands as resources, and as such, you should provide those resources.
 
-First of all you need to add the resources to the `dpr` file.
+First of all, you need to add the resources to the `dpr` file.
 
 ```pascal
 {$R 'Queries.res' '<PATH_TO_THE_DOMAIN>\Queries.rc'}
@@ -399,14 +399,14 @@ The folder structure will end up like this.
 <DPR_LOCATION>\<PATH_TO_THE_DOMAIN>\<PATH_TO_THE_QUERIES>\sql files
 ```
 
-The reason behind this structure  is that when you start working with a medium/large project and you have 100s of resources the  `dpr` file will become very slow when edited from the IDE.
+This structure is because when you start working with a medium/large project and have 100s of resources, the `dpr` file will become very slow when edited from the IDE.
 
 ### Virtual queries
 
 Unit `Fido.VirtualQuery.Intf`.
 
-With a virtual query you can abstract an SQL query and retrieve a `Spring.Collections.IReadonlyList<T: IInvokable>`.
-You just need to declare the DTO (Data Transfer Object) interface and the query interface descendent from `IVirtualQuery` and  then use it.
+With a virtual query, you can abstract an SQL query and retrieve a `Spring.Collections.IReadonlyList<T: IInvokable>`.
+You just need to declare the DTO (Data Transfer Object) interface, and the query interface descendent from `IVirtualQuery` and  then use it.
 
 ##### Declaration
 
@@ -474,7 +474,7 @@ end;
 
 Unit `Fido.VirtualStatement.Intf`.
 
-With a virtual query you can abstract an SQL command or call to stored procedure or sequence.
+With a virtual query, you can abstract an SQL command or call to stored procedure or sequence.
 
 A virtual statement can use a fully qualified DB object name (i.e. when a procedure or sequence is needed) or a resource.
 
@@ -494,11 +494,11 @@ unit `Fido.VirtualStatement.Attributes`.
 
 ###### [Statement(Type, RESOURCE_NAME)]
 
-It sets statement type and the resource that needs to be used. Values can be: `stSequence, stFunction, stStoredProc, stCommand`.
+It sets the statement type and the resource that needs to be used. Values can be: `stSequence, stFunction, stStoredProc, stCommand`.
 
 For `stCommand` it is necessary to provide a resource.
 
-For `stSequence, stFunction, stStoredProc` it is necessary to provide the fully qualified database object name.
+For `stSequence, stFunction, stStoredProc`, it is necessary to provide the fully qualified database object name.
 
 ###### [Execute]
 
@@ -510,7 +510,7 @@ If the method is already called `Execute` or if the interface contains only one 
 
 It sets the database name of a specific parameter.
 
-i.e. in the previous declaration the second parameter of the `Update` method is called `Name` in the Delphi code, but `title` in the related resource.
+i.e. in the previous declaration, the second parameter of the `Update` method is called `Name` in the Delphi code, but `title` in the related resource.
 
 ###### [PagingLimit]
 
@@ -538,7 +538,7 @@ end;
 
 ##### Using multiple databases
 
-If you need to connect to multiple database in your application, just register the `TXXXConnections`' and the `IStatementExecutor`s using  service  names and then register the virtual statements and virtual query using the appropriate service name.
+If you need to connect to multiple databases in your application, just register the `TXXXConnections`' and the `IStatementExecutor`s using  service  names and then register the virtual statements and virtual query using the appropriate service name.
 
 ```pascal
 var
@@ -605,14 +605,14 @@ IIdentityApi = interface(IClientVirtualApi)
 end;
 ```
 
-A virtual Api client is always linked to an `IClientVirtualApiConfiguration` (that is injected into it) and it is able to extract information from it.
+A virtual Api client is always linked to an `IClientVirtualApiConfiguration` (that is injected into it), and it is able to extract information from it.
 Every parameter-less function will be scanned in order to [resolve](#resolving-the-parameters) the call parameters.
 
 #### Attributes
 
 ###### [EndPoint(Method, Endpoint)]
 The **EndPoint** attribute defines what method and endpoint will be used during the call.
-The EndPoint variable can contain [Mustache](https://mustache.github.io/) templates, that will be [resolved](#resolving-the-parameters) during the call.
+The EndPoint variable can contain [Mustache](https://mustache.github.io/) templates that will be [resolved](#resolving-the-parameters) during the call.
 
 Example:
 ```pascal
@@ -621,7 +621,7 @@ Example:
 
 ###### [Content(ContentType)]
 
-The **Content** attribute is used to override the content of both request and response. By default the value is `application/json` so there's no need to define it if your service uses it.
+The **Content** attribute is used to override the content of both request and response. By default, the value is `application/json`, so there's no need to define it if your service uses it.
 
 Example:
 
@@ -646,12 +646,12 @@ Examples:
   [HeaderParam('ApiKey', 'Api-Key')]
 ```
 
-The `MethodParam` is the name of the parameter as it can be found in the Delphi code (call parameter or Configuration function name), while the `RestParam` is the optional name of the parameter as is requested by the service. This is required usually only when, for example, the parameter name must be `something-somethingelse` and Delphi won't be able to find any parameter or method called that way (in case you are wondering why it is because Delphi do not allows to define names containing `-`).
+The `MethodParam` is the name of the parameter as it can be found in the Delphi code (call parameter or Configuration function name), while the `RestParam` is the optional name of the parameter as is requested by the service. This is required usually only when, for example, the parameter name must be `something-somethingelse`, and Delphi won't be able to find any parameter or method called that way (in case you are wondering why it is because Delphi does not allow to define names containing `-`).
 
 ###### [Request(MethodParam)]
 
-The **Request** attribute is used when the call requires a JSON content, to inform the Fido library which parameter is to be converted in JSON and become the body of the request. 
-If the body is an aggregate we strongly suggest to descend it from `TOwningObject` so that the whole hierarchy of children objects will be freed upon destruction of the aggregate.
+The **Request** attribute is used when the call requires JSON content to inform the Fido library which parameter is to be converted in JSON and become the body of the request. 
+If the body is an aggregate, we strongly suggest descending it from `TOwningObject` so that the whole hierarchy of children objects will be freed upon the destruction of the aggregate.
 
 Example
 
@@ -689,8 +689,9 @@ Usage Examples:
 ###### [ResponseHeaderParam(MethodParam, RestParam='')]
 
 The **ResponseHeaderParam** attribute is used when a POST call is expected to return a header parameter when the response code is a specific number (usually 201), as explained [here](https://knpuniversity.com/screencast/rest/post). 
-if ParamName is not set then it assumes it has the same value as HeaderParam.
-The interface parameter must be out and of type string .
+
+If ParamName is not set then it assumes it has the same value as HeaderParam.
+The interface parameter must be out and of type string.
 
 Declaration Example:
 
@@ -744,7 +745,7 @@ And finally calls the REST service.
 The Fido library supports, out of the box, Apis based on JSON.
 The unit `Fido.Api.Client.VirtualApi.json.pas` contains the class `TJSONClientVirtualApi<T: IClientVirtualApi; IConfiguration: IClientVirtualApiConfiguration>` that can be used to consume JSON based Apis.
 
-If you need to support other flavours or you want to specialize the behaviour of the class please feel free to inherit from `TAbstractClientVirtualApi<T: IClientVirtualApi; IConfiguration: IClientVirtualApiConfiguration>` declared in `Fido.Api.Client.VirtualApi.Abstract.pas`.
+If you need to support other flavours or you want to specialize the behaviour of the class, please feel free to inherit from `TAbstractClientVirtualApi<T: IClientVirtualApi; IConfiguration: IClientVirtualApiConfiguration>` declared in `Fido.Api.Client.VirtualApi.Abstract.pas`.
 
 The inherited class will implement the following methods:
 
@@ -752,19 +753,19 @@ The inherited class will implement the following methods:
     function ConvertTValueToString(const Value: TValue): string; virtual; abstract;    
 ```
 
-In this function you will convert a TValue into a string. The Virtual Api works with RTTI so it required a way to convert a parameter from TValue to a string (JSON and XML end up writing strings).
+In this function you will convert a TValue into a string. The Virtual Api works with RTTI, so it required a way to convert a parameter from TValue to a string (JSON and XML end up writing strings).
 
 ```pascal
     function ConvertResponseToDto(const Response: string; const ConvertToClass: TClass): TValue; virtual; abstract;
 ```
 
-In this conversion you will convert from a string response  (JSON or XML depend on the Service implementation) to a instance.
+In this conversion, you will convert from a string response  (JSON or XML depending on the Service implementation) to a instance.
 
 ```pascal
     function ConvertRequestDtoToString(const Value: TValue): string; virtual; abstract;
 ```
 
-In this function you will convert the request from a TValue to a string.
+In this function, you will convert the request from a TValue to a string.
 
 ```pascal
 procedure CallApi(
@@ -781,7 +782,7 @@ procedure CallApi(
 ```
 
 This is the core procedure that will perform the Api call. 
-Is it important that you catch all the exceptions on this call because if you do not do that you will raise a generic exception, instead of getting the proper HTTP status code.
+Is it important that you catch all the exceptions on this call because if you do not do that, you will raise a generic exception instead of getting the proper HTTP status code.
 
 ### Virtual Api servers
 
@@ -955,7 +956,7 @@ end;
 end.
 ```
 
-Resources are decorated with attributes so that the server can understand how to process it.
+Resources are decorated with attributes so that the server can understand how to process them.
 
 #### Attributes
 
@@ -992,7 +993,7 @@ Example:
 ###### [Path(Method, Path)]
 
 The **Path** attribute defines to what method and endpoint the decorated method will respond.
-The Path variable can contain [Mustache](https://mustache.github.io/) templates, that will be [resolved](#resolving-the-parameters) during the call.
+The Path variable can contain [Mustache](https://mustache.github.io/) templates that will be [resolved](#resolving-the-parameters) during the call.
 
 Example:
 
@@ -1029,7 +1030,7 @@ Examples:
   [HeaderParam('ApiKey', 'Api-Key')]
 ```
 
-The `MethodParam` is the name of the parameter as it can be found in the Delphi code (call parameter or Configuration function name), while the `RestParam` is the optional name of the parameter as is requested by the service. This is required usually only when, for example, the parameter name must be `something-somethingelse` and Delphi won't be able to find any parameter or method called that way (in case you are wondering why it is because Delphi do not allows to define names containing `-`).
+The `MethodParam` is the name of the parameter as it can be found in the Delphi code (call parameter or Configuration function name), while the `RestParam` is the optional name of the parameter as is requested by the service. This is required usually only when, for example, the parameter name must be `something-somethingelse`, and Delphi won't be able to find any parameter or method called that way (in case you are wondering why, it is because Delphi does not allow to define names containing `-`).
 
 ###### [WebSocketPath(Path)]
 
@@ -1117,7 +1118,7 @@ Async procedures let you run a procedure or a sequence of procedures in a separa
 
 - *fire and forget*. A separate task is created and executed without the caller having any control of how and when it will terminate.
 - *fire and get ITask*. A separate task is created and executed and the caller gets an `ITask` that the caller can use.
-- *fire and wait*. A separate task is created and executed and the caller waits for the `Resolve` method to finish to know the final status of the async procedure.
+- *fire and wait*. A separate task is created and executed, and the caller waits for the `Resolve` method to finish to know the final status of the async procedure.
 
 ##### Usage
 
@@ -1172,7 +1173,7 @@ Async functions let you run a function or a sequence of functions in a separate 
 
 - *fire and forget*. A separate task is created and executed without the caller having any control of how and when it will terminate.
 - *fire and get ITask*. A separate task is created and executed and the caller gets an `ITask` that the caller can use.
-- *fire and wait*. A separate task is created and executed and the caller waits for the `Resolve` method to finish to know the final status and value of the async function.
+- *fire and wait*. A separate task is created, and executed and the caller waits for the `Resolve` method to finish to know the final status and value of the async function.
 
 ##### Usage
 
@@ -1222,7 +1223,7 @@ end;
 
 Unit: `Fido.Slots.Intf`.
 
-When you work with MVVM it it easy to consume the View model from the View and the binding functionalities from [FidoGui](./FidoGui.md) allows you to easily to bind components and entities (or other components). But, in order to be really workable, a solution should also provide a mechanism to link without coupling the View model to the View (or two components that are not supposed to see each other.
+When you work with MVVM, it is easy to consume the View model from the View. The binding functionalities from [FidoGui](./FidoGui.md) allow you to easily bind components and entities (or other components). But, to be really workable, a solution should also provide a mechanism to link, without coupling, the View model to the View (or two components that are not supposed to see each other).
 
 We based our functionalities on the signal and slots from the Qt C++ library.
 
@@ -1232,7 +1233,7 @@ The mechanism is pretty simple:
 
 - Signals are messages broadcasted by an `IObserver` 
 - Signals values must be formatted as `TArray<TValue>`
-- Slots can be either a `Spring.TAction<TArray<TValue>>`, or a `public` procedure whose parameters are compatible with the signal. If the signal values are not in the same format there is the possibility to map the values to the parameters the slot requires.  
+- Slots can be either a `Spring.TAction<TArray<TValue>>`, or a `public` procedure whose parameters are compatible with the signal. If the signal values are not in the same format, there is the possibility to map the values to the parameters required by the slot.  
 
 ##### Usage
 
