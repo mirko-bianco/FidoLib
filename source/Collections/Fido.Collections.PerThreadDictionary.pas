@@ -33,7 +33,7 @@ uses
   {$ifdef POSIX}
   Posix.Pthread,
   {$endif}
-
+  System.Threading,
   System.SysUtils,
   System.Classes,
 
@@ -48,7 +48,7 @@ type
   strict private
     FLock: IReadWriteSync;
     FFactoryFunc: TFunc<T>;
-    FGarbageThread: TThread;
+    FGarbageTask: ITask;
   protected
     FItems: IDictionary<TThreadId, T>;
 
@@ -104,6 +104,9 @@ begin
   LiveThreads := TCollections.CreateSet<TThreadId>(GetThreadsList);
   GarbageThreads := TCollections.CreateSet<TThreadId>;
 
+  if not Assigned(FLock) then
+    Exit;
+
   FLock.BeginWrite;
   try
     FItems.Keys.ForEach(
@@ -133,22 +136,27 @@ begin
   FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<Integer, T>(Ownership);
   FFactoryFunc := FactoryFunc;
-  FGarbageThread := TThread.CreateAnonymousThread(
+  FGarbageTask := TTask.Run(
     procedure
+    var
+      Index: Integer;
+      Task: Weak<ITask>;
     begin
+      Task := FGarbageTask;
       while true do
       begin
-        Sleep(10000);
+        if not Assigned(FGarbageTask) then
+          Exit;
+        for Index := 1 to 10 do
+          Sleep(100);
         PerformGarbageCollection;
       end;
     end);
-    FGarbageThread.NameThreadForDebugging('TPerThreadDictionary<T>.GarbageCollection');
-    FGarbageThread.Start;
 end;
 
 destructor TPerThreadDictionary<T>.Destroy;
 begin
-  FGarbageThread.Free;
+  FGarbageTask.Cancel;
   inherited;
 end;
 
