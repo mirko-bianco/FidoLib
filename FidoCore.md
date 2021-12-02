@@ -1234,8 +1234,13 @@ The mechanism is pretty simple:
 - Signals are messages broadcasted by an `IObserver` 
 - Signals values must be formatted as `TArray<TValue>`
 - Slots can be either a `Spring.TAction<TArray<TValue>>`, or a `public` procedure whose parameters are compatible with the signal. If the signal values are not in the same format, there is the possibility to map the values to the parameters required by the slot.  
+- The signal can contain a number of parameters greater than the number required by the slot.
 
 ##### Usage
+
+You can bind signals and slots in two ways:
+
+The first is by code:
 
 ```pascal
 type
@@ -1262,7 +1267,7 @@ procedure TMainView.SetupTokenSchedulerSlots;
 begin
   // When the FTokenScheduler broadcasts the LOGGED_MESSAGE message the MainView.OnLogStatusChanged procedure will be called
   Slots.RegisterWithClass<TMainView>(
-    GetSlots,
+    FSlots,
     FTokenScheduler,
     LOGGED_MESSAGE,
     ftSynched,
@@ -1276,7 +1281,7 @@ begin
     
   // When the FTokenScheduler broadcasts the TOKEN_CHANGED_MESSAGE message the MainView.SetMemo procedure will be called
   Slots.RegisterWithClass<TMainView>(
-    GetSlots,
+    FSlots,
     FTokenScheduler,
     TOKEN_CHANGED_MESSAGE,
     ftSynched,
@@ -1332,5 +1337,50 @@ begin
       else
         Self.OnCloseQuery := FormCloseQueryYes;
     end);
+end;
+```
+
+The second one is by attributes, but in this case there is not parameters overriding functionality:
+
+```pascal
+type
+  TMainView = class(TForm)
+    ...
+  private
+    FTokenScheduler: ITokenScheduler;
+    FSlots: ISlots;
+    FViewModel: IMainViewModel;
+
+    ....
+
+    procedure SetupTokenSchedulerSlots;
+    procedure SetupViewModelSlots;
+  public
+    ...
+
+    [SignalToSlot('FTokenScheduler', TOKEN_CHANGED_MESSAGE, ftSynched)]
+    procedure OnTokenChanged(const Text: string);
+    [SignalToSlot('FTokenScheduler', LOGGED_MESSAGE, ftSynched)]
+    procedure OnLogStatusChanged(const Logged: Boolean);
+    [SignalToSlot('FTokenScheduler', TOKEN_REFRESH_FAILED_MESSAGE, ftSynched)]
+    procedure OnTokenRefreshFailed(const E: Exception);
+    [SignalToSlot('FViewModel', VIEW_BUSY_MESSAGE, ftSynched)]
+    procedure OnBusyChange(const Busy: Boolean);
+
+    ...
+  end; 
+  
+implementation
+
+...
+
+procedure TMainView.SetupTokenSchedulerSlots;
+begin
+  Slots.Register(FSlots, FTokenScheduler, Self)
+end;
+
+procedure TMainView.SetupViewModelSlots;
+begin
+  Slots.Register(FSlots, FViewModel, Self)
 end;
 ```

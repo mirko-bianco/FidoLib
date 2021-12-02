@@ -222,8 +222,10 @@
         <DCCReference Include="Async\Fido.Async.Procs.pas"/>
         <DCCReference Include="Api\Server\Fido.Api.Server.Abstract.pas"/>
         <DCCReference Include="Logging\Fido.Logging.Appenders.PermanentFile.pas"/>
-        <DCCReference Include="Fido.Slots.Intf.pas"/>
-        <DCCReference Include="Fido.Slots.pas"/>
+        <DCCReference Include="Slots\Fido.Slots.Attributes.pas"/>
+        <DCCReference Include="Slots\Fido.Slots.Binding.pas"/>
+        <DCCReference Include="Slots\Fido.Slots.Intf.pas"/>
+        <DCCReference Include="Slots\Fido.Slots.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

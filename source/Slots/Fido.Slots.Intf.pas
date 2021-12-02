@@ -26,60 +26,29 @@ interface
 
 uses
   System.SysUtils,
+  System.Rtti,
 
   Spring,
 
+  Fido.Exceptions,
   Fido.DesignPatterns.Observer.Intf,
   Fido.DesignPatterns.Observable.Intf;
 
 type
   TSlotType = (ftSynched, ftNotSynched);
 
+  ESlots = class(EFidoException);
+
   ISlots = interface(IObserver)
     ['{72785413-37E9-41EE-B3BA-FCBFDFE8BFFF}']
 
     procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
-      const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: IInterface; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
     procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
 
     procedure UnregisterSignalActor(const SignalActor: IObservable);
   end;
 
-  Slots = record
-    class procedure RegisterWithClass<T: class>(const TheSlots: ISlots; const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: T; const MethodName: string;
-      const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload; static;
-    class procedure RegisterWithInterface<T: IInterface>(const TheSlots: ISlots; const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: T;
-      const MethodName: string; const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload; static;
-  end;
-
 implementation
-
-{ Slots }
-
-class procedure Slots.RegisterWithClass<T>(
-  const TheSlots: ISlots;
-  const SignalActor: IObservable;
-  const Message: string;
-  const FlowType: TSlotType;
-  const SlotActor: T;
-  const MethodName: string;
-  const MapParams: TFunc<TArray<TValue>, TArray<TValue>>);
-begin
-  TheSlots.Register(SignalActor, Message, FlowType, SlotActor, TypeInfo(T), MethodName, MapParams);
-end;
-
-class procedure Slots.RegisterWithInterface<T>(
-  const TheSlots: ISlots;
-  const SignalActor: IObservable;
-  const Message: string;
-  const FlowType: TSlotType;
-  const SlotActor: T;
-  const MethodName: string;
-  const MapParams: TFunc<TArray<TValue>, TArray<TValue>>);
-begin
-  TheSlots.Register(SignalActor, Message, FlowType, SlotActor, TypeInfo(T), MethodName, MapParams);
-end;
 
 end.

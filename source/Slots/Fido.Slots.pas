@@ -67,8 +67,6 @@ type
 
     procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: IInterface; const TypInfo: pTypeInfo; const MethodName: string;
-      const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
     procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
 
     procedure UnregisterSignalActor(const SignalActor: IObservable);
@@ -214,60 +212,29 @@ begin
   Proc := procedure(const Values: TArray<TValue>)
     var
       MappedValues: TArray<TValue>;
+      RequiredParams: Integer;
+      Index: Integer;
     begin
       try
         if Assigned(MapParams) then
           MappedValues := MapParams(Values)
         else
-          MappedValues := Values;
+        begin
+          RequiredParams := Length(Method.GetParameters);
+          if Length(Values) = RequiredParams then
+            MappedValues := Values
+          else
+          begin
+            SetLength(MappedValues, RequiredParams);
+            for Index := 0 to RequiredParams - 1 do
+              MappedValues[Index] := Values[Index];
+          end;
+        end;
 
         Method.Invoke(SlotActor, MappedValues);
       except
         on E: Exception do
-          raise ESlots.CreateFmt('Interaction failed. Error Message: %s', [E.Message]);
-      end;
-    end;
-
-  Register(SignalActor, Message, SlotType, Proc);
-end;
-
-procedure TSlots.Register(
-  const SignalActor: IObservable;
-  const Message: string;
-  const SlotType: TSlotType;
-  const SlotActor: IInterface;
-  const TypInfo: pTypeInfo;
-  const MethodName: string;
-  const MapParams: TFunc<TArray<TValue>, TArray<TValue>>);
-var
-  Proc: Spring.TAction<TArray<TValue>>;
-  Method: TRttiMethod;
-  Ctx: TRttiContext;
-  Value: TValue;
-begin
-  Method := Ctx.GetType(TypInfo).GetMethod(MethodName);
-
-  if not Assigned(Method) then
-    raise ESlots.CreateFmt('Method %s not found', [MethodName]);
-
-  if Method.MethodKind <> TMethodKind.mkProcedure then
-    raise ESlots.CreateFmt('Method %s is not a procedure', [MethodName]);
-
-  Proc := procedure(const Values: TArray<TValue>)
-    var
-      MappedValues: TArray<TValue>;
-    begin
-      try
-        if Assigned(MapParams) then
-          MappedValues := MapParams(Values)
-        else
-          MappedValues := Values;
-
-        Value := TValue.From<IInterface>(SlotActor);
-        Method.Invoke(Value, MappedValues);
-      except
-        on E: Exception do
-          raise ESlots.CreateFmt('Interaction failed. Error Message: %s', [E.Message]);
+          raise ESlots.CreateFmt('Slot failed. Method: %s Error Message: %s', [MethodName, E.Message]);
       end;
     end;
 
