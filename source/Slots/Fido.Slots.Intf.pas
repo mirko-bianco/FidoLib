@@ -42,7 +42,7 @@ type
   ISlots = interface(IObserver)
     ['{72785413-37E9-41EE-B3BA-FCBFDFE8BFFF}']
 
-    procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
+    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
     procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
 
