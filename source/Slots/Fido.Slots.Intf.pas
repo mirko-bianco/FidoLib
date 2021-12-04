@@ -44,7 +44,7 @@ type
 
     procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure Register(const SignalActor: IObservable; const Message: string; const FlowType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
+    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
 
     procedure UnregisterSignalActor(const SignalActor: IObservable);
   end;
