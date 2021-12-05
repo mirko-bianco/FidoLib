@@ -70,6 +70,7 @@ type
       FWorker: ITask;
       FTask: ITask;
       FStatus: IBox<TAsyncProcStatus>;
+      FResolving: IBox<Boolean>;
     public
       constructor Create(const Action: TAsyncProcAction);
       destructor Destroy; override;
@@ -109,7 +110,7 @@ begin
   FCatch :=
     procedure(const E: Exception)
     begin
-      raise EAsyncProcs.Create(E.Message);
+      raise E;
     end;
   FWhenExpired :=
     procedure
@@ -118,6 +119,7 @@ begin
   FWorker := nil;
   FTask := nil;
   FStatus := Box<TAsyncProcStatus>.Setup(NotStarted);
+  FResolving := Box<Boolean>.Setup(False);
 end;
 
 destructor AsyncProcs.TAsyncProc.Destroy;
@@ -128,6 +130,7 @@ end;
 
 function AsyncProcs.TAsyncProc.Resolve: TAsyncProcStatus;
 begin
+  FResolving.UpdateValue(True);
   while FStatus.Value = Running do
     Sleep(5);
 
@@ -146,17 +149,13 @@ begin
     procedure
     var
       Action: TAsyncProcAction;
-      LException: TObject;
-      AsyncProc: Weak<IAsyncProc>;
+      AsyncProc: IAsyncProc;
+      ErrorMessage: string;
     begin
       AsyncProc := Parent;
-      LException := nil;
       try
-        while AsyncProc.IsAlive and FActions.TryExtract(Action) and (FStatus.Value <> Expired) do
+        while FActions.TryExtract(Action) and (FStatus.Value <> Expired) do
           Action();
-
-        if not AsyncProc.IsAlive then
-          Exit;
 
         if FStatus.Value <> Expired then
           FStatus.UpdateValue(Finished);
@@ -165,23 +164,21 @@ begin
         begin
           try
             FCatch(E);
-          except
-            LException := AcquireExceptionObject;
-          end;
-
-          if Assigned(LException) then
-          begin
-            FStatus.UpdateValue(Failed);
-            TThread.ForceQueue(
-              nil,
-              procedure
-              begin
-                raise EAsyncProcs.Create(LException.ToString);
-              end);
-            LException.Free;
-          end
-          else
             FStatus.UpdateValue(Finished);
+          except
+            on E2: Exception do
+            begin
+              FStatus.UpdateValue(Failed);
+              ErrorMessage := E2.Message;
+              if not FResolving.Value then
+                TThread.ForceQueue(
+                  nil,
+                  procedure
+                  begin
+                    raise EAsyncProcs.Create(ErrorMessage);
+                  end);
+            end;
+          end;
         end;
       end;
     end);
