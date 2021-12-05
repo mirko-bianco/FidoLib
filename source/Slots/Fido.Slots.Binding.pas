@@ -30,14 +30,20 @@ uses
   System.TypInfo,
 
   Spring,
+  Spring.Collections,
 
+  Fido.Exceptions,
   Fido.DesignPatterns.Observable.Intf,
-
   Fido.Slots.Attributes,
   Fido.Slots.Intf;
 
 type
+  ESlotBinding = class(EFidoException);
+
   Slots = record
+  private
+    class function TryFindSignalActor(const SlotActor: TObject; const RttiType: TRttiType; const ObservableName: string; out SignalActor: IObservable): Boolean; static;
+  public
     class procedure RegisterWithClass<T: class>(const TheSlots: ISlots; const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: T; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload; static;
 
@@ -48,6 +54,41 @@ implementation
 
 { Slots }
 
+class function Slots.TryFindSignalActor(const SlotActor: TObject; const RttiType: TRttiType; const ObservableName: string; out SignalActor: IObservable): Boolean;
+  var
+    ObservableField: TRttiField;
+    ObservableGetter: TRttiMethod;
+    Value: TValue;
+  begin
+    Result := False;
+    try
+      ObservableField := RttiType.GetField(ObservableName);
+      if Assigned(ObservableField) then
+      begin
+        if not ObservableField.GetValue(SlotActor).IsType<IObservable> then
+          Exit(False);
+        SignalActor := ObservableField.GetValue(SlotActor).AsType<IObservable>;
+        Exit(True);
+      end;
+
+      ObservableGetter := RttiType.GetMethod(ObservableName);
+      if Assigned(ObservableGetter) and
+         (ObservableGetter.MethodKind = mkFunction) and
+         (Length(ObservableGetter.GetParameters) = 0) then
+      begin
+        Value := ObservableGetter.Invoke(SlotActor, []);
+        if not Value.IsType<IObservable> then
+          Exit(False);
+
+        SignalActor := Value.AsType<IObservable>;
+        Exit(True);
+      end;
+    except
+      on E: Exception do
+        raise ESlotBinding.CreateFmt('Slots.Register raised an exception: %s', [E.Message]);
+    end;
+  end;
+
 class procedure Slots.Register(
   const TheSlots: ISlots;
   const SignalActor: IObservable;
@@ -55,54 +96,37 @@ class procedure Slots.Register(
 var
   Ctx: TRttiContext;
   RttiType: TRttiType;
-  RttiMethod: TRttiMethod;
-  Attribute: TCustomAttribute;
-  ObservableField: TRttiField;
-  ObservableGetter: TRttiMethod;
-  ObservableName: string;
-  Message: string;
-  SlotType: TSlotType;
-  FoundSignalActor: IObservable;
 begin
   Ctx := TRttiContext.Create;
 
   RttiType := Ctx.GetType(SlotActor.ClassType);
 
-  for RttiMethod in RttiType.GetMethods do
-  begin
-    for Attribute in RttiMethod.GetAttributes do
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).
+    ForEach(procedure(const Method: TRttiMethod)
     begin
-      if Attribute is SignalToSlotAttribute then
-      begin
-        ObservableName := (Attribute as SignalToSlotAttribute).ObservableName;
-        Message := (Attribute as SignalToSlotAttribute).Message;
-        SlotType := (Attribute as SignalToSlotAttribute).SlotType;
-
-        FoundSignalActor := nil;
-        try
-          ObservableField := RttiType.GetField(ObservableName);
-          if Assigned(ObservableField) then
-            FoundSignalActor := ObservableField.GetValue(SlotActor).AsType<IObservable>
-          else
+      TCollections.CreateList<TCustomAttribute>(Method.GetAttributes).
+        Where(function(const Attribute: TCustomAttribute): Boolean
           begin
-            ObservableGetter := RttiType.GetMethod(ObservableName);
-            if Assigned(ObservableGetter) and
-               (ObservableGetter.MethodKind = mkFunction) and
-               (Length(ObservableGetter.GetParameters) = 0) then
-              FoundSignalActor := ObservableGetter.Invoke(SlotActor, []).AsType<IObservable>
-            else
-              raise ESlots.CreateFmt('Slots.Register signal actor %s not found', [ObservableName]);
-          end;
-        except
-          on E: Exception do
-            raise ESlots.CreateFmt('Slots.Register raised an exception: %s', [E.Message]);
-        end;
+            result := Attribute is SignalToSlotAttribute;
+          end).
+        ForEach(procedure(const Attribute: TCustomAttribute)
+          var
+            ObservableName: string;
+            Message: string;
+            SlotType: TSlotType;
+            FoundSignalActor: IObservable;
+          begin
+            ObservableName := (Attribute as SignalToSlotAttribute).ObservableName;
+            Message := (Attribute as SignalToSlotAttribute).Message;
+            SlotType := (Attribute as SignalToSlotAttribute).SlotType;
 
-        if FoundSignalActor = SignalActor then
-          TheSlots.Register(SignalActor, Message, SlotType, SlotActor, RttiType.Handle, RttiMethod.Name)
-      end;
-    end;
-  end;
+            if not TryFindSignalActor(SlotActor, RttiType, ObservableName, FoundSignalActor) then
+              raise ESlotBinding.CreateFmt('Slots.Register signal actor %s not found', [ObservableName]);
+
+            if FoundSignalActor = SignalActor then
+              TheSlots.Register(SignalActor, Message, SlotType, SlotActor, RttiType.Handle, Method.Name)
+          end)
+    end);
 end;
 
 class procedure Slots.RegisterWithClass<T>(

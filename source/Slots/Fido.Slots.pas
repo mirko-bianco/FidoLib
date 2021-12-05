@@ -125,14 +125,14 @@ begin
       begin
         Params := Notification.GetData.AsType<TArray<TValue>>;
         case SignalSlot.SlotType of
-          ftSynched:
+          stSynched:
             TThread.Synchronize(
               nil,
               procedure
               begin
                 SignalSlot.FSlot(Params)
               end);
-          ftNotSynched: SignalSlot.FSlot(Params);
+          stNotSynched: SignalSlot.FSlot(Params);
         end;
       end);
   finally

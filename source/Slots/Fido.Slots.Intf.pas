@@ -35,7 +35,7 @@ uses
   Fido.DesignPatterns.Observable.Intf;
 
 type
-  TSlotType = (ftSynched, ftNotSynched);
+  TSlotType = (stSynched, stNotSynched);
 
   ESlots = class(EFidoException);
 

@@ -37,7 +37,8 @@ uses
   Fido.DesignPatterns.Retries.Test in 'DesignPatterns\Fido.DesignPatterns.Retries.Test.pas',
   Fido.Boxes.Test in 'Fido.Boxes.Test.pas',
   Fido.Async.Funcs.Test in 'Async\Fido.Async.Funcs.Test.pas',
-  Fido.Async.Procs.Test in 'Async\Fido.Async.Procs.Test.pas';
+  Fido.Async.Procs.Test in 'Async\Fido.Async.Procs.Test.pas',
+  Fido.Slots.Binding.Tests in 'Slots\Fido.Slots.Binding.Tests.pas';
 
 var
   runner : ITestRunner;
