@@ -49,13 +49,15 @@ type
       FMessage: string;
       FSlot: Spring.TAction<TArray<TValue>>;
       FSlotType: TSlotType;
+
+      function GetSignalActor: IObservable;
     public
       constructor Create(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>);
 
-      function SignalActor: IObservable;
-      function Message: string;
-      function SlotType: TSlotType;
-      function Slot: Spring.TAction<TArray<TValue>>;
+      property SignalActor: IObservable read GetSignalActor;
+      property Message: string read FMessage;
+      property SlotType: TSlotType read FSlotType;
+      property Slot: Spring.TAction<TArray<TValue>> read FSlot;
     end;
   private
     FLock: IReadWriteSync;
@@ -255,24 +257,9 @@ begin
   FSlotType := SlotType;
 end;
 
-function TSlots.TSignalSlot.Message: string;
-begin
-  Result := FMessage;
-end;
-
-function TSlots.TSignalSlot.SignalActor: IObservable;
+function TSlots.TSignalSlot.GetSignalActor: IObservable;
 begin
   Result := FSignalActor;
-end;
-
-function TSlots.TSignalSlot.Slot: Spring.TAction<TArray<TValue>>;
-begin
-  Result := FSlot;
-end;
-
-function TSlots.TSignalSlot.SlotType: TSlotType;
-begin
-  Result := FSlotType;
 end;
 
 end.
