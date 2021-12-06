@@ -124,7 +124,9 @@ begin
       procedure(const SignalSlot: TSignalSlot)
       var
         Params: TArray<TValue>;
+        LSignalSlot: TSignalSlot;
       begin
+        LSignalSlot := SignalSlot;
         Params := Notification.GetData.AsType<TArray<TValue>>;
         case SignalSlot.SlotType of
           stSynched:
@@ -132,7 +134,7 @@ begin
               nil,
               procedure
               begin
-                SignalSlot.FSlot(Params)
+                LSignalSlot.FSlot(Params)
               end);
           stNotSynched: SignalSlot.FSlot(Params);
         end;
