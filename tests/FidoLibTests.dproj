@@ -192,6 +192,7 @@
         <DCCReference Include="Fido.Boxes.Test.pas"/>
         <DCCReference Include="Async\Fido.Async.Funcs.Test.pas"/>
         <DCCReference Include="Async\Fido.Async.Procs.Test.pas"/>
+        <DCCReference Include="Slots\Fido.Slots.Binding.Tests.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
