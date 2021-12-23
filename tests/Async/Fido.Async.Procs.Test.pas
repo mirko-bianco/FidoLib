@@ -38,6 +38,12 @@ type
 
     [Test]
     procedure AsyncProcsWithMultipleStepsAndResolveSetsStatusToCancelledWhenItExpires;
+
+    [Test]
+    procedure AsyncProcsWithFinallyRunsItWhenEnds;
+
+    [Test]
+    procedure AsyncProcsWithFinallyRunsItWhenAnExceptionIsRaised;
   end;
 
 implementation
@@ -136,6 +142,50 @@ begin
     Resolve;
 
   Assert.AreEqual(TAsyncProcstatus.Finished, Result);
+end;
+
+procedure TAsyncProcsTests.AsyncProcsWithFinallyRunsItWhenAnExceptionIsRaised;
+var
+  FinallyCalled: IBox<Boolean>;
+begin
+  FinallyCalled := Box<Boolean>.Setup(False);
+
+  AsyncProcs.
+    Queue(
+      procedure
+      begin
+        raise EFidoTestException.Create('Error Message');
+      end).
+    &Finally(procedure
+    begin
+      FinallyCalled.UpdateValue(True);
+    end).
+    Run.
+    Resolve;
+
+  Assert.AreEqual(True, FinallyCalled.Value);
+end;
+
+procedure TAsyncProcsTests.AsyncProcsWithFinallyRunsItWhenEnds;
+var
+  FinallyCalled: IBox<Boolean>;
+begin
+  FinallyCalled := Box<Boolean>.Setup(False);
+
+  AsyncProcs.
+    Queue(
+      procedure
+      begin
+        Sleep(25);
+      end).
+    &Finally(procedure
+    begin
+      FinallyCalled.UpdateValue(True);
+    end).
+    Run.
+    Resolve;
+
+  Assert.AreEqual(True, FinallyCalled.Value);
 end;
 
 procedure TAsyncProcsTests.AsyncProcsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinished;

@@ -56,6 +56,7 @@ type
   TAsyncFuncAction = reference to function(const Value: TValue): TValue;
   TAsyncFuncCatch<T> = reference to function(const E: Exception): T;
   TAsyncFuncWhenExpired<T> = reference to function: T;
+  TAsyncFuncFinally = reference to procedure;
 
   IAsyncFunc<TFrom, TTo> = interface(IInvokable)
     ['{92292D61-AC9C-4A36-ADBE-D7AEEDC58449}']
@@ -63,6 +64,7 @@ type
     function &Then(const Action: TAsyncFuncAction): IAsyncFunc<TFrom, TTo>;
     function Catch(const OnCatch: TAsyncFuncCatch<TTo>): IAsyncFunc<TFrom, TTo>;
     function Within(const SpanInMs: Cardinal; const WhenExpired: TAsyncFuncWhenExpired<TTo>): IAsyncFunc<TFrom, TTo>;
+    function &Finally(const OnFinally: TAsyncFuncFinally): IAsyncFunc<TFrom, TTo>;
 
     function Run(const Value: TFrom): IAsyncFunc<TFrom, TTo>;
 
@@ -79,6 +81,7 @@ type
       FSpanInMs: Cardinal;
       FWhenExpired: TAsyncFuncWhenExpired<TTo>;
       FCatch: TAsyncFuncCatch<TTo>;
+      FFinally: TAsyncFuncFinally;
       FFuture: IFuture<TTo>;
       FTask: ITask;
       FStatus: IBox<TAsyncFuncStatus>;
@@ -90,6 +93,7 @@ type
       function &Then(const Action: TAsyncFuncAction): IAsyncFunc<TFrom, TTo>;
       function Catch(const OnCatch: TAsyncFuncCatch<TTo>): IAsyncFunc<TFrom, TTo>;
       function Within(const SpanInMs: Cardinal; const WhenExpired: TAsyncFuncWhenExpired<TTo>): IAsyncFunc<TFrom, TTo>;
+      function &Finally(const OnFinally: TAsyncFuncFinally): IAsyncFunc<TFrom, TTo>;
 
       function Run(const Value: TFrom): IAsyncFunc<TFrom, TTo>;
 
@@ -108,6 +112,12 @@ type
 implementation
 
 { AsyncFuncs<TFrom, TTo>.TAsyncFunc }
+
+function AsyncFuncs<TFrom, TTo>.TAsyncFunc.&Finally(const OnFinally: TAsyncFuncFinally): IAsyncFunc<TFrom, TTo>;
+begin
+  FFinally := OnFinally;
+  Result := Self;
+end;
 
 function AsyncFuncs<TFrom, TTo>.TAsyncFunc.Catch(const OnCatch: TAsyncFuncCatch<TTo>): IAsyncFunc<TFrom, TTo>;
 begin
@@ -132,6 +142,10 @@ begin
     function: TTo
     begin
       Result := Default(TTo);
+    end;
+  FFinally :=
+    procedure
+    begin
     end;
   FFuture := nil;
   FTask := nil;
@@ -178,42 +192,49 @@ begin
       AsyncFunc := Parent;
       CurrValue := TValue.From<TFrom>(Value);
       try
-        while FActions.TryExtract(Action) and (FStatus.Value <> Expired) do
-          CurrValue := Action(CurrValue);
+        try
+          while FActions.TryExtract(Action) and (FStatus.Value <> Expired) do
+            CurrValue := Action(CurrValue);
 
-        if FStatus.Value <> Expired then
-        begin
-          Result := CurrValue.AsType<TTo>;
-          FStatus.UpdateValue(Finished);
-        end;
-      except
-        on E: Exception do
-        begin
-          try
-            Result := FCatch(E);
+          if FStatus.Value <> Expired then
+          begin
+            Result := CurrValue.AsType<TTo>;
             FStatus.UpdateValue(Finished);
-          except
-            on E2: Exception do
-            begin
-              ErrorMessage := E2.Message;
-              FStatus.UpdateValue(Failed);
-              if not FResolving.Value then
-                TThread.ForceQueue(
-                  nil,
-                  procedure
-                  begin
-                    raise EAsyncFuncs.Create(ErrorMessage);
-                  end);
+          end;
+        except
+          on E: Exception do
+          begin
+            try
+              Result := FCatch(E);
+              FStatus.UpdateValue(Finished);
+            except
+              on E2: Exception do
+              begin
+                ErrorMessage := E2.Message;
+                FStatus.UpdateValue(Failed);
+                if not FResolving.Value then
+                  TThread.ForceQueue(
+                    nil,
+                    procedure
+                    begin
+                      raise EAsyncFuncs.Create(ErrorMessage);
+                    end);
+              end;
             end;
           end;
         end;
+      finally
+        FFinally();
       end;
     end);
   FStatus.UpdateValue(Running);
 
   FTask := TTask.Create(
     procedure
+    var
+      AsyncFunc: IAsyncFunc<TFrom, TTo>;
     begin
+      AsyncFunc := Parent;
       FFuture.Start;
       Executed := FFuture.Wait(FSpanInMs);
       if (not Executed) and (FStatus.Value = Running) then
