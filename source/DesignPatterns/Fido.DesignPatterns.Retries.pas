@@ -25,23 +25,40 @@ unit Fido.DesignPatterns.Retries;
 interface
 
 uses
-  System.SysUtils;
+  System.SysUtils,
+
+  Spring,
+  Spring.Collections;
 
 type
   Retries = record
-    class function Run<T>(const Func: TFunc<T>; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): T; overload; static;
-    class procedure Run(const Proc: TProc; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250); overload; static;
+    class function Run<T>(const Func: TFunc<T>; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): T; overload; static;
+    class procedure Run(const Proc: TProc; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250); overload; static;
   end;
 
 implementation
 
 { Retries }
 
-class procedure Retries.Run(const Proc: TProc; const MaxRetries, RetryIntervalInMSec: Integer);
+class procedure Retries.Run(
+  const Proc: TProc;
+  const RetryOnException: TPredicate<Exception>;
+  const MaxRetries: Integer;
+  const RetryIntervalInMSec: Integer);
 var
+  OnException: TPredicate<Exception>;
   Index: Integer;
   FailCount: Integer;
 begin
+  OnException :=
+    function(const Exc: Exception): Boolean
+    begin
+      Result := True;
+    end;
+
+  if Assigned(RetryOnException) then
+    OnException := RetryOnException;
+
   FailCount := 0;
   for Index := 1 to MaxRetries do
   begin
@@ -51,6 +68,9 @@ begin
     except
       on E: Exception do
       begin
+        if not OnException(E) then
+          raise;
+
         Inc(FailCount);
         if FailCount >= MaxRetries then
           raise
@@ -61,11 +81,26 @@ begin
   end;
 end;
 
-class function Retries.Run<T>(const Func: TFunc<T>; const MaxRetries, RetryIntervalInMSec: Integer): T;
+class function Retries.Run<T>(
+  const Func: TFunc<T>;
+  const RetryOnException: TPredicate<Exception>;
+  const MaxRetries: Integer;
+  const RetryIntervalInMSec: Integer): T;
 var
+  OnException: TPredicate<Exception>;
   Index: Integer;
   FailCount: Integer;
+  Value: TClass;
 begin
+  OnException :=
+    function(const Exc: Exception): Boolean
+    begin
+      Result := True;
+    end;
+
+  if Assigned(RetryOnException) then
+    OnException := RetryOnException;
+
   FailCount := 0;
   for Index := 1 to MaxRetries do
   begin
@@ -75,6 +110,9 @@ begin
     except
       on E: Exception do
       begin
+        if not OnException(E) then
+          raise;
+
         Inc(FailCount);
         if FailCount >= MaxRetries then
           raise
