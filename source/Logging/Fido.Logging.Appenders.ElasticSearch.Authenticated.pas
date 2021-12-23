@@ -75,34 +75,30 @@ procedure TElasticsearchAuthenticatedAppender.DoSend(const Event: TLogEvent);
 var
   ExceptionPtr: Pointer;
   LEvent: TLogEvent;
+  Request: TElasticsearchDocumentRequest;
+  Response: IElasticsearchDocumentResponse;
+  Content: TObject;
 begin
   LEvent := Event;
   ExceptionPtr := AcquireExceptionObject;
-  TThread.CreateAnonymousThread(
-    procedure
-    var
-      Request: TElasticsearchDocumentRequest;
-      Response: IElasticsearchDocumentResponse;
-      Content: TObject;
-    begin
-      Content := nil;
-      if LEvent.Data.IsObject then
-        Content := LEvent.Data.AsObject;
-      Request := TElasticsearchDocumentRequest.Create(
-        LEvent.Level,
-        LEvent.EventType,
-        LEvent.Msg,
-        LEvent.TimeStamp,
-        Exception(ExceptionPtr),
-        Content);
 
-      Response := FApi.Add('ApiKey ' + FApiKey, FIndex, FTypeName, Request);
+  Content := nil;
+  if LEvent.Data.IsObject then
+    Content := LEvent.Data.AsObject;
+  Request := TElasticsearchDocumentRequest.Create(
+    LEvent.Level,
+    LEvent.EventType,
+    LEvent.Msg,
+    LEvent.TimeStamp,
+    Exception(ExceptionPtr),
+    Content);
 
-      try
-        Request.Free;
-      except
-      end;
-    end).Start;
+  Response := FApi.Add('ApiKey ' + FApiKey, FIndex, FTypeName, Request);
+
+  try
+    Request.Free;
+  except
+  end;
 end;
 
 end.
