@@ -35,6 +35,7 @@ uses
   System.Generics.Defaults,
   System.Generics.Collections,
   Rest.Types,
+  Rest.Client,
 
   Spring,
   Spring.Collections,
@@ -148,10 +149,12 @@ type
       const Call: TClientVirtualApiCall);
     procedure MapArgumentAndConfiguration(const Arguments: IDictionary<string, TPair<string, TValue>>);
     procedure DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
+    procedure UpdateConfiguration(const Method: TRttiMethod; const Headers: TStrings);
   protected const
     CONTENT = 'application/json';
   protected
     class function GetAcceptHeaderWithApiVersion(const AcceptHeader: string): string;
+
     function ConvertTValueToString(const Value: TValue): string; virtual; abstract;
     function ConvertResponseToDto(const Response: string; const TypeInfo: PTypeInfo): TValue; virtual; abstract;
     function ConvertRequestDtoToString(const Value: TValue): string; virtual; abstract;
@@ -560,7 +563,6 @@ begin
 
   FLastStatusCode := Call.Value.ResponseCode;
 
-
   if not Call.Value.IsOk then
   begin
     if EndPointInfo.ConvertResponseForErrorCodeInfo.HasValue and (EndPointInfo.ConvertResponseForErrorCodeInfo.Value.ErrorCode = Call.Value.ResponseCode) then
@@ -595,7 +597,9 @@ begin
     Result := ConvertResponseToDto(Call.Value.ResponseContent, Method.ReturnType.Handle);
 
   if Assigned(ActiveConfig) then
-    ActiveConfig.CallEnded(Call.Value)
+    ActiveConfig.CallEnded(Call.Value);
+
+  UpdateConfiguration(Method, Call.Value.ResponseHeaders);
 end;
 
 class procedure TAbstractClientVirtualApi<T, IConfiguration>.SetApiVersion(const ApiInterface: TRttiType);
@@ -609,6 +613,57 @@ begin
         Result := Attribute is ApiVersionAttribute;
       end) then
     FApiVersion := ApiVersionAttribute(Attribute).Version;
+end;
+
+procedure TAbstractClientVirtualApi<T, IConfiguration>.UpdateConfiguration(const Method: TRttiMethod; const Headers: TStrings);
+var
+  Map: IDictionary<string, string>;
+  Context: TRttiContext;
+  RttiType: TRttiType;
+begin
+  Map := TCollections.CreateDictionary<string, string>;
+
+  TCollections.CreateList<TCustomAttribute>(Method.GetAttributes)
+    .Where(function(const Item: TCustomAttribute): Boolean
+      begin
+        Result := (Item is HeaderParamAttribute);
+      end)
+    .ForEach(procedure(const Item: TCustomAttribute)
+      var
+        Attribute: HeaderParamAttribute;
+        ApiParam: string;
+      begin
+        Attribute := Item as HeaderParamAttribute;
+        ApiParam := Attribute.ApiParam;
+        if ApiParam.IsEmpty then
+          ApiParam := Attribute.MethodParam;
+        Map[ApiParam] := Attribute.MethodParam;
+      end);
+
+  Context := TRttiContext.Create;
+  RttiType := Context.GetType(TypeInfo(IConfiguration));
+
+  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+    .Where(function(const Item: TRttiMethod): Boolean
+      begin
+        Result := (Item.MethodKind = mkProcedure) and
+          (Length(Item.GetParameters) = 1);
+      end)
+    .ForEach(procedure(const Item: TRttiMethod)
+      var
+        Index: Integer;
+        ApiParamName: string;
+      begin
+        for Index := 0 to Headers.Count -1  do
+        begin
+          if not Map.TryGetValue(Headers.Names[Index], ApiParamName) then
+            Continue;
+
+          if Item.Name.ToLower.Equals(Format('set%s', [ApiParamName]).ToLower) then
+            Item.Invoke(TValue.From<IConfiguration>(FConfiguration), [TValue.From<string>(Headers.ValueFromIndex[Index])])
+        end;
+      end);
+
 end;
 
 class function TAbstractClientVirtualApi<T, IConfiguration>.InspectMethod(const Method: TRttiMethod): TClientVirtualApiEndPointInfo;

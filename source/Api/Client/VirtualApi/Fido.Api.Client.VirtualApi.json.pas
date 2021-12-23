@@ -77,6 +77,7 @@ begin
   ApiClient.Value.Accept := GetAcceptHeaderWithApiVersion(Call.ContentType);
   ApiClient.Value.ContentType := Call.ContentType;
   ApiClient.Value.BaseURL := Call.Url;
+  ApiClient.Value.RaiseExceptionOn500 := False;
 
   ApiRequest.Value.Client := ApiClient;
   ApiRequest.Value.Response := ApiResponse;

@@ -54,9 +54,9 @@ type
     function Method: THttpMethod;
     function URI: string;
     function Body: string;
-    function FormParams: IReadOnlyDictionary<string, string>;
-    function HeaderParams: IReadOnlyDictionary<string, string>;
-    function QueryParams: IReadOnlyDictionary<string, string>;
+    function FormParams: IDictionary<string, string>;
+    function HeaderParams: IDictionary<string, string>;
+    function QueryParams: IDictionary<string, string>;
     function MimeType: TMimeType;
   end;
 
@@ -153,19 +153,19 @@ begin
   Result := FBody;
 end;
 
-function THttpRequest.FormParams: IReadOnlyDictionary<string, string>;
+function THttpRequest.FormParams: IDictionary<string, string>;
 begin
-  Result := FFormParams.AsReadOnlyDictionary;
+  Result := FFormParams;
 end;
 
-function THttpRequest.HeaderParams: IReadOnlyDictionary<string, string>;
+function THttpRequest.HeaderParams: IDictionary<string, string>;
 begin
-  Result := FHeaderParams.AsReadOnlyDictionary;
+  Result := FHeaderParams;
 end;
 
-function THttpRequest.QueryParams: IReadOnlyDictionary<string, string>;
+function THttpRequest.QueryParams: IDictionary<string, string>;
 begin
-  Result := FQueryParams.AsReadOnlyDictionary;
+  Result := FQueryParams;
 end;
 
 end.

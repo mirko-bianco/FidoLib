@@ -725,10 +725,12 @@ Let's assume we have this Api definition:
     function AccountByAccountIdPut([RestParam('AccountId')] Account_Id: Integer; Request: TUpdateIdentityRequest): TUpdateIdentityResponse;          
   end;                    
           
-  IMySettings = interface(IBaseRestApiConfiguration)            
+  IMySettings = interface(IClientVirtualApiConfiguration)            
     ['{D875BB18-F217-4208-8B41-17A867BA9F2B}']            
     
-    function GetApiKey: string;          
+    [ApiParam('Api-Key')]
+    function GetApiKey: string;
+    procedure SetApiKey(const Value: string);
   end;
 ```
 
@@ -739,6 +741,10 @@ When the `AccountByAccountIdPut` method is called the Fido library executes the 
  - Reads the result from the `GetApiKey` function and saves it as a header parameter called `Api-Key`.
 
 And finally calls the REST service.
+
+**Updating the ApiConfiguration**
+
+If an Api call outputs a parameter that is called as one of the ApiConfiguration parameters (using the convention `Set<ParameterName>`) the library will automatically update it. This is useful, for example, in case of headers or tokens that can be updated by server (i.e. Access tokens).
 
 ##### Out of the box and craftsmanship
 
