@@ -45,6 +45,10 @@ type
     constructor Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string);
   end;
 
+  EApiServer503 = class(EFidoException); //Service unavailable
+
+  EApiServer504 = class(EFidoException); //Gateway timeout
+
 
 implementation
 

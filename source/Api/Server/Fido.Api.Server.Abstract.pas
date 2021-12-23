@@ -287,12 +287,16 @@ begin
     var
       Value: TValue;
       ParameterValue: string;
+      ItemName: string;
     begin
       if not Item.IsOut then
       begin
+        ItemName := Item.Name;
+        if not Item.RestName.IsEmpty then
+          ItemName := Item.RestName;
         case Item.&Type of
           mptPath: begin
-            if not PathParams.TryGetValue(Item.Name, ParameterValue) then
+            if not PathParams.TryGetValue(ItemName, ParameterValue) then
             begin
               if not Item.IsNullable then
               begin
@@ -310,7 +314,7 @@ begin
             end;
           end;
           mptForm: begin
-            if not ApiRequest.FormParams.TryGetValue(Item.Name, ParameterValue) then
+            if not ApiRequest.FormParams.TryGetValue(ItemName, ParameterValue) then
             begin
               if not Item.IsNullable then
               begin
@@ -326,7 +330,7 @@ begin
             LParams[ParameterIndex] := Value;
           end;
           mptHeader: begin
-            if not ApiRequest.HeaderParams.TryGetValue(Item.Name, ParameterValue) then
+            if not ApiRequest.HeaderParams.TryGetValue(ItemName, ParameterValue) then
             begin
               if not Item.IsNullable then
               begin
@@ -342,7 +346,7 @@ begin
             LParams[ParameterIndex] := Value;
           end;
           mptQuery: begin
-            if not ApiRequest.QueryParams.TryGetValue(Item.Name, ParameterValue) then
+            if not ApiRequest.QueryParams.TryGetValue(ItemName, ParameterValue) then
             begin
               if not Item.IsNullable then
               begin
@@ -385,10 +389,8 @@ procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFac
   const EndPoint: TEndPoint;
   const Params: array of TValue);
 var
-  ParameterIndex: Integer;
   LParams: IList<TValue>;
 begin
-  ParameterIndex := 0;
   LParams := TCollections.CreateList<TValue>(Params);
 
   EndPoint.Parameters
@@ -397,14 +399,23 @@ begin
         Result := Item.IsOut;
       end)
     .ForEach(procedure(const Item: TEndPointParameter)
+      var
+        ItemName: string;
+        ParameterIndex: Integer;
       begin
+        ItemName := Item.Name;
+        if not Item.RestName.IsEmpty then
+          ItemName := Item.RestName;
+
+        ParameterIndex := EndPoint.Parameters.IndexOf(Item);
+
         case Item.&Type of
           mptBody:
             if not (Assigned(Item.ClassType) or Item.IsInterface) then
               ApiResponse.SetBody(ConvertTValueToString(LParams[ParameterIndex]))
             else
               ApiResponse.SetBody(ConvertResponseDtoToString(ApiResponse.MimeType, LParams[ParameterIndex]));
-          mptHeader: ApiResponse.HeaderParams[Item.Name] := ConvertTValueToString(LParams[ParameterIndex]);
+          mptHeader: ApiResponse.HeaderParams[ItemName] := ConvertTValueToString(LParams[ParameterIndex]).DeQuotedString('"');
         end;
         Inc(ParameterIndex);
       end);
@@ -508,7 +519,6 @@ begin
             end;
 
           Result := Method.Invoke(EndPoint.Instance, Params);
-          UpdateResponse(Method, Result, ApiResponse, EndPoint, Params);
 
           for Step in Endpoint.PostProcessPipelineSteps do
           begin
@@ -516,6 +526,8 @@ begin
               raise EFidoApiException.Create('ResponseMiddleware ' + Step.Key + ' not found.');
             PostStepProc(Step.Value, ApiRequest, ApiResponse)
           end;
+
+          UpdateResponse(Method, Result, ApiResponse, EndPoint, Params);
 
         except
           on E: EApiServer400 do
@@ -530,6 +542,10 @@ begin
             ApiResponse.SetResponseCode(409, 'Conflict.');
           on E: EApiServer500 do
             ApiResponse.SetResponseCode(500, 'Internal server error.');
+          on E: EApiServer503 do
+            ApiResponse.SetResponseCode(503, 'Service not available.');
+          on E: EApiServer504 do
+            ApiResponse.SetResponseCode(504, 'Gateway timeout.');
           else
             raise;
           Exit;
