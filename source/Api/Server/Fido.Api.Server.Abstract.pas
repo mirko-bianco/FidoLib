@@ -390,9 +390,11 @@ procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFac
   const Params: array of TValue);
 var
   LParams: IList<TValue>;
+  LEndPoint: TEndpoint;
 begin
   LParams := TCollections.CreateList<TValue>(Params);
 
+  LEndPoint := Endpoint;
   EndPoint.Parameters
     .Where(function(const Item: TEndPointParameter): Boolean
       begin
@@ -407,7 +409,7 @@ begin
         if not Item.RestName.IsEmpty then
           ItemName := Item.RestName;
 
-        ParameterIndex := EndPoint.Parameters.IndexOf(Item);
+        ParameterIndex := LEndPoint.Parameters.IndexOf(Item);
 
         case Item.&Type of
           mptBody:
