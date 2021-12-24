@@ -36,6 +36,7 @@ uses
   System.Threading,
   System.SysUtils,
   System.Classes,
+  System.IOUtils,
 
   Spring,
   Spring.Collections,
@@ -70,6 +71,7 @@ implementation
 
 { TPerThreadDictionary<T> }
 
+{$ifdef MSWINDOWS}
 function TPerThreadDictionary<T>.GetThreadsList: TArray<TThreadId>;
 var
   SnapProcHandle: THandle;
@@ -99,6 +101,24 @@ begin
     CloseHandle(SnapProcHandle);
   end;
 end;
+{$endif}
+{$ifdef POSIX}
+function TPerThreadDictionary<T>.GetThreadsList: TArray<TThreadId>;
+var
+  List: IList<TThreadId>;
+begin
+  List := TCollections.CreateList<TThreadId>;
+  TCollections.CreateList<string>(TDirectory.GetDirectories(Format('/Proc/%d/task', [MainThreadID]))).ForEach(
+    procedure(const Item: string)
+    var
+      Value: Integer;
+    begin
+      if TryStrToInt(Item, Value) then
+        List.Add(Value);
+    end);
+  Result := List.ToArray;
+end;
+{$endif}
 
 procedure TPerThreadDictionary<T>.PerformGarbageCollection;
 var
