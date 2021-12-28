@@ -419,7 +419,6 @@ begin
               ApiResponse.SetBody(ConvertResponseDtoToString(ApiResponse.MimeType, LParams[ParameterIndex]));
           mptHeader: ApiResponse.HeaderParams[ItemName] := ConvertTValueToString(LParams[ParameterIndex]).DeQuotedString('"');
         end;
-        Inc(ParameterIndex);
       end);
 
   if Method.MethodKind = mkFunction then
