@@ -480,7 +480,6 @@ begin
           if MethodName.ToUpper.StartsWith('GET') then
             MethodName := Copy(MethodName, 4, Length(MethodName));
           ResultValue := RttiMethod.Invoke(MethodInstanceValue, []);
-          Arguments[MethodName] := TPair<string, TValue>.Create(string(ResultValue.TypeInfo.Name), ResultValue);
 
           if TCollections.CreateList<TCustomAttribute>(RttiMethod.GetAttributes).TryGetFirst(
               RttiAttribute,
@@ -488,7 +487,9 @@ begin
               begin
                 Result := RttiAttribute is ApiParamAttribute;
               end) then
-            Arguments[ApiParamAttribute(RttiAttribute).ParamName] := TPair<string, TValue>.Create(string(ResultValue.TypeInfo.Name), ResultValue);
+            Arguments[ApiParamAttribute(RttiAttribute).ParamName] := TPair<string, TValue>.Create(string(ResultValue.TypeInfo.Name), ResultValue)
+          else
+            Arguments[MethodName] := TPair<string, TValue>.Create(string(ResultValue.TypeInfo.Name), ResultValue);
         end);
 end;
 
