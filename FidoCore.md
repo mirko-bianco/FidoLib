@@ -8,6 +8,7 @@ Below is a list of the most important features:
 - [Virtual database features](#virtual-database-features)
 - [Virtual Api clients](#virtual-api-clients)
 - [Virtual Api servers](#virtual-api-servers)
+- [Consul and Fabio support](#consul-and-fabio-support)
 - [Boxes](#boxes)
 - [Async procedures](#async-procedures)
 - [Async functions](#async-functions)
@@ -1069,6 +1070,90 @@ Example:
 ```
 
 
+
+### Consul and Fabio support
+
+Unit: `Fido.Api.Server.Consul`.
+
+If you plan to develop a (micro)services architecture then [Consul](https://www.consul.io/) and [Fabio](https://fabiolb.net/) will help you manage the whole mesh and present it as a single API reachable from a single IP address. Do you need to scale horizontally? No worries, spawn your new service instance, register it into Consul and Fabio will pick it up and do the load balancing for you.
+
+FidoLib has a ready-to-go solution that will register your API server into Consul, with a little bit of configuration.
+
+##### The ini file
+
+The code needs to know where Consul is and the token to use.
+
+```ini
+...
+
+[Consul]
+URL=http://192.168.178.11:8500
+Token=3b12990b-b69f-3f9c-0fbc-5a627ee6a7be
+
+...
+```
+
+##### Registration
+
+After that the `TConsulAwareApiServer` will simply decorate the `IApiServer` and provide the registration and deregistration with Consul.
+
+```pascal
+  Fido.Consul.DI.Registration.Register(Container, IniFile);
+  Container.RegisterType<IApiServer>.DelegateTo(
+    function: IApiServer
+    begin
+      Result := TConsulAwareApiServer.Create(
+        TIndyApiServer.Create(
+          IniFile.ReadInteger('Server', 'Port', 8080),
+          IniFile.ReadInteger('Server', 'MaxConnections', 50),
+          TNullWebServer.Create,
+          TSSLCertData.CreateEmpty),
+        Container.Resolve<IConsulService>,
+        IniFile.ReadString('Server', 'ServiceName', 'Authentication'),
+        IniFile.ReadInteger('Server', 'Port', 8080));
+    end);
+```
+
+##### Decoration
+
+The `ConsulHealthCheck` attribute tells FidoLib that the endpoint  will be used as healthcheck by Consul and Fabio.
+
+```pascal
+type  
+  [BaseUrl('/api')]
+  [Consumes(mtJson)]
+  [Produces(mtJson)]
+  THealthResource = class(TObject)
+  private
+    FLogger: ILogger;
+  public
+    constructor Create(const Logger: ILogger);
+
+    [Path(rmGet, '/health')]
+    [ConsulHealthCheck]
+    function Default: TResult<string>;
+  end;
+```
+
+
+
+The result is: 
+
+- FidoLib will make the api available under the `{fabiolburl}/{ServiceName.Lowercase}/{EndpointURI}`, in this case `{fabiolburl}/authentication/api/health`
+- If more than one instances of the service will run simultaneously Fabio will automatically load balance them.
+- If one instance will be shutdown or die Fabio will automatically stop using it.
+
+FidoLib allows you to consume the Consul KVStore by means of the `TConsulKVStore` class.
+
+##### Usage
+
+```pascal
+  KVStore := Container.Resolve<IKVStore>;
+  
+  PublicKeyContent := KVStore.Get('key');
+  Flag := KVStore.Put('key', 'a test value');
+  Flag := KVStore.Delete('key');
+```
 
 ### Boxes
 
