@@ -28,10 +28,14 @@ uses
   System.SysUtils,
 
   Spring,
-  Spring.Collections;
+  Spring.Collections,
+
+  Fido.Api.Client.Exception;
 
 type
   Retries = record
+    class function GetRetriesOnExceptionFunc: TPredicate<Exception>; static;
+
     class function Run<T>(const Func: TFunc<T>; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): T; overload; static;
     class procedure Run(const Proc: TProc; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250); overload; static;
   end;
@@ -39,6 +43,15 @@ type
 implementation
 
 { Retries }
+
+class function Retries.GetRetriesOnExceptionFunc: TPredicate<Exception>;
+begin
+  Result := function(const Exc: Exception): Boolean
+  begin
+    Result := Exc.InheritsFrom(EFidoClientApiException) and
+      TCollections.CreateList<Integer>([503, 504]).Contains(EFidoClientApiException(Exc).ErrorCode);
+  end;
+end;
 
 class procedure Retries.Run(
   const Proc: TProc;
