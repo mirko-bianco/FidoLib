@@ -105,28 +105,29 @@ begin
   Ctx := TRttiContext.Create;
   RttiType := Ctx.GetType(Resource.ClassType);
 
-  Attr := RttiType.GetAttribute<BaseUrlAttribute>;
-  if Assigned(Attr) then
-    BaseUrl := (Attr as BaseUrlAttribute).BaseUrl;
+  for Attr in RttiType.GetAttributes do
+    if Attr is BaseUrlAttribute then
+      BaseUrl := (Attr as BaseUrlAttribute).BaseUrl;
 
   for RttiMethod in RttiType.GetMethods do
   begin
     Path := '';
-    Attr := RttiMethod.GetAttribute<PathAttribute>;
-    if Assigned(Attr) then
-    begin
-      Path := (Attr as PathAttribute).Path;
-      if Path.Contains('/{') then
-        Path := Copy(Path, 1, Pos('/{', Path) - 1)
-      else if Path.Contains('{') then
-        Path := Copy(Path, 1, Pos('{', Path) - 1);
-    end;
+    for Attr in RttiMethod.GetAttributes do
+      if Attr is PathAttribute then
+      begin
+        Path := (Attr as PathAttribute).Path;
+        if Path.Contains('/{') then
+          Path := Copy(Path, 1, Pos('/{', Path) - 1)
+        else if Path.Contains('{') then
+          Path := Copy(Path, 1, Pos('{', Path) - 1);
+      end;
 
     if Path.IsEmpty then
       Continue;
 
-    if Assigned(RttiMethod.GetAttribute<ConsulHealthCheckAttribute>()) then
-      FHealthEndpoint := Format('%s%s', [BaseUrl, Path]);
+    for Attr in RttiMethod.GetAttributes do
+      if Attr is ConsulHealthCheckAttribute then
+        FHealthEndpoint := Format('%s%s', [BaseUrl, Path]);
   end;
 end;
 
