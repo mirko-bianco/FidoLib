@@ -47,17 +47,17 @@ type
     private
       FSignalActor: Weak<IObservable>;
       FMessage: string;
-      FSlot: Spring.TAction<TArray<TValue>>;
+      FSlot: Spring.Action<TArray<TValue>>;
       FSlotType: TSlotType;
 
       function GetSignalActor: IObservable;
     public
-      constructor Create(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>);
+      constructor Create(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.Action<TArray<TValue>>);
 
       property SignalActor: IObservable read GetSignalActor;
       property Message: string read FMessage;
       property SlotType: TSlotType read FSlotType;
-      property Slot: Spring.TAction<TArray<TValue>> read FSlot;
+      property Slot: Spring.Action<TArray<TValue>> read FSlot;
     end;
   private
     FLock: IReadWriteSync;
@@ -69,7 +69,7 @@ type
 
     procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
+    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.Action<TArray<TValue>>); overload;
 
     procedure UnregisterSignalActor(const SignalActor: IObservable);
 
@@ -148,7 +148,7 @@ procedure TSlots.Register(
   const SignalActor: IObservable;
   const Message: string;
   const SlotType: TSlotType;
-  const Slot: Spring.TAction<TArray<TValue>>);
+  const Slot: Spring.Action<TArray<TValue>>);
 begin
   if FObservables.Add(SignalActor) then
     SignalActor.RegisterObserver(Self);
@@ -201,7 +201,7 @@ procedure TSlots.Register(
   const MethodName: string;
   const MapParams: TFunc<TArray<TValue>, TArray<TValue>>);
 var
-  Proc: Spring.TAction<TArray<TValue>>;
+  Proc: Spring.Action<TArray<TValue>>;
   Method: TRttiMethod;
   Ctx: TRttiContext;
 begin
@@ -251,7 +251,7 @@ constructor TSlots.TSignalSlot.Create(
   const SignalActor: IObservable;
   const Message: string;
   const SlotType: TSlotType;
-  const Slot: Spring.TAction<TArray<TValue>>);
+  const Slot: Spring.Action<TArray<TValue>>);
 begin
   FSignalActor := SignalActor;
   FMessage := Message;
