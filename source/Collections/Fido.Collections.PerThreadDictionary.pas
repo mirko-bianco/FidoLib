@@ -38,11 +38,13 @@ uses
   System.Classes,
 
   Spring,
-  Spring.Collections;
+  Spring.Collections,
+
+  Fido.Collections.PerXDictionary.Intf;
 
 type
   // This dictionary store one item per thread.
-  TPerThreadDictionary<T> = class(TInterfacedObject)
+  TPerThreadDictionary<T> = class(TInterfacedObject, IPerXDictionary<T>)
   type
     TThreadId = Integer;
   strict private
@@ -60,6 +62,8 @@ type
 
     function GetCurrent: T;
     procedure ReleaseCurrent;
+
+    function GetItems: IEnumerable<T>;
   end;
 
 implementation
@@ -182,6 +186,11 @@ begin
     end;
   end;
   Result := Item;
+end;
+
+function TPerThreadDictionary<T>.GetItems: IEnumerable<T>;
+begin
+  Result := FItems.Values;
 end;
 
 procedure TPerThreadDictionary<T>.ReleaseCurrent;

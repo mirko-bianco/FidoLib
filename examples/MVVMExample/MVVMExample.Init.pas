@@ -26,9 +26,8 @@ uses
 
   Fido.Mappers,
   Fido.Containers,
-  Fido.Collections.UpdateablePerXDictionary.Intf,
-  Fido.Collections.UpdateablePerThreadDictionary,
   Fido.Db.Connections.FireDac,
+  Fido.Db.Connections.FireDac.PerThread,
   Fido.StatementExecutor.Intf,
   Fido.Db.StatementExecutor.FireDac,
 
@@ -67,33 +66,10 @@ end;
 
 class procedure MVVMExampleInitialization.Register(const Container: TContainer; const FireDacDatabaseParams: TStrings);
 begin
-  Container.RegisterInstance<
-      TFunc<
-        TDictionaryOwnerships,
-        TFunc<TFDConnection>,
-        TProc<TFDConnection, TStrings>,
-        IUpdatablePerXDictionary<TFDConnection, TStrings>>
-      >(
-    function(
-      Ownership: TDictionaryOwnerships;
-      FactoryFunc: TFunc<TFDConnection>;
-      Predicate: TProc<TFDConnection, TStrings>
-      ): IUpdatablePerXDictionary<TFDConnection, TStrings>
-    begin
-      result := TUpdateablePerThreadDictionary<TFDConnection, TStrings>.Create(
-        Ownership, FactoryFunc, Predicate);
-    end
-  );
-
   Container.RegisterType<TFireDacConnections>.DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParams,
-        Container.Resolve<TFunc<
-        TDictionaryOwnerships,
-        TFunc<TFDConnection>,
-        TProc<TFDConnection, TStrings>,
-        IUpdatablePerXDictionary<TFDConnection, TStrings>>>());
+      Result := TFireDacPerThreadConnections.Create(FireDacDatabaseParams);
     end).AsSingleton;
 
   Container.RegisterType<IStatementExecutor, TFireDacStatementExecutor>;

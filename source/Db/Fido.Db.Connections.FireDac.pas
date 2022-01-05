@@ -33,24 +33,19 @@ uses
 
   Spring.Collections,
 
-  Fido.Collections.UpdateablePerXDictionary.Intf,
-  Fido.Collections.UpdateablePerThreadDictionary;
+  Fido.Collections.PerXDictionary.Intf,
+  Fido.Collections.UpdateablePerXDictionary;
 
 type
   TFireDacConnections = class
-  private type
-    TFidoFireDacConnections = IUpdatablePerXDictionary<TFDConnection, TStrings>;
-  private var
+  protected type
+    TFidoFireDacConnections = TUpdateablePerXDictionary<TFDConnection, TStrings>;
+  protected var
     FFireDacConnections: TFidoFireDacConnections;
   private
     procedure OnAfterDisconnect(Sender: TObject);
   public
-    constructor Create(const Parameters: TStrings;
-      const UpdateablePerXDictionary: TFunc<
-        TDictionaryOwnerships,
-        TFunc<TFDConnection>,
-        TProc<TFDConnection, TStrings>,
-        IUpdatablePerXDictionary<TFDConnection, TStrings>>);
+    constructor Create(const Parameters: TStrings; const PerXDictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<TFDConnection>, IPerXDictionary<TFDConnection>>);
     destructor Destroy; override;
 
     function GetCurrent: TFDConnection;
@@ -58,21 +53,19 @@ type
 
 implementation
 
-constructor TFireDacConnections.Create(const Parameters: TStrings;
-  const UpdateablePerXDictionary: TFunc<
-    TDictionaryOwnerships,
-    TFunc<TFDConnection>,
-    TProc<TFDConnection, TStrings>,
-    IUpdatablePerXDictionary<TFDConnection, TStrings>>);
+constructor TFireDacConnections.Create(
+  const Parameters: TStrings;
+  const PerXDictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<TFDConnection>, IPerXDictionary<TFDConnection>>);
 begin
   inherited Create;
-  FFireDacConnections := UpdateablePerXDictionary(
+  FFireDacConnections := TUpdateablePerXDictionary<TFDConnection, TStrings>.Create(
+    PerXDictionaryFactoryFunc,
     [doOwnsValues],
     function: TFDConnection
     begin
       Result := TFDConnection.Create(nil);
       Result.Params.Clear;
-      Result.Params.AddStrings(FFireDacConnections.UpdateableValue);
+      Result.Params.AddStrings(FFireDacConnections.GetUpdateableValue);
       Result.LoginPrompt := False;
       with Result.FormatOptions.MapRules.Add do
       begin
@@ -88,12 +81,12 @@ begin
       Connection.Params.Clear;
       Connection.Params.AddStrings(Params);
     end);
-  FFireDacConnections.UpdateableValue := Parameters;
+  FFireDacConnections.SetUpdateableValue(Parameters);
 end;
 
 destructor TFireDacConnections.Destroy;
 begin
-  // FFireDacConnections.Free;
+  FFireDacConnections.Free;
   inherited;
 end;
 

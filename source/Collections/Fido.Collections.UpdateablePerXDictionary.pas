@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.Collections.UpdateablePerThreadDictionary;
+unit Fido.Collections.UpdateablePerXDictionary;
 
 interface
 
@@ -30,49 +30,64 @@ uses
   Spring,
   Spring.Collections,
 
-  Fido.Collections.UpdateablePerXDictionary.Intf,
-  Fido.Collections.PerThreadDictionary;
+  Fido.Collections.PerXDictionary.Intf;
 
 type
-  TUpdateablePerThreadDictionary<T, TUpdateable> = class(TPerThreadDictionary<T>, IUpdatablePerXDictionary<T, TUpdateable>)
+  TUpdateablePerXDictionary<T, TUpdateable> = class
   strict private
     FPredicate: TProc<T, TUpdateable>;
     FUpdateableValue: TUpdateable;
+    FDictionary: IPerXDictionary<T>;
+  public
+    constructor Create(const DictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<T>, IPerXDictionary<T>>; const Ownership: TDictionaryOwnerships; const ValueFactoryFunc: TFunc<T>;
+      const Predicate: TProc<T, TUpdateable>); reintroduce;
+
+    function GetCurrent: T;
+    procedure ReleaseCurrent;
 
     procedure SetUpdateableValue(const Updateable: TUpdateable);
     function GetUpdateableValue: TUpdateable;
-  public
-    constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>; const Predicate: TProc<T, TUpdateable>); reintroduce;
-
-    property UpdateableValue: TUpdateable read GetUpdateableValue write SetUpdateableValue;
   end;
 
 implementation
 
-{ TUpdateablePerThreadDictionary<T, TUpdateable> }
+{ TUpdateablePerXDictionary<T, TUpdateable> }
 
-constructor TUpdateablePerThreadDictionary<T, TUpdateable>.Create(
+constructor TUpdateablePerXDictionary<T, TUpdateable>.Create(
+  const DictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<T>, IPerXDictionary<T>>;
   const Ownership: TDictionaryOwnerships;
-  const FactoryFunc: TFunc<T>;
+  const ValueFactoryFunc: TFunc<T>;
   const Predicate: TProc<T, TUpdateable>);
 begin
+  Guard.CheckTrue(Assigned(DictionaryFactoryFunc), 'DictionaryFactoryFunc');
   Guard.CheckTrue(Assigned(Predicate), 'Predicate');
-  inherited Create(Ownership, FactoryFunc);
+  inherited Create;
   FPredicate := Predicate;
+  FDictionary := DictionaryFactoryFunc(Ownership, ValueFactoryFunc);
 end;
 
-function TUpdateablePerThreadDictionary<T, TUpdateable>.GetUpdateableValue: TUpdateable;
+function TUpdateablePerXDictionary<T, TUpdateable>.GetCurrent: T;
+begin
+  Result := FDictionary.GetCurrent;
+end;
+
+function TUpdateablePerXDictionary<T, TUpdateable>.GetUpdateableValue: TUpdateable;
 begin
   result := FUpdateableValue;
 end;
 
-procedure TUpdateablePerThreadDictionary<T, TUpdateable>.SetUpdateableValue(const Updateable: TUpdateable);
+procedure TUpdateablePerXDictionary<T, TUpdateable>.ReleaseCurrent;
+begin
+  FDictionary.ReleaseCurrent;
+end;
+
+procedure TUpdateablePerXDictionary<T, TUpdateable>.SetUpdateableValue(const Updateable: TUpdateable);
 begin
   FUpdateableValue := Updateable;
 
-  with FItems.GetEnumerator do
+  with FDictionary.GetItems.GetEnumerator do
     while MoveNext do
-      FPredicate(GetCurrent.Value, Updateable);
+      FPredicate(GetCurrent, Updateable);
 end;
 
 end.

@@ -172,7 +172,7 @@
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.JSonArrayAsReadonlyList.pas"/>
         <DCCReference Include="Json\Fido.JSON.Mapping.pas"/>
         <DCCReference Include="Fido.OwningObject.pas"/>
-        <DCCReference Include="Collections\Fido.Collections.UpdateablePerThreadDictionary.pas"/>
+        <DCCReference Include="Collections\Fido.Collections.UpdateablePerXDictionary.pas"/>
         <DCCReference Include="Environment\Fido.Environment.Vault.Intf.pas"/>
         <DCCReference Include="Http\Fido.Http.RequestInfo.Intf.pas"/>
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.TIdHTTPRequestInfoAsIHTTPRequestInfo.pas"/>
@@ -226,6 +226,8 @@
         <DCCReference Include="Slots\Fido.Slots.Binding.pas"/>
         <DCCReference Include="Slots\Fido.Slots.Intf.pas"/>
         <DCCReference Include="Slots\Fido.Slots.pas"/>
+        <DCCReference Include="Collections\Fido.Collections.PerXDictionary.Intf.pas"/>
+        <DCCReference Include="Db\Fido.Db.Connections.FireDac.PerThread.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

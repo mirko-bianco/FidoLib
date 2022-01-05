@@ -1,7 +1,5 @@
 program MVVMExample;
 
-{$R 'Queries.res' 'Repositories\Queries.rc'}
-
 uses
   System.Classes,
   System.SysUtils,
