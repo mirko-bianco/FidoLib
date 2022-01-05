@@ -189,13 +189,14 @@ contains
   Fido.Api.Client.Consul.KVStore.V1.Intf in 'Api\Client\Consul\Fido.Api.Client.Consul.KVStore.V1.Intf.pas',
   Fido.Consul.UseCases.KVStore.Get.Intf in 'Consul\UseCases\Fido.Consul.UseCases.KVStore.Get.Intf.pas',
   Fido.Consul.UseCases.KVStore.Get in 'Consul\UseCases\Fido.Consul.UseCases.KVStore.Get.pas',
-  Fido.KVStore.Intf in 'Interfaces\Fido.KVStore.Intf.pas',
   Fido.Consul.KVStore in 'Consul\Fido.Consul.KVStore.pas',
   Fido.Consul.UseCases.KVStore.Put.Intf in 'Consul\UseCases\Fido.Consul.UseCases.KVStore.Put.Intf.pas',
   Fido.Consul.UseCases.KVStore.Put in 'Consul\UseCases\Fido.Consul.UseCases.KVStore.Put.pas',
   Fido.Consul.UseCases.KVStore.Delete.Intf in 'Consul\UseCases\Fido.Consul.UseCases.KVStore.Delete.Intf.pas',
   Fido.Consul.UseCases.KVStore.Delete in 'Consul\UseCases\Fido.Consul.UseCases.KVStore.Delete.pas',
   Fido.Consul.Service.Intf in 'Consul\Fido.Consul.Service.Intf.pas',
-  Fido.Consul.Service in 'Consul\Fido.Consul.Service.pas';
+  Fido.Consul.Service in 'Consul\Fido.Consul.Service.pas',
+  Fido.KVStore.JSON in 'KVStore\Fido.KVStore.JSON.pas',
+  Fido.KVStore.Intf in 'KVStore\Fido.KVStore.Intf.pas';
 
 end.

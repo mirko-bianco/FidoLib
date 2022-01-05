@@ -242,7 +242,6 @@
         <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.KVStore.V1.Intf.pas"/>
         <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Get.Intf.pas"/>
         <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Get.pas"/>
-        <DCCReference Include="Interfaces\Fido.KVStore.Intf.pas"/>
         <DCCReference Include="Consul\Fido.Consul.KVStore.pas"/>
         <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Put.Intf.pas"/>
         <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Put.pas"/>
@@ -250,6 +249,8 @@
         <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Delete.pas"/>
         <DCCReference Include="Consul\Fido.Consul.Service.Intf.pas"/>
         <DCCReference Include="Consul\Fido.Consul.Service.pas"/>
+        <DCCReference Include="KVStore\Fido.KVStore.JSON.pas"/>
+        <DCCReference Include="KVStore\Fido.KVStore.Intf.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
