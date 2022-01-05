@@ -33,18 +33,24 @@ uses
 
   Spring.Collections,
 
+  Fido.Collections.UpdateablePerXDictionary.Intf,
   Fido.Collections.UpdateablePerThreadDictionary;
 
 type
   TFireDacConnections = class
   private type
-    TFidoFireDacConnections = TUpdateablePerThreadDictionary<TFDConnection, TStrings>;
+    TFidoFireDacConnections = IUpdatablePerXDictionary<TFDConnection, TStrings>;
   private var
     FFireDacConnections: TFidoFireDacConnections;
   private
     procedure OnAfterDisconnect(Sender: TObject);
   public
-    constructor Create(const Parameters: TStrings);
+    constructor Create(const Parameters: TStrings;
+      const UpdateablePerXDictionary: TFunc<
+        TDictionaryOwnerships,
+        TFunc<TFDConnection>,
+        TProc<TFDConnection, TStrings>,
+        IUpdatablePerXDictionary<TFDConnection, TStrings>>);
     destructor Destroy; override;
 
     function GetCurrent: TFDConnection;
@@ -52,10 +58,15 @@ type
 
 implementation
 
-constructor TFireDacConnections.Create(const Parameters: TStrings);
+constructor TFireDacConnections.Create(const Parameters: TStrings;
+  const UpdateablePerXDictionary: TFunc<
+    TDictionaryOwnerships,
+    TFunc<TFDConnection>,
+    TProc<TFDConnection, TStrings>,
+    IUpdatablePerXDictionary<TFDConnection, TStrings>>);
 begin
   inherited Create;
-  FFireDacConnections := TFidoFireDacConnections.Create(
+  FFireDacConnections := UpdateablePerXDictionary(
     [doOwnsValues],
     function: TFDConnection
     begin
@@ -82,7 +93,7 @@ end;
 
 destructor TFireDacConnections.Destroy;
 begin
-  FFireDacConnections.Free;
+  // FFireDacConnections.Free;
   inherited;
 end;
 

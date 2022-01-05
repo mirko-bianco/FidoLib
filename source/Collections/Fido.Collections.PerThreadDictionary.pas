@@ -42,7 +42,7 @@ uses
 
 type
   // This dictionary store one item per thread.
-  TPerThreadDictionary<T> = class
+  TPerThreadDictionary<T> = class(TInterfacedObject)
   type
     TThreadId = Integer;
   strict private

@@ -17,6 +17,7 @@ uses
   FireDAC.ConsoleUI.Wait,
   FireDAC.Comp.UI,
   FireDAC.Dapt,
+  FireDAC.Comp.Client,
 
   Vcl.Forms,
 
@@ -25,6 +26,8 @@ uses
 
   Fido.Mappers,
   Fido.Containers,
+  Fido.Collections.UpdateablePerXDictionary.Intf,
+  Fido.Collections.UpdateablePerThreadDictionary,
   Fido.Db.Connections.FireDac,
   Fido.StatementExecutor.Intf,
   Fido.Db.StatementExecutor.FireDac,
@@ -41,7 +44,8 @@ uses
   Song.Model,
   Song.View,
   Song.ViewModel.Intf,
-  Song.ViewModel;
+  Song.ViewModel,
+  System.Generics.Collections;
 
 type
   MVVMExampleInitialization = class
@@ -63,11 +67,35 @@ end;
 
 class procedure MVVMExampleInitialization.Register(const Container: TContainer; const FireDacDatabaseParams: TStrings);
 begin
+  Container.RegisterInstance<
+      TFunc<
+        TDictionaryOwnerships,
+        TFunc<TFDConnection>,
+        TProc<TFDConnection, TStrings>,
+        IUpdatablePerXDictionary<TFDConnection, TStrings>>
+      >(
+    function(
+      Ownership: TDictionaryOwnerships;
+      FactoryFunc: TFunc<TFDConnection>;
+      Predicate: TProc<TFDConnection, TStrings>
+      ): IUpdatablePerXDictionary<TFDConnection, TStrings>
+    begin
+      result := TUpdateablePerThreadDictionary<TFDConnection, TStrings>.Create(
+        Ownership, FactoryFunc, Predicate);
+    end
+  );
+
   Container.RegisterType<TFireDacConnections>.DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParams);
+      Result := TFireDacConnections.Create(FireDacDatabaseParams,
+        Container.Resolve<TFunc<
+        TDictionaryOwnerships,
+        TFunc<TFDConnection>,
+        TProc<TFDConnection, TStrings>,
+        IUpdatablePerXDictionary<TFDConnection, TStrings>>>());
     end).AsSingleton;
+
   Container.RegisterType<IStatementExecutor, TFireDacStatementExecutor>;
 
   Container.RegisterType<TMainView>.AsSingleton;

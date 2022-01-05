@@ -30,19 +30,21 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Collections.UpdateablePerXDictionary.Intf,
   Fido.Collections.PerThreadDictionary;
 
 type
-  TUpdateablePerThreadDictionary<T, TUpdateable> = class(TPerThreadDictionary<T>)
+  TUpdateablePerThreadDictionary<T, TUpdateable> = class(TPerThreadDictionary<T>, IUpdatablePerXDictionary<T, TUpdateable>)
   strict private
     FPredicate: TProc<T, TUpdateable>;
     FUpdateableValue: TUpdateable;
 
     procedure SetUpdateableValue(const Updateable: TUpdateable);
+    function GetUpdateableValue: TUpdateable;
   public
     constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>; const Predicate: TProc<T, TUpdateable>); reintroduce;
 
-    property UpdateableValue: TUpdateable read FUpdateableValue write SetUpdateableValue;
+    property UpdateableValue: TUpdateable read GetUpdateableValue write SetUpdateableValue;
   end;
 
 implementation
@@ -57,6 +59,11 @@ begin
   Guard.CheckTrue(Assigned(Predicate), 'Predicate');
   inherited Create(Ownership, FactoryFunc);
   FPredicate := Predicate;
+end;
+
+function TUpdateablePerThreadDictionary<T, TUpdateable>.GetUpdateableValue: TUpdateable;
+begin
+  result := FUpdateableValue;
 end;
 
 procedure TUpdateablePerThreadDictionary<T, TUpdateable>.SetUpdateableValue(const Updateable: TUpdateable);
