@@ -54,6 +54,7 @@ type
   TIndyApiServerRequestFactory = reference to function(const RequestInfo: TIdHTTPRequestInfo): IHttpRequest;
 
   TIndyApiServerResponseFactory = reference to function(const Context: TIdContext; const RequestInfo: TIdHTTPRequestInfo; const ResponseInfo: TIdHTTPResponseInfo): IHttpResponse;
+  {$M-}
 
   TIndyApiServer = class(TAbstractApiServer<TIndyApiServerRequestFactory, TIndyApiServerResponseFactory>, IApiServer)
   private

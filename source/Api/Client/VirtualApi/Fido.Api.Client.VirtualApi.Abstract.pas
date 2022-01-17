@@ -168,6 +168,7 @@ type
 
     function IsActive: Boolean;
   end;
+  {$M-}
 
 implementation
 

@@ -42,11 +42,13 @@ type
   private
     FConsulRegisterServiceUseCase: IConsulRegisterServiceUseCase;
     FConsulDeregisterServiceUseCase: IConsulDeregisterServiceUseCase;
+    FGetIPsFunc: TFunc<TArray<string>>;
     FServiceIds: IList<string>;
 
     function GetIps: TArray<string>;
   public
-    constructor Create(const ConsulRegisterServiceUseCase: IConsulRegisterServiceUseCase; const ConsulDeregisterServiceUseCase: IConsulDeregisterServiceUseCase);
+    constructor Create(const ConsulRegisterServiceUseCase: IConsulRegisterServiceUseCase; const ConsulDeregisterServiceUseCase: IConsulDeregisterServiceUseCase;
+      const GetIPsFunc: TFunc<TArray<string>> = nil);
     destructor Destroy; override;
 
     procedure Register(const ServiceName: string; const Port: Integer; const HealthEndpoint: string);
@@ -59,12 +61,17 @@ implementation
 
 constructor TConsulService.Create(
   const ConsulRegisterServiceUseCase: IConsulRegisterServiceUseCase;
-  const ConsulDeregisterServiceUseCase: IConsulDeregisterServiceUseCase);
+  const ConsulDeregisterServiceUseCase: IConsulDeregisterServiceUseCase;
+  const GetIPsFunc: TFunc<TArray<string>>);
 begin
   inherited Create;
 
   Guard.CheckNotNull(ConsulRegisterServiceUseCase, 'ConsulRegisterServiceUseCase');
   Guard.CheckNotNull(ConsulDeregisterServiceUseCase, 'ConsulDeregisterServiceUseCase');
+
+  FGetIPsFunc := GetIps;
+  if Assigned(GetIPsFunc) then
+    FGetIPsFunc := GetIPsFunc;
 
   FConsulRegisterServiceUseCase := ConsulRegisterServiceUseCase;
   FConsulDeregisterServiceUseCase := ConsulDeregisterServiceUseCase;
@@ -111,7 +118,7 @@ begin
   if Port = 443 then
     Prot := 'https://';
 
-  for Address in GetIps do
+  for Address in FGetIPsFunc do
     try
       FServiceIds.Add(
         FConsulRegisterServiceUseCase.Run(

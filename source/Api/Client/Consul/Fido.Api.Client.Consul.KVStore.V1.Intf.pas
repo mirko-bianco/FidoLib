@@ -37,8 +37,7 @@ uses
   Fido.Api.Client.Consul.Constants;
 
 type
-  {$M+}
-  IKVStoreGetResponseItem = interface
+  IKVStoreGetResponseItem = interface(IInvokable)
     ['{8BCA6FBB-6AD8-46D3-BC29-0A30D0D2E793}']
 
     function CreateIndex: Integer;

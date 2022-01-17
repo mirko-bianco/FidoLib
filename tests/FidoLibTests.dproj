@@ -193,6 +193,20 @@
         <DCCReference Include="Async\Fido.Async.Funcs.Test.pas"/>
         <DCCReference Include="Async\Fido.Async.Procs.Test.pas"/>
         <DCCReference Include="Slots\Fido.Slots.Binding.Tests.pas"/>
+        <DCCReference Include="Consul\Fido.Consul.KVStore.Test.pas"/>
+        <DCCReference Include="Consul\Fido.Consul.Service.Test.pas"/>
+        <DCCReference Include="Consul\Fido.Consul.UseCases.KVStore.Get.Test.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.Queue.Test.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Publisher.Test.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Subscriber.Test.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.PubSub.Test.pas"/>
+        <DCCReference Include="Redis\Fido.Redis.KVStore.Test.pas"/>
+        <DCCReference Include="Redis\Fido.Redis.EventsDriven.Consumer.Queue.Test.pas"/>
+        <DCCReference Include="Redis\Fido.Redis.EventsDriven.Producer.Queue.Test.pas"/>
+        <DCCReference Include="Redis\Fido.Redis.EventsDriven.Producer.PubSub.Test.pas"/>
+        <DCCReference Include="Redis\Fido.Redis.EventsDriven.Consumer.PubSub.Test.pas"/>
+        <DCCReference Include="Redis\Fido.Redis.EventsDriven.Producer.QueueQueuePubSub.Test.pas"/>
+        <DCCReference Include="Redis\Fido.Redis.EventsDriven.Consumer.QueuePubSub.Test.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

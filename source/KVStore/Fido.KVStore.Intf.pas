@@ -24,13 +24,6 @@ unit Fido.KVStore.Intf;
 
 interface
 
-uses
-  System.SysUtils,
-
-  Spring,
-
-  Fido.JSON.Marshalling;
-
 type
   IKVStore = interface(IInvokable)
   ['{A52C2B4B-D8A0-483C-9834-2CD2504CBCF1}']
@@ -40,34 +33,6 @@ type
     function Delete(const Key: string): Boolean;
   end;
 
-  JSONKVStore = record
-  public
-    class function Get<T>(const KVStore: IKVStore; const Key: string): T; static;
-    class function Put<T>(const KVStore: IKVStore; const Key: string; const Value: T): Boolean; static;
-  end;
-
 implementation
-
-{ JSONKVStore }
-
-class function JSONKVStore.Get<T>(const KVStore: IKVStore; const Key: string): T;
-var
-  Value: string;
-begin
-  Guard.CheckNotNull(KVStore, 'KVStore');
-
-  Value := KVStore.Get(Key);
-  if Value.IsEmpty then
-    Exit(Default(T));
-
-  Result := JSONUnmarshaller.To<T>(Value);
-end;
-
-class function JSONKVStore.Put<T>(const KVStore: IKVStore; const Key: string; const Value: T): Boolean;
-begin
-  Guard.CheckNotNull(KVStore, 'KVStore');
-
-  Result := KVStore.Put(Key, JSONMarshaller.From<T>(Value))
-end;
 
 end.

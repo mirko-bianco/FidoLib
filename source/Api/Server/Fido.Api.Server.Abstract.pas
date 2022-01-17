@@ -50,7 +50,6 @@ uses
   Fido.Web.Server.WebSocket.Tool;
 
 type
-  {$M+}
   EFidoApiException = class(EFidoException);
 
   TAbstractApiServer<TApiServerRequestFactoryFunc: IInterface; TApiServerResponseFactoryFunc: IInterface>  = class abstract(TInterfacedObject, IApiServer)
@@ -91,6 +90,7 @@ type
       const ApiResponseFactory: TApiServerResponseFactoryFunc);
     destructor Destroy; override;
 
+    function Port: Word;
     function IsActive: Boolean; virtual; abstract;
     procedure SetActive(const Value: Boolean); virtual; abstract;
     procedure RegisterResource(const Resource: TObject);
@@ -427,6 +427,11 @@ begin
     else
       ApiResponse.SetBody(ConvertTValueToString(MethodResult));
   ApiResponse.SetResponseCode(EndPoint.ResponseCode, EndPoint.ResponseText);
+end;
+
+function TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.Port: Word;
+begin
+  Result := FPort;
 end;
 
 procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.ProcessCommand(
@@ -794,3 +799,4 @@ begin
 end;
 
 end.
+

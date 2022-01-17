@@ -39,7 +39,6 @@ uses
   Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Response;
   
 type
-  {$M+}
   IElasticsearchDocumentApi<Document: TElasticsearchDocumentRequest> = interface(IClientVirtualApi)
   ['{0B42421D-5E82-424E-A7B8-1886AB26283E}']
 

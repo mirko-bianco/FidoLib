@@ -197,6 +197,19 @@ contains
   Fido.Consul.Service.Intf in 'Consul\Fido.Consul.Service.Intf.pas',
   Fido.Consul.Service in 'Consul\Fido.Consul.Service.pas',
   Fido.KVStore.JSON in 'KVStore\Fido.KVStore.JSON.pas',
-  Fido.KVStore.Intf in 'KVStore\Fido.KVStore.Intf.pas';
+  Fido.KVStore.Intf in 'KVStore\Fido.KVStore.Intf.pas',
+  Fido.EventsDriven.Attributes in 'EventsDriven\Fido.EventsDriven.Attributes.pas',
+  Fido.EventsDriven.Listener.Intf in 'EventsDriven\Fido.EventsDriven.Listener.Intf.pas',
+  Fido.EventsDriven.Listener.Queue in 'EventsDriven\Fido.EventsDriven.Listener.Queue.pas',
+  Fido.EventsDriven.Publisher.Intf in 'EventsDriven\Fido.EventsDriven.Publisher.Intf.pas',
+  Fido.EventsDriven.Publisher in 'EventsDriven\Fido.EventsDriven.Publisher.pas',
+  Fido.EventsDriven.Consumer.Queue.Intf in 'EventsDriven\Fido.EventsDriven.Consumer.Queue.Intf.pas',
+  Fido.EventsDriven.Producer.Intf in 'EventsDriven\Fido.EventsDriven.Producer.Intf.pas',
+  Fido.EventsDriven.Subscriber.Intf in 'EventsDriven\Fido.EventsDriven.Subscriber.Intf.pas',
+  Fido.EventsDriven.Subscriber in 'EventsDriven\Fido.EventsDriven.Subscriber.pas',
+  Fido.EventsDriven.Utils in 'EventsDriven\Fido.EventsDriven.Utils.pas',
+  Fido.EventsDriven.Consumer.PubSub.Intf in 'EventsDriven\Fido.EventsDriven.Consumer.PubSub.Intf.pas',
+  Fido.EventsDriven.Listener.PubSub in 'EventsDriven\Fido.EventsDriven.Listener.PubSub.pas';
 
 end.
+

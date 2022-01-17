@@ -45,11 +45,11 @@ type
     FApiServer: IApiServer;
     FConsulService: IConsulService;
     FServiceName: string;
-    FPort: Integer;
     FHealthEndpoint: string;
   public
-    constructor Create(const ApiServer: IApiServer; const ConsulService: IConsulService; const ServiceName: string; const Port: Integer);
+    constructor Create(const ApiServer: IApiServer; const ConsulService: IConsulService; const ServiceName: string);
 
+    Function Port: Word;
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
     procedure RegisterResource(const Resource: TObject);
@@ -65,8 +65,7 @@ implementation
 constructor TConsulAwareApiServer.Create(
   const ApiServer: IApiServer;
   const ConsulService: IConsulService;
-  const ServiceName: string;
-  const Port: Integer);
+  const ServiceName: string);
 begin
   inherited Create;
   Guard.CheckNotNull(ApiServer, 'ApiServer');
@@ -75,13 +74,17 @@ begin
   FApiServer := ApiServer;
   FConsulService := ConsulService;
   FServiceName := ServiceName;
-  FPort := Port;
   FHealthEndpoint := '';
 end;
 
 function TConsulAwareApiServer.IsActive: Boolean;
 begin
   Result := FApiServer.IsActive;
+end;
+
+function TConsulAwareApiServer.Port: Word;
+begin
+  Result := FApiServer.Port;
 end;
 
 procedure TConsulAwareApiServer.RegisterRequestMiddleware(
@@ -147,7 +150,7 @@ procedure TConsulAwareApiServer.SetActive(const Value: Boolean);
 begin
   FApiServer.SetActive(Value);
   case Value of
-    True: FConsulService.Register(FServiceName, FPort, FHealthEndpoint);
+    True: FConsulService.Register(FServiceName, FApiServer.Port, FHealthEndpoint);
     False: FConsulService.Deregister;
   end;
 end;

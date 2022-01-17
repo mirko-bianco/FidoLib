@@ -251,6 +251,18 @@
         <DCCReference Include="Consul\Fido.Consul.Service.pas"/>
         <DCCReference Include="KVStore\Fido.KVStore.JSON.pas"/>
         <DCCReference Include="KVStore\Fido.KVStore.Intf.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Attributes.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.Intf.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.Queue.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Publisher.Intf.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Publisher.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Consumer.Queue.Intf.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Producer.Intf.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Subscriber.Intf.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Subscriber.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Utils.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Consumer.PubSub.Intf.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.PubSub.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

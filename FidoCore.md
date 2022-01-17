@@ -13,6 +13,7 @@ Below is a list of the most important features:
 - [Async procedures](#async-procedures)
 - [Async functions](#async-functions)
 - [Signals and slots](#signals-and-slots)
+- [Events driven architecture](#events-driven-architecture)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -1109,8 +1110,7 @@ After that the `TConsulAwareApiServer` will simply decorate the `IApiServer` and
           TNullWebServer.Create,
           TSSLCertData.CreateEmpty),
         Container.Resolve<IConsulService>,
-        IniFile.ReadString('Server', 'ServiceName', 'Authentication'),
-        IniFile.ReadInteger('Server', 'Port', 8080));
+        IniFile.ReadString('Server', 'ServiceName', 'Authentication'));
     end);
 ```
 
@@ -1140,10 +1140,10 @@ type
 The result is: 
 
 - FidoLib will make the api available under the `{fabiolburl}/{ServiceName.Lowercase}/{EndpointURI}`, in this case `{fabiolburl}/authentication/api/health`
-- If more than one instances of the service will run simultaneously Fabio will automatically load balance them.
-- If one instance will be shutdown or die Fabio will automatically stop using it.
+- If more than one instances of the service run simultaneously Fabio will automatically load balance them.
+- If one instance shuts down or dies Fabio will automatically stop using it.
 
-FidoLib allows you to consume the Consul KVStore by means of the `TConsulKVStore` class.
+FidoLib allows you to consume the Consul KVStore by means of the `TConsulKVStore` class which implements the `IKVStore` interface.
 
 ##### Usage
 
@@ -1248,7 +1248,7 @@ begin
 
   AsyncProc.Run; //Fire and forget
   
-  AsyncProc.Run.Task; //Fire and get ITask
+  Task := AsyncProc.Run.Task; //Fire and get ITask
   
   FinalStatus := AsyncProc.Run.Resolve; //Fire and wait
 end;
@@ -1304,7 +1304,7 @@ begin
 
   AsyncFunc.Run(100); //Fire and forget
   
-  AsyncFunc.Run(100).Task; //Fire and get ITask
+  Future := AsyncFunc.Run(100).Task; //Fire and get ITask
   
   FuncResult := AsyncProc.Run(100).Resolve; //Fire and wait
 end;
@@ -1338,6 +1338,7 @@ type
   TMainView = class(TForm)
     ...
   private
+    FTokenScheduler: ITokenScheduler;
     FSlots: ISlots;
     FViewModel: IMainViewModel;
 
@@ -1441,7 +1442,6 @@ type
     FTokenScheduler: ITokenScheduler;
     FSlots: ISlots;
     FViewModel: IMainViewModel;
-
     ....
 
     procedure SetupTokenSchedulerSlots;
@@ -1474,4 +1474,143 @@ procedure TMainView.SetupViewModelSlots;
 begin
   Slots.Register(FSlots, FViewModel, Self)
 end;
+```
+
+Slots can be of two types:
+
+- `stSynched`, the slot will be synchronized with the main thread  
+- `stNotSynched`, the slot will not be synchronized with the main thread.
+
+## Events driven architecture
+
+Units folder: `EventsDriven`.
+
+![](C:\Users\mendrix\Documents\fidolib - github\diagrams\Events driven.svg)
+
+> An event-driven architecture uses events to trigger and communicate between decoupled services and is common in modern applications built with microservices. An event is a change in state, or an update, like an item being placed in a shopping cart on an e-commerce website. Events can either carry the state (the item purchased, its price, and a delivery address) or events can be identifiers (a notification that an order was shipped).
+>
+> Event-driven architectures have three key components: event producers, event routers, and event consumers. A producer publishes an event to the router, which filters and pushes the events to consumers. Producer services and consumer services are decoupled, which allows them to be scaled, updated, and deployed independently.  [Source](https://aws.amazon.com/event-driven-architecture/)
+
+
+
+With FidoLib you can design your system adhering to the Events driven architecture.
+
+Out of the box you can use a Redis implementation that would use Queues, PubSub or an hybrid Queues + PubSub system to manage the events, but as always nothing stops you from implementing your own flavour and to contribute.
+
+##### The mechanism
+
+Depending on the system used the mechanism works as follow:
+
+- Queues
+  - Subscribers subscribe to channels and event names and start polling the queue for new events
+  - Producers publish events to channels with optional payloads
+  - One subscriber will eventually pop the event and payload and process it, In case of failure it will push it back at the end of the queue. 
+
+- PubSub
+  - Subscribers subscribe to channels and event names
+  - Producers publish events to channels with optional payloads
+  - All active subscribers will get the event and the payload and process it.
+- Hybrid
+  - Subscribers subscribe to channels and event names
+  - Producers publish events to channels with optional payloads
+  - All active subscribers will get the notification of a new event and try to pop it from a queue
+  - The first one will get event and the payload and process it.
+
+As you can see each flavour has its on peculiarities and behaviors. You can choose the system you find suitable for your own processes or implement a new one, if needed.
+
+##### **Registration**
+
+To use the Qeues system please use the following registration:
+
+```pascal
+  Container.RegisterType<IEventsDrivenQueueConsumer, TRedisEventsDrivenQueueConsumer>;
+  Container.RegisterFactory<IEventsDrivenQueueConsumerFactory>;
+  Container.RegisterType<IEventsDrivenProducer, TRedisEventsDrivenQueueProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory>;
+  Container.RegisterType<IEventsDrivenListener, TEventsDrivenQueueListener>;
+  Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
+  Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
+```
+
+To use the PubSub system please use the following registration:
+
+```pascal
+  Container.RegisterType<IEventsDrivenPubSubConsumer, TRedisEventsDrivenPubSubConsumer>;
+  Container.RegisterType<IEventsDrivenProducer, TRedisEventsDrivenPubSubProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory>;
+  Container.RegisterType<IEventsDrivenListener, TEventsDrivenPubSubListener>;
+  Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
+  Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
+```
+
+To use the hybrid system please use the following registration:
+
+```pascal
+  Container.RegisterType<IEventsDrivenPubSubConsumer, TRedisEventsDrivenQueuePubSubConsumer>;
+  Container.RegisterFactory<IEventsDrivenPubSubConsumerFactory>;
+  Container.RegisterType<IEventsDrivenProducer, TRedisEventsDrivenQueuePubSubProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory>;
+  Container.RegisterType<IEventsDrivenListener, TEventsDrivenPubSubListener>;
+  Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
+  Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
+```
+
+##### Usage
+
+We tried to make the usage as straight forward as possible.
+
+In the example below `TAddUserConsumer` is a consumer for the event `UserAdded` triggered in the  `Authentication` channel.
+
+It is assumed that the payload of the event will be a Json compatible to the `IUserCreatedDto` Dto.
+
+The class is also publishing (via the `IEventsDrivenPublisher`)  events to the `Users` channel. 
+
+```pascal
+type
+  IUserCreatedDto = interface(IInvokable)
+    function UserId: TGuid;
+    function FirstName: string;
+    function LastName: string;
+  end;
+
+  TAddUserConsumer = class
+  private
+    FLogger: ILogger;
+    FAddUseCase: IAddUseCase;
+    FDistribuitedEventPublisher: IEventsDrivenPublisher;
+  public
+    constructor Create(const Logger: ILogger; const AddUseCase: IAddUseCase; const DistribuitedEventPublisher: IEventsDrivenPublisher);
+
+    [EventsDriven('Authentication', 'UserAdded')]
+    procedure Run(const UserCreatedDto: IUserCreatedDto);
+  end;
+  
+implementation
+
+...
+
+procedure TAddUserConsumer.Run(const UserCreatedDto: IUserCreatedDto);
+begin
+  Logging.LogDuration(
+    FLogger,
+    Self.ClassName,
+    'Run',
+    procedure
+    begin
+      try
+        FAddUseCase.Run(UserCreatedDto.UserId, UserCreatedDto.FirstName, UserCreatedDto.LastName);
+        FDistribuitedEventPublisher.Trigger('Users', 'UserAdded', JSONMarshaller.From(UserCreatedDto.UserId).DeQuotedString('"'));
+      except
+        FDistribuitedEventPublisher.Trigger('Users', 'UserAddFailed', JSONMarshaller.From(UserCreatedDto.UserId).DeQuotedString('"'));
+        raise;
+      end;
+    end);
+end;
+```
+
+The instance of `TAddUserConsumer` is registered in the `EventsDrivenSubscriber`. This way it will be able to receive the events notifications. 
+
+```pascal
+  EventsDrivenSubscriber := Container.Value.Resolve<IEventsDrivenSubscriber>;
+  EventsDrivenSubscriber.RegisterConsumer(Container.Value.Resolve<TAddUserConsumer>);
 ```

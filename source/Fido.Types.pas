@@ -79,6 +79,7 @@ type
     function Success: Boolean;
     function ErrorMessage: string;
   end;
+  {$M-}
 
   IResult = interface(IInvokable)
     ['{BFC2A459-7B1B-4A83-B064-C15805F5EDC4}']
@@ -87,6 +88,7 @@ type
     function Success: Boolean;
   end;
 
+  {$M+}
   TResult<T> = record
   strict private
     FResult: TResult;
@@ -104,6 +106,7 @@ type
     function Success: Boolean;
     function Value: T;
   end;
+  {$M-}
 
   IResult<T> = interface(IInvokable)
     ['{E997C149-7248-428E-881D-7B176B93789C}']
@@ -112,7 +115,6 @@ type
     function Success: Boolean;
     function Value: T;
   end;
-  {$M-}
 
   // left outside TVirtualStatement class since Delphi dies when trying to create dictionary of it
   // unless using fully-qualified name, which is a nightmare (TVirtualInterface<T>.TParamDescriptor)

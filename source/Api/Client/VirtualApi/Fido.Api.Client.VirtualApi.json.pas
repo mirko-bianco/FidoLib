@@ -53,6 +53,7 @@ type
     function ConvertRequestDtoToString(const Value: TValue): string; override;
     procedure CallApi(const Call: TClientVirtualApiCall); override;
   end;
+  {$M-}
 
 implementation
 

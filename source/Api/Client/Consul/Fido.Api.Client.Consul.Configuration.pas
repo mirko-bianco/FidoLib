@@ -33,7 +33,6 @@ uses
   Fido.Api.Client.Consul.Constants;
 
 type
-  {$M+}
   IConsulClientVirtualApiConfiguration = interface(IClientVirtualApiConfiguration)
     ['{53890928-A51D-479A-95C2-1BF582D5C9B8}']
 
