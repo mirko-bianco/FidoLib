@@ -162,7 +162,8 @@ begin
     var
       PropertyName: string;
     begin
-      if (RttiMeth.Visibility = mvPublished) and
+      if (((RttiMeth.Visibility = mvPublished) and (RttiType.TypeKind = tkClass)) or
+          ((RttiMeth.Visibility = mvPublic) and (RttiType.TypeKind <> tkClass))) and
          (RttiMeth.MethodKind = mkFunction) and
          (Length(RttiMeth.GetParameters) = 0) and
          TryGetGetterMethodPropName(RttiMeth, PropertyName) then
@@ -191,7 +192,8 @@ begin
       var
         Value: TValue;
       begin
-        if (RttiProp.Visibility = mvPublished) and
+        if (((RttiProp.Visibility = mvPublished) and (RttiType.TypeKind = tkClass)) or
+            ((RttiProp.Visibility = mvPublic) and (RttiType.TypeKind <> tkClass))) and
            RttiProp.IsWritable and
            Values.TryGetValue(RttiProp.Name.ToUpper, Value) then
           RttiProp.SetValue(InstanceValue.AsPointer, Value);
@@ -203,7 +205,8 @@ begin
         PropertyName: string;
         Value: TValue;
       begin
-        if (RttiMeth.Visibility = mvPublished) and
+        if (((RttiMeth.Visibility = mvPublished) and (RttiType.TypeKind = tkClass)) or
+            ((RttiMeth.Visibility = mvPublic) and (RttiType.TypeKind <> tkClass))) and
            (RttiMeth.MethodKind = mkProcedure) and
            (Length(RttiMeth.GetParameters) = 1) and
            TryGetSetterMethodPropName(RttiMeth, PropertyName) and
