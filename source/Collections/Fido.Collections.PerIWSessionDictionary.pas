@@ -32,11 +32,13 @@ uses
   IWApplication,
 
   Spring,
-  Spring.Collections;
+  Spring.Collections,
+
+  Fido.Collections.PerXDictionary.Intf;
 
 type
   // This dictionary store one item per intraweb session.
-  TPerIWSessionDictionary<T> = class
+  TPerIWSessionDictionary<T> = class(TInterfacedObject, IPerXDictionary<T>)
   type
     TSessionId = string;
   strict private
@@ -54,27 +56,30 @@ type
 
     function GetCurrent: T;
     procedure ReleaseCurrent;
+
+    function GetItems: IEnumerable<T>;
   end;
 
 implementation
 
+{ TPerIWSessionDictionary<T> }
+
 function TPerIWSessionDictionary<T>.GetSessionsList: TArray<TSessionId>;
 var
-  aList: Shared<TStringList>;
+  lList: Shared<TStringList>;
 begin
-  aList := TStringList.Create;
-  IWApplication.gSessions.GetList(aList);
-  SetLength(result, aList.Value.Count);
-  for var i := 0 to aList.Value.Count - 1 do
+  lList := TStringList.Create;
+  IWApplication.gSessions.GetList(lList);
+  SetLength(result, lList.Value.Count);
+  for var i := 0 to lList.Value.Count - 1 do
   begin
-     result[i] := aList.Value[i];
+     result[i] := lList.Value[i];
   end;
 end;
 
 procedure TPerIWSessionDictionary<T>.PerformGarbageCollection;
 var
   LiveThreads: ISet<TSessionId>;
-  LiveThreads2: ISet<string>;
   GarbageThreads: ISet<TSessionId>;
 begin
   LiveThreads := TCollections.CreateSet<TSessionId>(GetSessionsList);
@@ -102,8 +107,9 @@ begin
   end;
 end;
 
-constructor TPerIWSessionDictionary<T>.Create(const Ownership:
-    TDictionaryOwnerships; const FactoryFunc: TFunc<T>);
+constructor TPerIWSessionDictionary<T>.Create(
+  const Ownership: TDictionaryOwnerships;
+  const FactoryFunc: TFunc<T>);
 begin
   Guard.CheckTrue(Assigned(FactoryFunc), 'FFactoryFunc');
   inherited Create;
@@ -156,6 +162,11 @@ begin
     end;
   end;
   Result := Item;
+end;
+
+function TPerIWSessionDictionary<T>.GetItems: IEnumerable<T>;
+begin
+  Result := FItems.Values;
 end;
 
 procedure TPerIWSessionDictionary<T>.ReleaseCurrent;
