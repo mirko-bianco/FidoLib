@@ -77,7 +77,10 @@ procedure TEventsDrivenPubSubListener.SubscribeTo(
   const Channel: string;
   const EventName: string;
   const ConsumerData: TConsumerData);
+var
+  LConsumerData: TConsumerData;
 begin
+  LConsumerData := ConsumerData;
   FPubSubConsumer.Subscribe(
     Channel,
     EventName,
@@ -87,19 +90,19 @@ begin
       RttiType: TRttiType;
     begin
       Ctx := TRttiContext.Create;
-      RttiType := Ctx.GetType(ConsumerData.Consumer.ClassType);
+      RttiType := Ctx.GetType(LConsumerData.Consumer.ClassType);
 
       TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).
         Where(
           function(const Method: TRttiMethod): Boolean
           begin
-            Result := Method.Name.Equals(ConsumerData.MethodName);
+            Result := Method.Name.Equals(LConsumerData.MethodName);
           end).
         ForEach(
           procedure(const Method: TRttiMethod)
           begin
             Method.Invoke(
-              ConsumerData.Consumer,
+              LConsumerData.Consumer,
               [JSONUnmarshaller.To(Payload, Method.GetParameters[0].ParamType.Handle)]);
           end);
     end);

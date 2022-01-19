@@ -38,7 +38,7 @@ var
 begin
   Key := MockUtils.SomeString;
   Payload := MockUtils.SomeString;
-  EncodedPayload := TNetEncoding.Base64String.Encode(Payload);
+  EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Executes.When.LPUSH(Key, EncodedPayload);

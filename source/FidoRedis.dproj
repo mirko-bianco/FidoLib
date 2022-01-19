@@ -111,6 +111,7 @@
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="spring.core.dcp"/>
         <DCCReference Include="fidocore.dcp"/>
+        <DCCReference Include="..\..\delphiredisclient\sources\Redis.Command.pas"/>
         <DCCReference Include="..\..\delphiredisclient\sources\Redis.Client.pas"/>
         <DCCReference Include="..\..\delphiredisclient\sources\Redis.Commons.pas"/>
         <DCCReference Include="..\..\delphiredisclient\sources\Redis.Values.pas"/>

@@ -123,7 +123,9 @@ begin
       Value: string;
       Ctx: TRttiContext;
       RttiType: TRttiType;
+      LItem: TPair<string, TConsumerData>;
     begin
+      LItem := Item;
       while Assigned(FActive) and FActive.Value and QueueConsumer.Pop(Item.Key, Value) do
       begin
         Ctx := TRttiContext.Create;
@@ -133,17 +135,17 @@ begin
           Where(
             function(const Method: TRttiMethod): Boolean
             begin
-              Result := Method.Name.Equals(Item.Value.MethodName);
+              Result := Method.Name.Equals(LItem.Value.MethodName);
             end).
           ForEach(
             procedure(const Method: TRttiMethod)
             begin
               try
                 Method.Invoke(
-                  Item.Value.Consumer,
+                  LItem.Value.Consumer,
                   [JSONUnmarshaller.To(Value, Method.GetParameters[0].ParamType.Handle)]);
               except
-                QueueConsumer.PushBack(Item.Key, Value);
+                QueueConsumer.PushBack(LItem.Key, Value);
               end;
             end);
       end;

@@ -35,10 +35,10 @@ requires
 
 contains
   Redis.Command,
-  Redis.Client in '..\..\delphiredisclient\sources\Redis.Client.pas',
-  Redis.Commons in '..\..\delphiredisclient\sources\Redis.Commons.pas',
-  Redis.Values in '..\..\delphiredisclient\sources\Redis.Values.pas',
-  Redis.NetLib.Factory in '..\..\delphiredisclient\sources\Redis.NetLib.Factory.pas',
+  Redis.Client,
+  Redis.Commons,
+  Redis.Values,
+  Redis.NetLib.Factory,
   JsonDataObjects,
   Fido.Redis.KVStore in 'Redis\Fido.Redis.KVStore.pas',
   Fido.Redis.EventsDriven.Producer.Queue in 'Redis\Fido.Redis.EventsDriven.Producer.Queue.pas',

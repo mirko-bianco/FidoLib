@@ -88,7 +88,7 @@ begin
   if not EncodedValue.HasValue then
     Exit;
 
-  Payload := TNetEncoding.Base64String.Decode(EncodedValue);
+  Payload := TNetEncoding.Base64.Decode(EncodedValue);
   OnNotify(Key, Payload);
 end;
 

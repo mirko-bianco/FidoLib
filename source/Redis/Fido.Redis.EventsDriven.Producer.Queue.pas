@@ -72,7 +72,7 @@ function TRedisEventsDrivenQueueProducer.Push(
 var
   EncodedPayload: string;
 begin
-  EncodedPayload := TBase64StringEncoding.Base64String.Encode(Payload);
+  EncodedPayload := TNetEncoding.Base64.Encode(Payload);
   Result := Retries.Run<Boolean>(
     function: Boolean
     begin

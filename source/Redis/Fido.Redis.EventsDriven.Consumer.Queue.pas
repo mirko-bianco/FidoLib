@@ -84,7 +84,7 @@ begin
 
   Result := EncodedValue.HasValue;
   if Result then
-    Payload := TNetEncoding.Base64String.Decode(EncodedValue)
+    Payload := TNetEncoding.Base64.Decode(EncodedValue)
 end;
 
 procedure TRedisEventsDrivenQueueConsumer.PushBack(
@@ -93,7 +93,7 @@ procedure TRedisEventsDrivenQueueConsumer.PushBack(
 var
   EncodedValue: string;
 begin
-  EncodedValue := TBase64StringEncoding.Base64String.Encode(Payload);
+  EncodedValue := TNetEncoding.Base64.Encode(Payload);
 
   Retries.Run(
     procedure

@@ -25,6 +25,7 @@ unit Fido.Redis.EventsDriven.Consumer.PubSub;
 interface
 
 uses
+  System.Classes,
   System.SysUtils,
   System.Threading,
   System.NetEncoding,
@@ -93,7 +94,7 @@ begin
         var
           DecodedPayload: string;
         begin
-          DecodedPayload := TNetEncoding.Base64String.Decode(EncodedPayload);
+          DecodedPayload := TNetEncoding.Base64.Decode(EncodedPayload);
           OnNotify(Key, DecodedPayload);
         end,
         function: Boolean

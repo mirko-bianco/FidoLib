@@ -73,7 +73,7 @@ var
   EncodedPayload: string;
   EventId: string;
 begin
-  EncodedPayload := TBase64StringEncoding.Base64String.Encode(Payload);
+  EncodedPayload := TNetEncoding.Base64.Encode(Payload);
   EventId := TGuid.NewGuid.ToString;
 
   Result := Retries.Run<Boolean>(

@@ -45,7 +45,7 @@ var
 begin
   Key := MockUtils.SomeString;
   Payload := MockUtils.SomeString;
-  EncodedPayload := TNetEncoding.Base64String.Encode(Payload);
+  EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Returns<Integer>(1).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
@@ -77,7 +77,7 @@ var
 begin
   Key := MockUtils.SomeString;
   Payload := MockUtils.SomeString;
-  EncodedPayload := TNetEncoding.Base64String.Encode(Payload);
+  EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Returns<Integer>(0).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
@@ -108,7 +108,7 @@ var
 begin
   Key := MockUtils.SomeString;
   Payload := MockUtils.SomeString;
-  EncodedPayload := TNetEncoding.Base64String.Encode(Payload);
+  EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Returns<Integer>(1).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
