@@ -25,11 +25,23 @@ unit Fido.EventsDriven.Utils;
 interface
 
 uses
-  System.SysUtils;
+  System.SysUtils,
+  System.TypInfo,
+  System.Generics.Collections,
+  System.JSON,
+  System.Rtti,
+  System.Math,
+
+  Spring,
+  Spring.Collections,
+
+  Fido.JSON.Marshalling,
+  Fido.JSON.Mapping;
 
 type
   TEventsDrivenUtilities = record
     class function FormatKey(const Channel: string; const EventName: string): string; static;
+    class function PayloadToMethodParams(const Payload: string; const Method: TRttiMethod): TArray<TValue>; static;
   end;
 
 implementation
@@ -43,4 +55,33 @@ begin
    Result := Format('%s::%s', [Channel, EventName]);
 end;
 
+class function TEventsDrivenUtilities.PayloadToMethodParams(const Payload: string; const Method: TRttiMethod): TArray<TValue>;
+var
+  JSONValue: Shared<TJSONValue>;
+  ParametersNo: integer;
+  Index: Integer;
+begin
+  Result := [];
+
+  ParametersNo := Length(Method.GetParameters);
+  if ParametersNo = 0 then
+    Exit(Result);
+
+  SetLength(Result, ParametersNo);
+
+  JSONValue := TJSONValue.ParseJSONValue(Payload);
+
+  if ParametersNo = 1 then
+  begin
+    if JSONValue.Value is TJSONArray then
+      Result[0] := JSONUnmarshaller.To(TJSONArray(JSONValue.Value).Items[0].ToJSON, Method.GetParameters[0].ParamType.Handle)
+    else
+      Result[0] := JSONUnmarshaller.To(Payload, Method.GetParameters[0].ParamType.Handle);
+    Exit(Result);
+  end;
+
+  for Index := 0 to Min(TJSONArray(JSONValue.Value).Count, ParametersNo) - 1 do
+    Result[Index] := JSONUnmarshaller.To(TJSONArray(JSONValue.Value).Items[Index].ToJSON, Method.GetParameters[Index].ParamType.Handle);
+
+end;
 end.

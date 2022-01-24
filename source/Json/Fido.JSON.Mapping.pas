@@ -359,7 +359,7 @@ initialization
     end,
     function(const Value: string): string
     begin
-      Result := Value;
+      Result := Value.DeQuotedString('"');
     end);
 
   MappingsUtilities.RegisterPrimitive<Int64>(

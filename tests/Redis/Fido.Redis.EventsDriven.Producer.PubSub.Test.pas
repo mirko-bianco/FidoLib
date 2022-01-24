@@ -43,7 +43,7 @@ begin
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Executes.When.LPUSH(Key, EncodedPayload);
 
-  Producer := TRedisEventsDrivenPubSubProducer.Create(Client);
+  Producer := TRedisPubSubEventsDrivenProducer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure

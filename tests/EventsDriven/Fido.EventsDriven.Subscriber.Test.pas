@@ -40,15 +40,15 @@ type
   end;
 
   TTestSingleEventConsumer = class
-    [EventsDriven('TestChannel', 'TestEvent')]
+    [TriggeredByEvent('TestChannel', 'TestEvent')]
     procedure TestMethod(const Payload: string);
   end;
 
   TTestMultipleEventsConsumer = class
-    [EventsDriven('TestChannel2', 'TestEvent2')]
+    [TriggeredByEvent('TestChannel2', 'TestEvent2')]
     procedure TestMethod2(const Payload: string);
 
-    [EventsDriven('TestChannel3', 'TestEvent3')]
+    [TriggeredByEvent('TestChannel3', 'TestEvent3')]
     procedure TestMethod3(const Payload: string);
   end;
 

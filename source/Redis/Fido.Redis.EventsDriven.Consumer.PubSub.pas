@@ -45,7 +45,7 @@ uses
   Fido.Redis.Client.Intf;
 
 type
-  TRedisEventsDrivenPubSubConsumer = class(TInterfacedObject, IEventsDrivenPubSubConsumer)
+  TRedisPubSubEventsDrivenConsumer = class(TInterfacedObject, IPubSubEventsDrivenConsumer)
   private
     FRedisClientFactoryFunc: TFunc<IFidoRedisClient>;
     FTasks: IDictionary<string, ITask>;
@@ -62,14 +62,14 @@ type
 
 implementation
 
-{ TRedisEventsDrivenPubSubConsumer }
+{ TRedisPubSubEventsDrivenConsumer }
 
-procedure TRedisEventsDrivenPubSubConsumer.Stop;
+procedure TRedisPubSubEventsDrivenConsumer.Stop;
 begin
   FClosing := True;
 end;
 
-constructor TRedisEventsDrivenPubSubConsumer.Create(const RedisClientFactoryFunc: TFunc<IFidoRedisClient>);
+constructor TRedisPubSubEventsDrivenConsumer.Create(const RedisClientFactoryFunc: TFunc<IFidoRedisClient>);
 begin
   inherited Create;
 
@@ -80,7 +80,7 @@ begin
   FClosing := False;
 end;
 
-procedure TRedisEventsDrivenPubSubConsumer.Subscribe(
+procedure TRedisPubSubEventsDrivenConsumer.Subscribe(
   const Channel: string;
   const EventName: string;
   OnNotify: TProc<string, string>);
@@ -104,7 +104,7 @@ begin
     end);
 end;
 
-procedure TRedisEventsDrivenPubSubConsumer.Unsubscribe(
+procedure TRedisPubSubEventsDrivenConsumer.Unsubscribe(
   const Channel: string;
   const EventName: string);
 begin

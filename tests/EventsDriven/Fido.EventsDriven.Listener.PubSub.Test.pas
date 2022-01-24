@@ -19,7 +19,7 @@ uses
 
 type
   [TestFixture]
-  TEventsDrivenPubSubListenerTests = class
+  TPubSubEventsDrivenListenerTests = class
   public
     [Test]
     procedure StopDoesNotRaiseAnyException;
@@ -33,14 +33,14 @@ type
 
 implementation
 
-procedure TEventsDrivenPubSubListenerTests.StopDoesNotRaiseAnyException;
+procedure TPubSubEventsDrivenListenerTests.StopDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  PubSubConsumer: Mock<IEventsDrivenPubSubConsumer>;
+  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer>;
 begin
-  PubSubConsumer := Mock<IEventsDrivenPubSubConsumer>.Create;
+  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer>.Create;
 
-  Listener := TEventsDrivenPubSubListener.Create(PubSubConsumer);
+  Listener := TPubSubEventsDrivenListener.Create(PubSubConsumer);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -49,14 +49,14 @@ begin
     end);
 end;
 
-procedure TEventsDrivenPubSubListenerTests.SubscribeToDoesNotRaiseAnyException;
+procedure TPubSubEventsDrivenListenerTests.SubscribeToDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  PubSubConsumer: Mock<IEventsDrivenPubSubConsumer>;
+  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer>;
 begin
-  PubSubConsumer := Mock<IEventsDrivenPubSubConsumer>.Create;
+  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer>.Create;
 
-  Listener := TEventsDrivenPubSubListener.Create(PubSubConsumer);
+  Listener := TPubSubEventsDrivenListener.Create(PubSubConsumer);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -65,14 +65,14 @@ begin
     end);
 end;
 
-procedure TEventsDrivenPubSubListenerTests.UnsubscribeFromDoesNotRaiseAnyException;
+procedure TPubSubEventsDrivenListenerTests.UnsubscribeFromDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  PubSubConsumer: Mock<IEventsDrivenPubSubConsumer>;
+  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer>;
 begin
-  PubSubConsumer := Mock<IEventsDrivenPubSubConsumer>.Create;
+  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer>.Create;
 
-  Listener := TEventsDrivenPubSubListener.Create(PubSubConsumer);
+  Listener := TPubSubEventsDrivenListener.Create(PubSubConsumer);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -82,5 +82,5 @@ begin
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TEventsDrivenPubSubListenerTests);
+  TDUnitX.RegisterTestFixture(TPubSubEventsDrivenListenerTests);
 end.

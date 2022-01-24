@@ -42,7 +42,7 @@ uses
   Fido.Redis.Client.Intf;
 
 type
-  TRedisEventsDrivenQueueConsumer = class(TInterfacedObject, IEventsDrivenQueueConsumer)
+  TRedisQueueEventsDrivenConsumer = class(TInterfacedObject, IQueueEventsDrivenConsumer)
   private
     FRedisClient: IFidoRedisClient;
   public
@@ -56,9 +56,9 @@ type
 
 implementation
 
-{ TRedisEventsDrivenQueueConsumer }
+{ TRedisQueueEventsDrivenConsumer }
 
-constructor TRedisEventsDrivenQueueConsumer.Create(const RedisClient: IFidoRedisClient);
+constructor TRedisQueueEventsDrivenConsumer.Create(const RedisClient: IFidoRedisClient);
 begin
   inherited Create;
 
@@ -66,13 +66,13 @@ begin
   FRedisClient := RedisClient;
 end;
 
-destructor TRedisEventsDrivenQueueConsumer.Destroy;
+destructor TRedisQueueEventsDrivenConsumer.Destroy;
 begin
   FRedisClient := nil;
   inherited;
 end;
 
-function TRedisEventsDrivenQueueConsumer.Pop(const Key: string; var Payload: string): Boolean;
+function TRedisQueueEventsDrivenConsumer.Pop(const Key: string; var Payload: string): Boolean;
 var
   EncodedValue: Nullable<string>;
 begin
@@ -87,7 +87,7 @@ begin
     Payload := TNetEncoding.Base64.Decode(EncodedValue)
 end;
 
-procedure TRedisEventsDrivenQueueConsumer.PushBack(
+procedure TRedisQueueEventsDrivenConsumer.PushBack(
   const Key: string;
   const Payload: string);
 var

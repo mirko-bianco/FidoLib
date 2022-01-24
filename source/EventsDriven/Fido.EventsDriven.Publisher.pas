@@ -45,7 +45,7 @@ type
   public
     constructor Create(const ProducerFactoryFunc: TFunc<IEventsDrivenProducer>);
 
-    function Trigger(const Channel: string; const EventName: string; const Payload: string): Boolean;
+    function Trigger(const Channel: string; const EventName: string; const Payload: string = ''): Boolean;
   end;
 
 implementation

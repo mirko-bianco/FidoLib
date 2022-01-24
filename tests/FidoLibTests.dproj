@@ -207,6 +207,7 @@
         <DCCReference Include="Redis\Fido.Redis.EventsDriven.Consumer.PubSub.Test.pas"/>
         <DCCReference Include="Redis\Fido.Redis.EventsDriven.Producer.QueueQueuePubSub.Test.pas"/>
         <DCCReference Include="Redis\Fido.Redis.EventsDriven.Consumer.QueuePubSub.Test.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Utils.Test.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

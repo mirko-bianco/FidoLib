@@ -28,7 +28,7 @@ uses
   System.Rtti;
 
 type
-  EventsDrivenAttribute = Class(TCustomAttribute)
+  TriggeredByEventAttribute = Class(TCustomAttribute)
   private
     FChannel: string;
     FEventName: string;
@@ -41,14 +41,14 @@ type
 
 implementation
 
-{ EventsDrivenAttribute }
+{ TriggeredByEventAttribute }
 
-function EventsDrivenAttribute.Channel: string;
+function TriggeredByEventAttribute.Channel: string;
 begin
   Result := FChannel;
 end;
 
-constructor EventsDrivenAttribute.Create(
+constructor TriggeredByEventAttribute.Create(
   const Channel: string;
   const EventName: string);
 begin
@@ -56,7 +56,7 @@ begin
   FEventName := EventName;
 end;
 
-function EventsDrivenAttribute.EventName: string;
+function TriggeredByEventAttribute.EventName: string;
 begin
   Result := FEventName;
 end;

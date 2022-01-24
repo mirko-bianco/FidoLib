@@ -44,11 +44,11 @@ uses
   Fido.EventsDriven.Consumer.PubSub.Intf;
 
 type
-  TEventsDrivenPubSubListener = class (TInterfacedObject, IEventsDrivenListener)
+  TPubSubEventsDrivenListener = class (TInterfacedObject, IEventsDrivenListener)
   private var
-    FPubSubConsumer: IEventsDrivenPubSubConsumer;
+    FPubSubConsumer: IPubSubEventsDrivenConsumer;
   public
-    constructor Create(const PubSubConsumer: IEventsDrivenPubSubConsumer);
+    constructor Create(const PubSubConsumer: IPubSubEventsDrivenConsumer);
 
     procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
     procedure UnsubscribeFrom(const Channel: string; const EventName: string);
@@ -58,9 +58,9 @@ type
 
 implementation
 
-{ TEventsDrivenPubSubListener }
+{ TPubSubEventsDrivenListener }
 
-constructor TEventsDrivenPubSubListener.Create(const PubSubConsumer: IEventsDrivenPubSubConsumer);
+constructor TPubSubEventsDrivenListener.Create(const PubSubConsumer: IPubSubEventsDrivenConsumer);
 begin
   inherited Create;
 
@@ -68,12 +68,12 @@ begin
   FPubSubConsumer := PubSubConsumer;
 end;
 
-procedure TEventsDrivenPubSubListener.Stop;
+procedure TPubSubEventsDrivenListener.Stop;
 begin
   FPubSubConsumer.Stop;
 end;
 
-procedure TEventsDrivenPubSubListener.SubscribeTo(
+procedure TPubSubEventsDrivenListener.SubscribeTo(
   const Channel: string;
   const EventName: string;
   const ConsumerData: TConsumerData);
@@ -101,14 +101,12 @@ begin
         ForEach(
           procedure(const Method: TRttiMethod)
           begin
-            Method.Invoke(
-              LConsumerData.Consumer,
-              [JSONUnmarshaller.To(Payload, Method.GetParameters[0].ParamType.Handle)]);
+            Method.Invoke(LConsumerData.Consumer, TEventsDrivenUtilities.PayloadToMethodParams(Payload, Method));
           end);
     end);
 end;
 
-procedure TEventsDrivenPubSubListener.UnsubscribeFrom(
+procedure TPubSubEventsDrivenListener.UnsubscribeFrom(
   const Channel: string;
   const EventName: string);
 begin

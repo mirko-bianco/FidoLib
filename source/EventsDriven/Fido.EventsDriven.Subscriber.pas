@@ -73,7 +73,8 @@ begin
   FConsumers.ForEach(
     procedure(const Item: TObject)
     begin
-      if not UniqueConsumers.Contains(Item) then
+      if not UniqueConsumers.Contains(Item) and
+         not Supports(Item, IInterface) then
         UniqueConsumers.Add(Item);
     end);
   UniqueConsumers.Clear;
@@ -116,17 +117,17 @@ begin
         Where(
           function(const Item: TCustomAttribute): Boolean
           begin
-            Result := Item is EventsDrivenAttribute;
+            Result := Item is TriggeredByEventAttribute;
           end).
         ForEach(
           procedure(const Item: TCustomAttribute)
           var
-            EDAttribute: EventsDrivenAttribute;
+            EDAttribute: TriggeredByEventAttribute;
           begin
-            EDAttribute := Item as EventsDrivenAttribute;
+            EDAttribute := Item as TriggeredByEventAttribute;
 
-            if Length(Method.GetParameters) <> 1 then
-              raise EEventsDrivenSubscriber.CreateFmt('Method %s does not have one parameter', [Method.Name]);
+            if Length(Method.GetParameters) > 1 then
+              raise EEventsDrivenSubscriber.CreateFmt('Method %s must have max one parameter', [Method.Name]);
 
             FConsumers.Add(Consumer);
             FChannels.Add(TChannelEventPair.Create(EDAttribute.Channel, EDAttribute.EventName));

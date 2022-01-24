@@ -37,7 +37,7 @@ implementation
 
 procedure TRedisEventsDrivenConsumerQueuePubSubTests.SubscribeDoesNotRaiseAnyException;
 var
-  Consumer: IEventsDrivenPubSubConsumer;
+  Consumer: IPubSubEventsDrivenConsumer;
   Channel: string;
   EventName: string;
   Proc: TProc<string, string>;
@@ -50,7 +50,7 @@ begin
     begin
     end;
 
-  Consumer := TRedisEventsDrivenQueuePubSubConsumer.Create(
+  Consumer := TRedisQueuePubSubEventsDrivenConsumer.Create(
     function: IFidoRedisClient
     begin
       Result := Mock<IFidoRedisClient>.Create;
@@ -65,14 +65,14 @@ end;
 
 procedure TRedisEventsDrivenConsumerQueuePubSubTests.UnsubscribeDoesNotRaiseAnyException;
 var
-  Consumer: IEventsDrivenPubSubConsumer;
+  Consumer: IPubSubEventsDrivenConsumer;
   Channel: string;
   EventName: string;
 begin
   Channel := MockUtils.SomeString;
   EventName := MockUtils.SomeString;
 
-  Consumer := TRedisEventsDrivenQueuePubSubConsumer.Create(
+  Consumer := TRedisQueuePubSubEventsDrivenConsumer.Create(
     function: IFidoRedisClient
     begin
       Result := Mock<IFidoRedisClient>.Create;
@@ -87,9 +87,9 @@ end;
 
 procedure TRedisEventsDrivenConsumerQueuePubSubTests.StopDoesNotRaiseAnyException;
 var
-  Consumer: IEventsDrivenPubSubConsumer;
+  Consumer: IPubSubEventsDrivenConsumer;
 begin
-  Consumer := TRedisEventsDrivenQueuePubSubConsumer.Create(
+  Consumer := TRedisQueuePubSubEventsDrivenConsumer.Create(
     function: IFidoRedisClient
     begin
       Result := Mock<IFidoRedisClient>.Create;

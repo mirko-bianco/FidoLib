@@ -1523,11 +1523,11 @@ As you can see each flavour has its on peculiarities and behaviors. You can choo
 To use the Qeues system please use the following registration:
 
 ```pascal
-  Container.RegisterType<IEventsDrivenQueueConsumer, TRedisEventsDrivenQueueConsumer>;
-  Container.RegisterFactory<IEventsDrivenQueueConsumerFactory>;
-  Container.RegisterType<IEventsDrivenProducer, TRedisEventsDrivenQueueProducer>;
+  Container.RegisterType<IQueueEventsDrivenConsumer, TRedisQueueEventsDrivenConsumer>;
+  Container.RegisterFactory<IQueueEventsDrivenConsumerFactory>;
+  Container.RegisterType<IEventsDrivenProducer, TRedisQueueEventsDrivenProducer>;
   Container.RegisterFactory<IEventsDrivenProducerFactory>;
-  Container.RegisterType<IEventsDrivenListener, TEventsDrivenQueueListener>;
+  Container.RegisterType<IEventsDrivenListener, TQueueEventsDrivenListener>;
   Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
   Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
 ```
@@ -1535,10 +1535,10 @@ To use the Qeues system please use the following registration:
 To use the PubSub system please use the following registration:
 
 ```pascal
-  Container.RegisterType<IEventsDrivenPubSubConsumer, TRedisEventsDrivenPubSubConsumer>;
-  Container.RegisterType<IEventsDrivenProducer, TRedisEventsDrivenPubSubProducer>;
+  Container.RegisterType<IPubSubEventsDrivenConsumer, TRedisPubSubEventsDrivenConsumer>;
+  Container.RegisterType<IEventsDrivenProducer, TRedisPubSubEventsDrivenProducer>;
   Container.RegisterFactory<IEventsDrivenProducerFactory>;
-  Container.RegisterType<IEventsDrivenListener, TEventsDrivenPubSubListener>;
+  Container.RegisterType<IEventsDrivenListener, TPubSubEventsDrivenListener>;
   Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
   Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
 ```
@@ -1546,11 +1546,11 @@ To use the PubSub system please use the following registration:
 To use the hybrid system please use the following registration:
 
 ```pascal
-  Container.RegisterType<IEventsDrivenPubSubConsumer, TRedisEventsDrivenQueuePubSubConsumer>;
-  Container.RegisterFactory<IEventsDrivenPubSubConsumerFactory>;
-  Container.RegisterType<IEventsDrivenProducer, TRedisEventsDrivenQueuePubSubProducer>;
+  Container.RegisterType<IPubSubEventsDrivenConsumer, TRedisPubSubEventsDrivenQueueConsumer>;
+  Container.RegisterFactory<IPubSubEventsDrivenConsumerFactory>;
+  Container.RegisterType<IEventsDrivenProducer, TRedisPubSubEventsDrivenQueueProducer>;
   Container.RegisterFactory<IEventsDrivenProducerFactory>;
-  Container.RegisterType<IEventsDrivenListener, TEventsDrivenPubSubListener>;
+  Container.RegisterType<IEventsDrivenListener, TPubSubEventsDrivenListener>;
   Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
   Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
 ```
@@ -1581,7 +1581,7 @@ type
   public
     constructor Create(const Logger: ILogger; const AddUseCase: IAddUseCase; const DistribuitedEventPublisher: IEventsDrivenPublisher);
 
-    [EventsDriven('Authentication', 'UserAdded')]
+    [TriggeredByEvent('Authentication', 'UserAdded')]
     procedure Run(const UserCreatedDto: IUserCreatedDto);
   end;
   

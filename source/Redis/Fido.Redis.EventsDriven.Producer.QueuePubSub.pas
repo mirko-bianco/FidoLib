@@ -45,7 +45,7 @@ uses
   Fido.Redis.Client.Intf;
 
 type
-  TRedisEventsDrivenQueuePubSubProducer = class(TInterfacedObject, IEventsDrivenProducer)
+  TRedisQueuePubSubEventsDrivenProducer = class(TInterfacedObject, IEventsDrivenProducer)
   private var
     FRedisClient: IFidoRedisClient;
   public
@@ -56,9 +56,9 @@ type
 
 implementation
 
-{ TRedisEventsDrivenQueuePubSubProducer }
+{ TRedisQueuePubSubEventsDrivenProducer }
 
-constructor TRedisEventsDrivenQueuePubSubProducer.Create(const RedisClient: IFidoRedisClient);
+constructor TRedisQueuePubSubEventsDrivenProducer.Create(const RedisClient: IFidoRedisClient);
 begin
   inherited Create;
 
@@ -66,7 +66,7 @@ begin
   FRedisClient := RedisClient;
 end;
 
-function TRedisEventsDrivenQueuePubSubProducer.Push(
+function TRedisQueuePubSubEventsDrivenProducer.Push(
   const Key: string;
   const Payload: string): Boolean;
 var

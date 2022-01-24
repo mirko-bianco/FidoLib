@@ -51,7 +51,7 @@ begin
   Client.Setup.Returns<Integer>(1).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
   Client.Setup.Returns<Integer>(1).When.PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>);
 
-  Producer := TRedisEventsDrivenQueuePubSubProducer.Create(Client);
+  Producer := TRedisQueuePubSubEventsDrivenProducer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -83,7 +83,7 @@ begin
   Client.Setup.Returns<Integer>(0).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
   Client.Setup.Returns<Integer>(1).When.PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>);
 
-  Producer := TRedisEventsDrivenQueuePubSubProducer.Create(Client);
+  Producer := TRedisQueuePubSubEventsDrivenProducer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -114,7 +114,7 @@ begin
   Client.Setup.Returns<Integer>(1).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
   Client.Setup.Returns<Integer>(0).When.PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>);
 
-  Producer := TRedisEventsDrivenQueuePubSubProducer.Create(Client);
+  Producer := TRedisQueuePubSubEventsDrivenProducer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure

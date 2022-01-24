@@ -45,7 +45,7 @@ uses
   Fido.Redis.Client.Intf;
 
 type
-  TRedisEventsDrivenQueuePubSubConsumer = class(TInterfacedObject, IEventsDrivenPubSubConsumer)
+  TRedisQueuePubSubEventsDrivenConsumer = class(TInterfacedObject, IPubSubEventsDrivenConsumer)
   private
     FRedisClientFactoryFunc: TFunc<IFidoRedisClient>;
     FTasks: IDictionary<string, ITask>;
@@ -63,9 +63,9 @@ type
 
 implementation
 
-{ TRedisEventsDrivenQueuePubSubConsumer }
+{ TRedisQueuePubSubEventsDrivenConsumer }
 
-procedure TRedisEventsDrivenQueuePubSubConsumer.TryPop(
+procedure TRedisQueuePubSubEventsDrivenConsumer.TryPop(
   const RedisClient: IFidoRedisClient;
   const Key: string;
   const OnNotify: TProc<string, string>);
@@ -92,12 +92,12 @@ begin
   OnNotify(Key, Payload);
 end;
 
-procedure TRedisEventsDrivenQueuePubSubConsumer.Stop;
+procedure TRedisQueuePubSubEventsDrivenConsumer.Stop;
 begin
   FClosing := True;
 end;
 
-constructor TRedisEventsDrivenQueuePubSubConsumer.Create(const RedisClientFactoryFunc: TFunc<IFidoRedisClient>);
+constructor TRedisQueuePubSubEventsDrivenConsumer.Create(const RedisClientFactoryFunc: TFunc<IFidoRedisClient>);
 begin
   inherited Create;
 
@@ -108,7 +108,7 @@ begin
   FClosing := False;
 end;
 
-procedure TRedisEventsDrivenQueuePubSubConsumer.Subscribe(
+procedure TRedisQueuePubSubEventsDrivenConsumer.Subscribe(
   const Channel: string;
   const EventName: string;
   OnNotify: TProc<string, string>);
@@ -136,7 +136,7 @@ begin
     end);
 end;
 
-procedure TRedisEventsDrivenQueuePubSubConsumer.Unsubscribe(const Channel, EventName: string);
+procedure TRedisQueuePubSubEventsDrivenConsumer.Unsubscribe(const Channel, EventName: string);
 begin
   FTasks.Remove(TEventsDrivenUtilities.FormatKey(Channel, EventName));
 end;

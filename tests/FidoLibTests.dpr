@@ -52,7 +52,8 @@ uses
   Fido.Redis.EventsDriven.Producer.PubSub.Test in 'Redis\Fido.Redis.EventsDriven.Producer.PubSub.Test.pas',
   Fido.Redis.EventsDriven.Consumer.PubSub.Test in 'Redis\Fido.Redis.EventsDriven.Consumer.PubSub.Test.pas',
   Fido.Redis.EventsDriven.Producer.QueueQueuePubSub.Test in 'Redis\Fido.Redis.EventsDriven.Producer.QueueQueuePubSub.Test.pas',
-  Fido.Redis.EventsDriven.Consumer.QueuePubSub.Test in 'Redis\Fido.Redis.EventsDriven.Consumer.QueuePubSub.Test.pas';
+  Fido.Redis.EventsDriven.Consumer.QueuePubSub.Test in 'Redis\Fido.Redis.EventsDriven.Consumer.QueuePubSub.Test.pas',
+  Fido.EventsDriven.Utils.Test in 'EventsDriven\Fido.EventsDriven.Utils.Test.pas';
 
 var
   runner : ITestRunner;

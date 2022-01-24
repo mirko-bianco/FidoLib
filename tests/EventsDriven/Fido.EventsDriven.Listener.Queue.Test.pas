@@ -19,7 +19,7 @@ uses
 
 type
   [TestFixture]
-  TEventsDrivenQueueListenerTests = class
+  TQueueEventsDrivenListenerTests = class
   public
     [Test]
     procedure StopDoesNotRaiseAnyException;
@@ -33,15 +33,15 @@ type
 
 implementation
 
-procedure TEventsDrivenQueueListenerTests.StopDoesNotRaiseAnyException;
+procedure TQueueEventsDrivenListenerTests.StopDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  QueueConsumer: Mock<IEventsDrivenQueueConsumer>;
+  QueueConsumer: Mock<IQueueEventsDrivenConsumer>;
 begin
-  QueueConsumer := Mock<IEventsDrivenQueueConsumer>.Create;
+  QueueConsumer := Mock<IQueueEventsDrivenConsumer>.Create;
 
-  Listener := TEventsDrivenQueueListener.Create(
-    function: IEventsDrivenQueueConsumer
+  Listener := TQueueEventsDrivenListener.Create(
+    function: IQueueEventsDrivenConsumer
     begin
       Result := QueueConsumer;
     end);
@@ -55,15 +55,15 @@ begin
   Listener := nil;
 end;
 
-procedure TEventsDrivenQueueListenerTests.SubscribeToDoesNotRaiseAnyException;
+procedure TQueueEventsDrivenListenerTests.SubscribeToDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  QueueConsumer: Mock<IEventsDrivenQueueConsumer>;
+  QueueConsumer: Mock<IQueueEventsDrivenConsumer>;
 begin
-  QueueConsumer := Mock<IEventsDrivenQueueConsumer>.Create;
+  QueueConsumer := Mock<IQueueEventsDrivenConsumer>.Create;
 
-  Listener := TEventsDrivenQueueListener.Create(
-    function: IEventsDrivenQueueConsumer
+  Listener := TQueueEventsDrivenListener.Create(
+    function: IQueueEventsDrivenConsumer
     begin
       Result := QueueConsumer;
     end);
@@ -77,15 +77,15 @@ begin
   Listener := nil;
 end;
 
-procedure TEventsDrivenQueueListenerTests.UnsubscribeFromDoesNotRaiseAnyException;
+procedure TQueueEventsDrivenListenerTests.UnsubscribeFromDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  QueueConsumer: Mock<IEventsDrivenQueueConsumer>;
+  QueueConsumer: Mock<IQueueEventsDrivenConsumer>;
 begin
-  QueueConsumer := Mock<IEventsDrivenQueueConsumer>.Create;
+  QueueConsumer := Mock<IQueueEventsDrivenConsumer>.Create;
 
-  Listener := TEventsDrivenQueueListener.Create(
-    function: IEventsDrivenQueueConsumer
+  Listener := TQueueEventsDrivenListener.Create(
+    function: IQueueEventsDrivenConsumer
     begin
       Result := QueueConsumer;
     end);
@@ -100,5 +100,5 @@ begin
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TEventsDrivenQueueListenerTests);
+  TDUnitX.RegisterTestFixture(TQueueEventsDrivenListenerTests);
 end.

@@ -37,7 +37,7 @@ implementation
 procedure TRedisEventsDrivenConsumerQueueTests.PopReturnsTrueAndValueWhenFound;
 var
   Client: Mock<IFidoRedisClient>;
-  Consumer: IEventsDrivenQueueConsumer;
+  Consumer: IQueueEventsDrivenConsumer;
   Key: string;
   Payload: string;
   Result: Boolean;
@@ -51,7 +51,7 @@ begin
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Returns<Nullable<string>>(TNetEncoding.Base64.Encode(Payload)).When.RPOP(Key);
 
-  Consumer := TRedisEventsDrivenQueueConsumer.Create(Client);
+  Consumer := TRedisQueueEventsDrivenConsumer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -68,7 +68,7 @@ end;
 procedure TRedisEventsDrivenConsumerQueueTests.PopReturnsFalseWhenNotFound;
 var
   Client: Mock<IFidoRedisClient>;
-  Consumer: IEventsDrivenQueueConsumer;
+  Consumer: IQueueEventsDrivenConsumer;
   Key: string;
   Payload: string;
   ResultPayload: string;
@@ -83,7 +83,7 @@ begin
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Returns<Nullable<string>>(NullableString).When.RPOP(Key);
 
-  Consumer := TRedisEventsDrivenQueueConsumer.Create(Client);
+  Consumer := TRedisQueueEventsDrivenConsumer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -99,7 +99,7 @@ end;
 procedure TRedisEventsDrivenConsumerQueueTests.PushBackPushesEndodedData;
 var
   Client: Mock<IFidoRedisClient>;
-  Consumer: IEventsDrivenQueueConsumer;
+  Consumer: IQueueEventsDrivenConsumer;
   Key: string;
   Payload: string;
   EncodedPayload: string;
@@ -111,7 +111,7 @@ begin
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Executes.When.LPUSH(Key, EncodedPayload);
 
-  Consumer := TRedisEventsDrivenQueueConsumer.Create(Client);
+  Consumer := TRedisQueueEventsDrivenConsumer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure

@@ -28,7 +28,7 @@ uses
   System.SysUtils;
 
 type
-  IEventsDrivenPubSubConsumer = interface(IInvokable)
+  IPubSubEventsDrivenConsumer = interface(IInvokable)
     ['{99C26265-A1D2-4A1C-BEFB-0BD1537ECA10}']
 
     procedure Subscribe(const Channel: string; const EventName: string; OnNotify: TProc<string, string>);
@@ -38,7 +38,7 @@ type
   end;
 
   {$M+}
-  IEventsDrivenPubSubConsumerFactory = reference to function: IEventsDrivenPubSubConsumer;
+  IPubSubEventsDrivenConsumerFactory = reference to function: IPubSubEventsDrivenConsumer;
   {$M-}
 
 implementation
