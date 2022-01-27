@@ -17,6 +17,7 @@ uses
   FireDAC.ConsoleUI.Wait,
   FireDAC.Comp.UI,
   FireDAC.Dapt,
+  FireDAC.Comp.Client,
 
   Vcl.Forms,
 
@@ -26,6 +27,7 @@ uses
   Fido.Mappers,
   Fido.Containers,
   Fido.Db.Connections.FireDac,
+  Fido.Db.Connections.FireDac.PerThread,
   Fido.StatementExecutor.Intf,
   Fido.Db.StatementExecutor.FireDac,
 
@@ -41,7 +43,8 @@ uses
   Song.Model,
   Song.View,
   Song.ViewModel.Intf,
-  Song.ViewModel;
+  Song.ViewModel,
+  System.Generics.Collections;
 
 type
   MVVMExampleInitialization = class
@@ -66,8 +69,9 @@ begin
   Container.RegisterType<TFireDacConnections>.DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParams);
+      Result := TFireDacPerThreadConnections.Create(FireDacDatabaseParams);
     end).AsSingleton;
+
   Container.RegisterType<IStatementExecutor, TFireDacStatementExecutor>;
 
   Container.RegisterType<TMainView>.AsSingleton;

@@ -360,7 +360,7 @@ begin
   Container.RegisterType<TFireDacConnections>.DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParams);
+      Result := TFireDacPerThreadConnections.Create(FireDacDatabaseParams);
     end).AsSingleton;
   Container.RegisterType<IStatementExecutor, TFireDacStatementExecutor>;
   
@@ -554,7 +554,7 @@ begin
   Container.RegisterType<TFireDacConnections>('First_Database').DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParamsFirstDatabase);
+      Result := TFireDacPerThreadConnections.Create(FireDacDatabaseParamsFirstDatabase);
     end).AsSingleton;
   Container.RegisterType<IStatementExecutor>('First_Database_Connector').DelegateTo(
     function: IStatementExecutor
@@ -565,7 +565,7 @@ begin
    Container.RegisterType<TFireDacConnections>('Second_Database').DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParamsSecondDatabase);
+      Result := TFireDacPerThreadConnections.Create(FireDacDatabaseParamsSecondDatabase);
     end).AsSingleton;
   Container.RegisterType<IStatementExecutor>('Second_Database_Connector').DelegateTo(
     function: IStatementExecutor
