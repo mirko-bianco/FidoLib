@@ -172,15 +172,15 @@ begin
     procedure
     var
       Index: Integer;
-      Task: Weak<ITask>;
     begin
-      Task := FGarbageTask;
       while true do
       begin
-        if not Assigned(FGarbageTask) then
-          Exit;
         for Index := 1 to 10 do
+        begin
+          if TTask.CurrentTask.Status = TTaskStatus.Canceled then
+            Exit;
           Sleep(100);
+        end;
         PerformGarbageCollection;
       end;
     end);

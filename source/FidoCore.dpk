@@ -209,7 +209,11 @@ contains
   Fido.EventsDriven.Subscriber in 'EventsDriven\Fido.EventsDriven.Subscriber.pas',
   Fido.EventsDriven.Utils in 'EventsDriven\Fido.EventsDriven.Utils.pas',
   Fido.EventsDriven.Consumer.PubSub.Intf in 'EventsDriven\Fido.EventsDriven.Consumer.PubSub.Intf.pas',
-  Fido.EventsDriven.Listener.PubSub in 'EventsDriven\Fido.EventsDriven.Listener.PubSub.pas';
+  Fido.EventsDriven.Listener.PubSub in 'EventsDriven\Fido.EventsDriven.Listener.PubSub.pas',
+  Fido.EventsDriven.Broker.PubSub.Intf in 'EventsDriven\Fido.EventsDriven.Broker.PubSub.Intf.pas',
+  Fido.Memory.EventsDriven.Producer.PubSub in 'EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.pas',
+  Fido.Memory.EventsDriven.Consumer.PubSub in 'EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.pas',
+  Fido.Memory.EventsDriven.Broker.PubSub in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.pas';
 
 end.
 

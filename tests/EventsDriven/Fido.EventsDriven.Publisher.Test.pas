@@ -29,8 +29,8 @@ implementation
 
 procedure TEventsDrivenPublisherTests.TriggerDoesNotRaiseAnyException;
 var
-  Publisher: IEventsDrivenPublisher;
-  Producer: Mock<IEventsDrivenProducer>;
+  Publisher: IEventsDrivenPublisher<string>;
+  Producer: Mock<IEventsDrivenProducer<string>>;
   Result: Boolean;
   Channel: string;
   EventName: string;
@@ -42,11 +42,11 @@ begin
   Payload := MockUtils.SomeString;
   Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
 
-  Producer := Mock<IEventsDrivenProducer>.Create;
+  Producer := Mock<IEventsDrivenProducer<string>>.Create;
   Producer.Setup.Returns<Boolean>(True).When.Push(Key, Payload);
 
-  Publisher := TEventsDrivenPublisher.Create(
-    function: IEventsDrivenProducer
+  Publisher := TEventsDrivenPublisher<string>.Create(
+    function: IEventsDrivenProducer<string>
     begin
       Result := Producer;
     end);

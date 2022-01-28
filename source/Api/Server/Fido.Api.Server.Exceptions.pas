@@ -25,6 +25,7 @@ unit Fido.Api.Server.Exceptions;
 interface
 
 uses
+  Spring,
   Spring.Logging,
 
   Fido.Logging.Types,
@@ -59,8 +60,11 @@ constructor EApiServer500.Create(
   const Logger: ILogger;
   const &Class: string;
   const Method: string);
+var
+  LoggedData: Shared<TLoggedData>;
 begin
-  Logger.LogValue(TLogLevel.Error, Msg, TLoggedData.Create('Error', &Class, Method));
+  LoggedData := TLoggedData.Create('Error', &Class, Method);
+  Logger.LogValue(TLogLevel.Error, Msg, LoggedData.Value);
   inherited Create(Msg);
 end;
 

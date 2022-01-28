@@ -45,7 +45,7 @@ uses
   Fido.Redis.Client.Intf;
 
 type
-  TRedisPubSubEventsDrivenProducer = class(TInterfacedObject, IEventsDrivenProducer)
+  TRedisPubSubEventsDrivenProducer = class(TInterfacedObject, IEventsDrivenProducer<string>)
   private var
     FRedisClient: IFidoRedisClient;
   public

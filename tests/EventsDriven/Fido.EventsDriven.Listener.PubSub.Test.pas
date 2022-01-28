@@ -36,11 +36,11 @@ implementation
 procedure TPubSubEventsDrivenListenerTests.StopDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer>;
+  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer<string>>;
 begin
-  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer>.Create;
+  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer<string>>.Create;
 
-  Listener := TPubSubEventsDrivenListener.Create(PubSubConsumer);
+  Listener := TPubSubEventsDrivenListener<string>.Create(PubSubConsumer);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -52,11 +52,11 @@ end;
 procedure TPubSubEventsDrivenListenerTests.SubscribeToDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer>;
+  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer<string>>;
 begin
-  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer>.Create;
+  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer<string>>.Create;
 
-  Listener := TPubSubEventsDrivenListener.Create(PubSubConsumer);
+  Listener := TPubSubEventsDrivenListener<string>.Create(PubSubConsumer);
 
   Assert.WillNotRaiseAny(
     procedure
@@ -68,11 +68,11 @@ end;
 procedure TPubSubEventsDrivenListenerTests.UnsubscribeFromDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer>;
+  PubSubConsumer: Mock<IPubSubEventsDrivenConsumer<string>>;
 begin
-  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer>.Create;
+  PubSubConsumer := Mock<IPubSubEventsDrivenConsumer<string>>.Create;
 
-  Listener := TPubSubEventsDrivenListener.Create(PubSubConsumer);
+  Listener := TPubSubEventsDrivenListener<string>.Create(PubSubConsumer);
 
   Assert.WillNotRaiseAny(
     procedure

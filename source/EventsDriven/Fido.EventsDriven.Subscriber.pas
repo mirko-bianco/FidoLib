@@ -126,9 +126,6 @@ begin
           begin
             EDAttribute := Item as TriggeredByEventAttribute;
 
-            if Length(Method.GetParameters) > 1 then
-              raise EEventsDrivenSubscriber.CreateFmt('Method %s must have max one parameter', [Method.Name]);
-
             FConsumers.Add(Consumer);
             FChannels.Add(TChannelEventPair.Create(EDAttribute.Channel, EDAttribute.EventName));
             FListener.SubscribeTo(

@@ -1495,7 +1495,19 @@ Units folder: `EventsDriven`.
 
 With FidoLib you can design your system adhering to the Events driven architecture.
 
-Out of the box you can use a Redis implementation that would use Queues, PubSub or an hybrid Queues + PubSub system to manage the events, but as always nothing stops you from implementing your own flavour and to contribute.
+Out of the box you can use:
+
+- a Redis implementation that would use Queues, PubSub or an hybrid Queues + PubSub system to manage the events
+- an intra-app memory based implementation that would use a PubSub system to manage the events.
+
+But as always nothing stops you from implementing your own flavour and to contribute.
+
+The events can be associated to a payload. Fidolib support out of the box two types of payload:
+
+- **string** - Used by Redis, that does a JSON marshalling of the payload.
+- **TArray<TValue>** - Used by the intra-app memory implementation.
+
+To add support for yet another  payload type just add conversion by means of the `TEventsDrivenUtilities.RegisterPayloadTypeMapper<PayloadType>` method. `TEventsDrivenUtilities.Create` contains the code for the registration of the supported payload types, you can use them as a reference.
 
 ##### The mechanism
 
@@ -1523,35 +1535,35 @@ As you can see each flavour has its on peculiarities and behaviors. You can choo
 To use the Qeues system please use the following registration:
 
 ```pascal
-  Container.RegisterType<IQueueEventsDrivenConsumer, TRedisQueueEventsDrivenConsumer>;
-  Container.RegisterFactory<IQueueEventsDrivenConsumerFactory>;
-  Container.RegisterType<IEventsDrivenProducer, TRedisQueueEventsDrivenProducer>;
-  Container.RegisterFactory<IEventsDrivenProducerFactory>;
-  Container.RegisterType<IEventsDrivenListener, TQueueEventsDrivenListener>;
-  Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
+  Container.RegisterType<IQueueEventsDrivenConsumer<string>, TRedisQueueEventsDrivenConsumer>;
+  Container.RegisterFactory<IQueueEventsDrivenConsumerFactory<string>>;
+  Container.RegisterType<IEventsDrivenProducer<string>, TRedisQueueEventsDrivenProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory<string>>;
+  Container.RegisterType<IEventsDrivenListener, TQueueEventsDrivenListener<string>>;
+  Container.RegisterType<IEventsDrivenPublisher<string>, TEventsDrivenPublisher<string>>;
   Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
 ```
 
 To use the PubSub system please use the following registration:
 
 ```pascal
-  Container.RegisterType<IPubSubEventsDrivenConsumer, TRedisPubSubEventsDrivenConsumer>;
-  Container.RegisterType<IEventsDrivenProducer, TRedisPubSubEventsDrivenProducer>;
-  Container.RegisterFactory<IEventsDrivenProducerFactory>;
-  Container.RegisterType<IEventsDrivenListener, TPubSubEventsDrivenListener>;
-  Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
+  Container.RegisterType<IPubSubEventsDrivenConsumer<string>, TRedisPubSubEventsDrivenConsumer>;
+  Container.RegisterType<IEventsDrivenProducer<string>, TRedisPubSubEventsDrivenProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory<string>>;
+  Container.RegisterType<IEventsDrivenListener, TPubSubEventsDrivenListener<string>>;
+  Container.RegisterType<IEventsDrivenPublisher<string>, TEventsDrivenPublisher<string>>;
   Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
 ```
 
 To use the hybrid system please use the following registration:
 
 ```pascal
-  Container.RegisterType<IPubSubEventsDrivenConsumer, TRedisPubSubEventsDrivenQueueConsumer>;
-  Container.RegisterFactory<IPubSubEventsDrivenConsumerFactory>;
-  Container.RegisterType<IEventsDrivenProducer, TRedisPubSubEventsDrivenQueueProducer>;
-  Container.RegisterFactory<IEventsDrivenProducerFactory>;
-  Container.RegisterType<IEventsDrivenListener, TPubSubEventsDrivenListener>;
-  Container.RegisterType<IEventsDrivenPublisher, TEventsDrivenPublisher>;
+  Container.RegisterType<IPubSubEventsDrivenConsumer<string>, TRedisPubSubEventsDrivenQueueConsumer>;
+  Container.RegisterFactory<IPubSubEventsDrivenConsumerFactory<string>>;
+  Container.RegisterType<IEventsDrivenProducer<string>, TRedisPubSubEventsDrivenQueueProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory<string>>;
+  Container.RegisterType<IEventsDrivenListener, TPubSubEventsDrivenListener<string>>;
+  Container.RegisterType<IEventsDrivenPublisher<string>, TEventsDrivenPublisher<string>>;
   Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
 ```
 

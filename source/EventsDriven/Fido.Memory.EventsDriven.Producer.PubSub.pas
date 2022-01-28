@@ -20,40 +20,45 @@
  * SOFTWARE.
  *)
 
-unit Fido.EventsDriven.Listener.Intf;
+unit Fido.Memory.EventsDriven.Producer.PubSub;
 
 interface
 
+uses
+  System.SysUtils,
+
+  Spring,
+
+  Fido.EventsDriven.Producer.Intf,
+  Fido.EventsDriven.Broker.PubSub.Intf;
+
 type
-  TConsumerData = record
+  TMemoryPubSubEventsDrivenProducer<PayloadType> = class(TInterfacedObject, IEventsDrivenProducer<PayloadType>)
   private
-    FConsumer: TObject;
-    FMethodName: string;
+    FBroker: IPubSubEventsDrivenBroker<PayloadType>;
   public
-    constructor Create(const Consumer: TObject; const MethodName: string);
+    constructor Create(const Broker: IPubSubEventsDrivenBroker<PayloadType>);
 
-    property Consumer: TObject read FConsumer;
-    property MethodName: string read FMethodName;
-  end;
-
-
-  IEventsDrivenListener = interface(IInvokable)
-  ['{E99B154A-8854-4C17-9357-B0E13C3DE909}']
-
-    procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
-    procedure UnsubscribeFrom(const Channel: string; const EventName: string);
-
-    procedure Stop;
+    function Push(const Key: string; const Payload: PayloadType): Boolean;
   end;
 
 implementation
 
-{ TResponderData }
+{ TMemoryPubSubEventsDrivenProducer<PayloadType> }
 
-constructor TConsumerData.Create(const Consumer: TObject; const MethodName: string);
+constructor TMemoryPubSubEventsDrivenProducer<PayloadType>.Create(const Broker: IPubSubEventsDrivenBroker<PayloadType>);
 begin
-  FConsumer := Consumer;
-  FMethodName := MethodName;
+  inherited Create;
+
+  Guard.CheckNotNull(Broker, 'Broker');
+  FBroker := Broker;
+end;
+
+function TMemoryPubSubEventsDrivenProducer<PayloadType>.Push(
+  const Key: string;
+  const Payload: PayloadType): Boolean;
+begin
+  Result := FBroker.Push(Key, Payload);
 end;
 
 end.

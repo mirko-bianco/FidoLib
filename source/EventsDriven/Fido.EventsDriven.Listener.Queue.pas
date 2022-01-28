@@ -44,7 +44,7 @@ uses
   Fido.EventsDriven.Consumer.Queue.Intf;
 
 type
-  TQueueEventsDrivenListener = class (TInterfacedObject, IEventsDrivenListener)
+  TQueueEventsDrivenListener<PayloadType> = class (TInterfacedObject, IEventsDrivenListener)
   private var
     FActive: IBox<Boolean>;
     FLock: IReadWriteSync;
@@ -52,9 +52,9 @@ type
     FSubscriptionsTask: ITask;
     FPollingIntervalMSec: Integer;
   private
-    procedure PerformEventPolling(const QueueConsumer: IQueueEventsDrivenConsumer);
+    procedure PerformEventPolling(const QueueConsumer: IQueueEventsDrivenConsumer<PayloadType>);
   public
-    constructor Create(const QueueConsumerFactoryFunc: TFunc<IQueueEventsDrivenConsumer>);
+    constructor Create(const QueueConsumerFactoryFunc: TFunc<IQueueEventsDrivenConsumer<PayloadType>>);
     destructor Destroy; override;
 
     procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
@@ -65,9 +65,9 @@ type
 
 implementation
 
-{ TQueueEventsDrivenListener }
+{ TQueueEventsDrivenListener<PayloadType> }
 
-constructor TQueueEventsDrivenListener.Create(const QueueConsumerFactoryFunc: TFunc<IQueueEventsDrivenConsumer>);
+constructor TQueueEventsDrivenListener<PayloadType>.Create(const QueueConsumerFactoryFunc: TFunc<IQueueEventsDrivenConsumer<PayloadType>>);
 begin
   inherited Create;
 
@@ -84,7 +84,7 @@ begin
     var
       Index: Integer;
       Steps: Integer;
-      QueueConsumer: IQueueEventsDrivenConsumer;
+      QueueConsumer: IQueueEventsDrivenConsumer<PayloadType>;
     begin
       QueueConsumer := QueueConsumerFactoryFunc();
       Steps := FPollingIntervalMSec div 50;
@@ -100,7 +100,7 @@ begin
     end);
 end;
 
-procedure TQueueEventsDrivenListener.PerformEventPolling(const QueueConsumer: IQueueEventsDrivenConsumer);
+procedure TQueueEventsDrivenListener<PayloadType>.PerformEventPolling(const QueueConsumer: IQueueEventsDrivenConsumer<PayloadType>);
 var
   Items: TArray<TPair<string, TConsumerData>>;
 begin
@@ -120,7 +120,7 @@ begin
   TCollections.CreateList<TPair<string, TConsumerData>>(Items).ForEach(
     procedure(const Item: TPair<string, TConsumerData>)
     var
-      Value: string;
+      Value: PayloadType;
       Ctx: TRttiContext;
       RttiType: TRttiType;
       LItem: TPair<string, TConsumerData>;
@@ -141,7 +141,7 @@ begin
             procedure(const Method: TRttiMethod)
             begin
               try
-                Method.Invoke(LItem.Value.Consumer, TEventsDrivenUtilities.PayloadToMethodParams(Value, Method));
+                Method.Invoke(LItem.Value.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Value, Method));
               except
                 QueueConsumer.PushBack(LItem.Key, Value);
               end;
@@ -150,19 +150,19 @@ begin
     end);
 end;
 
-destructor TQueueEventsDrivenListener.Destroy;
+destructor TQueueEventsDrivenListener<PayloadType>.Destroy;
 begin
   FActive.UpdateValue(False);
   FSubscriptionsTask.Wait(FPollingIntervalMSec);
   inherited;
 end;
 
-procedure TQueueEventsDrivenListener.Stop;
+procedure TQueueEventsDrivenListener<PayloadType>.Stop;
 begin
   FActive.UpdateValue(False);
 end;
 
-procedure TQueueEventsDrivenListener.SubscribeTo(
+procedure TQueueEventsDrivenListener<PayloadType>.SubscribeTo(
   const Channel: string;
   const EventName: string;
   const ConsumerData: TConsumerData);
@@ -175,7 +175,7 @@ begin
   end;
 end;
 
-procedure TQueueEventsDrivenListener.UnsubscribeFrom(
+procedure TQueueEventsDrivenListener<PayloadType>.UnsubscribeFrom(
   const Channel: string;
   const EventName: string);
 begin

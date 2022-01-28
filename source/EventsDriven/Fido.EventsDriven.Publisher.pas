@@ -39,20 +39,20 @@ uses
   Fido.EventsDriven.Utils;
 
 type
-  TEventsDrivenPublisher = class(TInterfacedObject, IEventsDrivenPublisher)
+  TEventsDrivenPublisher<PayloadType> = class(TInterfacedObject, IEventsDrivenPublisher<PayloadType>)
   private var
-    FProducerFactoryFunc: TFunc<IEventsDrivenProducer>;
+    FProducerFactoryFunc: TFunc<IEventsDrivenProducer<PayloadType>>;
   public
-    constructor Create(const ProducerFactoryFunc: TFunc<IEventsDrivenProducer>);
+    constructor Create(const ProducerFactoryFunc: TFunc<IEventsDrivenProducer<PayloadType>>);
 
-    function Trigger(const Channel: string; const EventName: string; const Payload: string = ''): Boolean;
+    function Trigger(const Channel: string; const EventName: string; const Payload: PayloadType): Boolean;
   end;
 
 implementation
 
-{ TEventsDrivenPublisher }
+{ TEventsDrivenPublisher<PayloadType> }
 
-constructor TEventsDrivenPublisher.Create(const ProducerFactoryFunc: TFunc<IEventsDrivenProducer>);
+constructor TEventsDrivenPublisher<PayloadType>.Create(const ProducerFactoryFunc: TFunc<IEventsDrivenProducer<PayloadType>>);
 begin
   inherited Create;
 
@@ -60,12 +60,12 @@ begin
   FProducerFactoryFunc := ProducerFactoryFunc;
 end;
 
-function TEventsDrivenPublisher.Trigger(
+function TEventsDrivenPublisher<PayloadType>.Trigger(
   const Channel: string;
   const EventName: string;
-  const Payload: string): Boolean;
+  const Payload: PayloadType): Boolean;
 var
-  Producer: IEventsDrivenProducer;
+  Producer: IEventsDrivenProducer<PayloadType>;
 begin
   Producer := FProducerFactoryFunc();
 

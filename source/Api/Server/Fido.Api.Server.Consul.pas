@@ -48,6 +48,7 @@ type
     FHealthEndpoint: string;
   public
     constructor Create(const ApiServer: IApiServer; const ConsulService: IConsulService; const ServiceName: string);
+    destructor Destroy; override;
 
     Function Port: Word;
     function IsActive: Boolean;
@@ -75,6 +76,12 @@ begin
   FConsulService := ConsulService;
   FServiceName := ServiceName;
   FHealthEndpoint := '';
+end;
+
+destructor TConsulAwareApiServer.Destroy;
+begin
+  FApiServer := nil;
+  inherited;
 end;
 
 function TConsulAwareApiServer.IsActive: Boolean;

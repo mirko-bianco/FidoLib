@@ -36,68 +36,70 @@ type
 implementation
 
 procedure TRedisEventsDrivenConsumerPubSubTests.SubscribeDoesNotRaiseAnyException;
-var
-  Consumer: IPubSubEventsDrivenConsumer;
-  Channel: string;
-  EventName: string;
-  Proc: TProc<string, string>;
-  Key: string;
 begin
-  Channel := MockUtils.SomeString;
-  EventName := MockUtils.SomeString;
-  Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
-  Proc := procedure(First: string; Second: string)
-    begin
-    end;
-
-  Consumer := TRedisPubSubEventsDrivenConsumer.Create(
-    function: IFidoRedisClient
-    begin
-      Result := Mock<IFidoRedisClient>.Create;
-    end);
-
   Assert.WillNotRaiseAny(
     procedure
+    var
+      Consumer: IPubSubEventsDrivenConsumer<string>;
+      Channel: string;
+      EventName: string;
+      Proc: TProc<string, string>;
+      Key: string;
     begin
+      Channel := MockUtils.SomeString;
+      EventName := MockUtils.SomeString;
+      Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
+      Proc := procedure(First: string; Second: string)
+        begin
+        end;
+
+      Consumer := TRedisPubSubEventsDrivenConsumer.Create(
+        function: IFidoRedisClient
+        begin
+          Result := Mock<IFidoRedisClient>.Create;
+        end);
+
       Consumer.Subscribe(Channel, EventName, Proc);
+
+      Proc := nil;
     end);
 end;
 
 procedure TRedisEventsDrivenConsumerPubSubTests.UnsubscribeDoesNotRaiseAnyException;
-var
-  Consumer: IPubSubEventsDrivenConsumer;
-  Channel: string;
-  EventName: string;
 begin
-  Channel := MockUtils.SomeString;
-  EventName := MockUtils.SomeString;
-
-  Consumer := TRedisPubSubEventsDrivenConsumer.Create(
-    function: IFidoRedisClient
-    begin
-      Result := Mock<IFidoRedisClient>.Create;
-    end);
-
   Assert.WillNotRaiseAny(
     procedure
+    var
+      Consumer: IPubSubEventsDrivenConsumer<string>;
+      Channel: string;
+      EventName: string;
     begin
+      Channel := MockUtils.SomeString;
+      EventName := MockUtils.SomeString;
+
+      Consumer := TRedisPubSubEventsDrivenConsumer.Create(
+        function: IFidoRedisClient
+        begin
+          Result := Mock<IFidoRedisClient>.Create;
+        end);
+
       Consumer.Unsubscribe(Channel, EventName);
     end);
 end;
 
 procedure TRedisEventsDrivenConsumerPubSubTests.StopDoesNotRaiseAnyException;
-var
-  Consumer: IPubSubEventsDrivenConsumer;
 begin
-  Consumer := TRedisPubSubEventsDrivenConsumer.Create(
-    function: IFidoRedisClient
-    begin
-      Result := Mock<IFidoRedisClient>.Create;
-    end);
-
   Assert.WillNotRaiseAny(
     procedure
+    var
+      Consumer: IPubSubEventsDrivenConsumer<string>;
     begin
+      Consumer := TRedisPubSubEventsDrivenConsumer.Create(
+        function: IFidoRedisClient
+        begin
+          Result := Mock<IFidoRedisClient>.Create;
+        end);
+
       Consumer.Stop;
     end);
 end;

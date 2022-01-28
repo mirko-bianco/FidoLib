@@ -37,7 +37,7 @@ implementation
 procedure TRedisEventsDrivenConsumerQueueTests.PopReturnsTrueAndValueWhenFound;
 var
   Client: Mock<IFidoRedisClient>;
-  Consumer: IQueueEventsDrivenConsumer;
+  Consumer: IQueueEventsDrivenConsumer<string>;
   Key: string;
   Payload: string;
   Result: Boolean;
@@ -68,7 +68,7 @@ end;
 procedure TRedisEventsDrivenConsumerQueueTests.PopReturnsFalseWhenNotFound;
 var
   Client: Mock<IFidoRedisClient>;
-  Consumer: IQueueEventsDrivenConsumer;
+  Consumer: IQueueEventsDrivenConsumer<string>;
   Key: string;
   Payload: string;
   ResultPayload: string;
@@ -99,7 +99,7 @@ end;
 procedure TRedisEventsDrivenConsumerQueueTests.PushBackPushesEndodedData;
 var
   Client: Mock<IFidoRedisClient>;
-  Consumer: IQueueEventsDrivenConsumer;
+  Consumer: IQueueEventsDrivenConsumer<string>;
   Key: string;
   Payload: string;
   EncodedPayload: string;

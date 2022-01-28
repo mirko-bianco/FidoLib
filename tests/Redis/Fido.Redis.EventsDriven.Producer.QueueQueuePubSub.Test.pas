@@ -37,7 +37,7 @@ implementation
 procedure TRedisEventsDrivenProducerQueuePubSubTests.PushPushesEncodedData;
 var
   Client: Mock<IFidoRedisClient>;
-  Producer: IEventsDrivenProducer;
+  Producer: IEventsDrivenProducer<string>;
   Key: string;
   Payload: string;
   EncodedPayload: string;
@@ -69,7 +69,7 @@ end;
 procedure TRedisEventsDrivenProducerQueuePubSubTests.PushReturnsFalseWhenLPUSHFails;
 var
   Client: Mock<IFidoRedisClient>;
-  Producer: IEventsDrivenProducer;
+  Producer: IEventsDrivenProducer<string>;
   Key: string;
   Payload: string;
   EncodedPayload: string;
@@ -100,7 +100,7 @@ end;
 procedure TRedisEventsDrivenProducerQueuePubSubTests.PushReturnsFalseWhenPUBLISHFails;
 var
   Client: Mock<IFidoRedisClient>;
-  Producer: IEventsDrivenProducer;
+  Producer: IEventsDrivenProducer<string>;
   Key: string;
   Payload: string;
   EncodedPayload: string;

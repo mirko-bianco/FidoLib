@@ -45,8 +45,9 @@ uses
   Fido.Redis.Client.Intf;
 
 type
-  TRedisQueuePubSubEventsDrivenConsumer = class(TInterfacedObject, IPubSubEventsDrivenConsumer)
+  TRedisQueuePubSubEventsDrivenConsumer = class(TInterfacedObject, IPubSubEventsDrivenConsumer<string>)
   private
+    FLock: IReadWriteSync;
     FRedisClientFactoryFunc: TFunc<IFidoRedisClient>;
     FTasks: IDictionary<string, ITask>;
     FClosing: Boolean;
@@ -55,7 +56,7 @@ type
   public
     constructor Create(const RedisClientFactoryFunc: TFunc<IFidoRedisClient>);
 
-    procedure Subscribe(const Channel: string; const EventName: string; OnNotify: TProc<string, string>);
+    procedure Subscribe(const Channel: string; const EventName: string; const OnNotify: TProc<string, string>);
     procedure Unsubscribe(const Channel: string; const EventName: string);
 
     procedure Stop;
@@ -104,6 +105,7 @@ begin
   Guard.CheckNotNull(RedisClientFactoryFunc, 'RedisClientFactoryFunc');
   FRedisClientFactoryFunc := RedisClientFactoryFunc;
 
+  FLock := TMREWSync.Create;
   FTasks := TCollections.CreateDictionary<string, ITask>;
   FClosing := False;
 end;
@@ -111,18 +113,15 @@ end;
 procedure TRedisQueuePubSubEventsDrivenConsumer.Subscribe(
   const Channel: string;
   const EventName: string;
-  OnNotify: TProc<string, string>);
+  const OnNotify: TProc<string, string>);
 var
   Key: string;
 begin
   Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
   FTasks.Items[Key] := TTask.Run(
     procedure
-    var
-      Client: IFidoRedisClient;
     begin
-      Client := FRedisClientFactoryFunc();
-      Client.SUBSCRIBE(
+      FRedisClientFactoryFunc().SUBSCRIBE(
         Key,
         procedure(key: string; QueueKey: string)
         begin
@@ -132,13 +131,16 @@ begin
         begin
           Result := Assigned(Self) and (not FClosing);
         end);
-      Client := nil;
     end);
 end;
 
 procedure TRedisQueuePubSubEventsDrivenConsumer.Unsubscribe(const Channel, EventName: string);
+var
+  Key: string;
 begin
-  FTasks.Remove(TEventsDrivenUtilities.FormatKey(Channel, EventName));
+  Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
+  FTasks.Items[Key] := nil;
+  FTasks.Remove(Key);
 end;
 
 end.

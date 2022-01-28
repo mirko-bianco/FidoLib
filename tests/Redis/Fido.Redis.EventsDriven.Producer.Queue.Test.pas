@@ -31,7 +31,7 @@ implementation
 procedure TRedisEventsDrivenProducerQueueTests.PushPushesEndodedData;
 var
   Client: Mock<IFidoRedisClient>;
-  Producer: IEventsDrivenProducer;
+  Producer: IEventsDrivenProducer<string>;
   Key: string;
   Payload: string;
   EncodedPayload: string;

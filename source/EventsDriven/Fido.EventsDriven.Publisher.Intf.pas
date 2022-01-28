@@ -25,10 +25,10 @@ unit Fido.EventsDriven.Publisher.Intf;
 interface
 
 type
-  IEventsDrivenPublisher = interface(IInvokable)
+  IEventsDrivenPublisher<PayloadType> = interface(IInvokable)
     ['{6339DC53-EEE1-4C1A-884D-9EA0A7B5F3A2}']
 
-    function Trigger(const Channel: string; const EventName: string; const Payload: string = ''): Boolean;
+    function Trigger(const Channel: string; const EventName: string; const Payload: PayloadType): Boolean;
   end;
 
 implementation

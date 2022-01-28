@@ -20,16 +20,26 @@
  * SOFTWARE.
  *)
 
-unit Fido.EventsDriven.Consumer.PubSub.Intf;
+unit Fido.Memory.EventsDriven.Consumer.PubSub;
 
 interface
 
 uses
-  System.SysUtils;
+  System.Classes,
+  System.SysUtils,
+
+  Spring,
+
+  Fido.EventsDriven.Consumer.PubSub.Intf,
+  Fido.EventsDriven.Utils,
+  Fido.EventsDriven.Broker.PubSub.Intf;
 
 type
-  IPubSubEventsDrivenConsumer<PayloadType> = interface(IInvokable)
-    ['{99C26265-A1D2-4A1C-BEFB-0BD1537ECA10}']
+  TMemoryPubSubEventsDrivenConsumer<PayloadType> = class(TInterfacedObject, IPubSubEventsDrivenConsumer<PayloadType>)
+  private
+    FBroker: IPubSubEventsDrivenBroker<PayloadType>;
+  public
+    constructor Create(const Broker: IPubSubEventsDrivenBroker<PayloadType>);
 
     procedure Subscribe(const Channel: string; const EventName: string; const OnNotify: TProc<string, PayloadType>);
     procedure Unsubscribe(const Channel: string; const EventName: string);
@@ -37,10 +47,36 @@ type
     procedure Stop;
   end;
 
-  {$M+}
-  IPubSubEventsDrivenConsumerFactory<PayloadType> = reference to function: IPubSubEventsDrivenConsumer<PayloadType>;
-  {$M-}
-
 implementation
+
+{ TMemoryPubSubEventsDrivenConsumer<PayloadType> }
+
+procedure TMemoryPubSubEventsDrivenConsumer<PayloadType>.Stop;
+begin
+  FBroker.Stop(Self);
+end;
+
+constructor TMemoryPubSubEventsDrivenConsumer<PayloadType>.Create(const Broker: IPubSubEventsDrivenBroker<PayloadType>);
+begin
+  inherited Create;
+
+  Guard.CheckNotNull(Broker, 'Broker');
+  FBroker := Broker;
+end;
+
+procedure TMemoryPubSubEventsDrivenConsumer<PayloadType>.Subscribe(
+  const Channel: string;
+  const EventName: string;
+  const OnNotify: TProc<string, PayloadType>);
+begin
+  FBroker.Subscribe(Self, TEventsDrivenUtilities.FormatKey(Channel, EventName), OnNotify);
+end;
+
+procedure TMemoryPubSubEventsDrivenConsumer<PayloadType>.Unsubscribe(
+  const Channel: string;
+  const EventName: string);
+begin
+  FBroker.Unsubscribe(Self, TEventsDrivenUtilities.FormatKey(Channel, EventName));
+end;
 
 end.

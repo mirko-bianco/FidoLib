@@ -28,10 +28,19 @@ type
     procedure PayloadToMethodParamTranslateCorrectlyWhenPayloadIsAsSingleValue;
 
     [Test]
-    procedure PayloadToMethodParamTranslateCorrectlyWhenPayloadIsASingleValueAsAnArray;
+    procedure StringPayloadToMethodParamsTranslatesCorrectlyWhenPayloadIsASingleValueAsAnArray;
 
     [Test]
-    procedure PayloadToMethodParamTranslateCorrectlyWhenPayloadAreMultipleValuesAsAnArray;
+    procedure StringPayloadToMethodParamsTranslatesCorrectlyWhenPayloadAreMultipleValuesAsAnArray;
+
+    [Test]
+    procedure ArrayOfTValuePayloadToMethodParamsTranslatesCorrectlyWithOneValue;
+
+    [Test]
+    procedure ArrayOfTValuePayloadToMethodParamsTranslatesCorrectlyWithMultipleValues;
+
+    [Test]
+    procedure PayloadToMethodParamsFailesWithNonSupportedType;
   end;
 
   {$M+}
@@ -47,6 +56,8 @@ type
     procedure TestMethod1(const StringParam: string);
 
     procedure TestMethod2(const StringParam: string; const BooleanParam: Boolean; const TestData: TTestData);
+
+    procedure TestMethod3(const BooleanParam: Boolean);
   end;
   {$M-}
 
@@ -62,6 +73,29 @@ begin
   EventName := MockUtils.SomeString;
   ExpectedResult := Format('%s::%s', [Channel, EventName]);
   Assert.AreEqual(ExpectedResult, TEventsDrivenUtilities.FormatKey(Channel, EventName));
+end;
+
+procedure TEventsDrivenUtilsTests.PayloadToMethodParamsFailesWithNonSupportedType;
+var
+  Ctx: TRttiContext;
+begin
+  Ctx := TRttiContext.Create;
+
+  Assert.WillRaise(
+    procedure
+    begin
+      TCollections.CreateList<TRttiMethod>(Ctx.GetType(TTestObject).GetMethods).Where(
+        function(const Method: TRttiMethod): Boolean
+        begin
+          Result := Method.Name = 'TestMethod3';
+        end).ForEach(
+        procedure(const Method: TRttiMethod)
+        begin
+          TEventsDrivenUtilities.PayloadToMethodParams(MockUtils.SomeBoolean, Method);
+        end);
+    end,
+    EEventsDrivenUtilities,
+    'TEventsDrivenUtilities.PayloadToMethodParams: Type System.Boolean not supported.');
 end;
 
 procedure TEventsDrivenUtilsTests.PayloadToMethodParamTranslateCorrectlyWhenPayloadIsAsSingleValue;
@@ -89,7 +123,67 @@ begin
   Assert.AreEqual(StringValue, Values[0].AsType<string>)
 end;
 
-procedure TEventsDrivenUtilsTests.PayloadToMethodParamTranslateCorrectlyWhenPayloadAreMultipleValuesAsAnArray;
+procedure TEventsDrivenUtilsTests.ArrayOfTValuePayloadToMethodParamsTranslatesCorrectlyWithMultipleValues;
+var
+  TestObject: Shared<TTestObject>;
+  Ctx: TRttiContext;
+  Result: TArray<TValue>;
+  StringValue: string;
+  BooleanValue: Boolean;
+  TestDataValue: Shared<TTestData>;
+begin
+  StringValue := MockUtils.SomeString;
+  BooleanValue := MockUtils.SomeBoolean;
+  TestDataValue := TTestData.Create;
+  TestDataValue.Value.SetValue(MockUtils.SomeString);
+
+  Ctx := TRttiContext.Create;
+
+  TestObject := TTestObject.Create;
+
+  TCollections.CreateList<TRttiMethod>(Ctx.GetType(TTestObject).GetMethods).Where(
+    function(const Method: TRttiMethod): Boolean
+    begin
+      Result := Method.Name = 'TestMethod2'
+    end).ForEach(
+    procedure(const Method: TRttiMethod)
+    begin
+      Result := TEventsDrivenUtilities.PayloadToMethodParams<TArray<TValue>>([StringValue, BooleanValue, TestDataValue.Value], Method);
+    end);
+
+  Assert.AreEqual(3, Length(Result));
+  Assert.AreEqual(StringValue, Result[0].AsType<string>);
+  Assert.AreEqual(BooleanValue, Result[1].AsType<Boolean>);
+  Assert.AreEqual<TTestData>(TestDataValue, Result[2].AsType<TTestData>);
+end;
+
+procedure TEventsDrivenUtilsTests.ArrayOfTValuePayloadToMethodParamsTranslatesCorrectlyWithOneValue;
+var
+  TestObject: Shared<TTestObject>;
+  Ctx: TRttiContext;
+  Result: TArray<TValue>;
+  Message: string;
+begin
+  Message := MockUtils.SomeString;
+  Ctx := TRttiContext.Create;
+
+  TestObject := TTestObject.Create;
+
+  TCollections.CreateList<TRttiMethod>(Ctx.GetType(TTestObject).GetMethods).Where(
+    function(const Method: TRttiMethod): Boolean
+    begin
+      Result := Method.Name = 'TestMethod1'
+    end).ForEach(
+    procedure(const Method: TRttiMethod)
+    begin
+      Result := TEventsDrivenUtilities.PayloadToMethodParams<TArray<TValue>>([Message], Method);
+    end);
+
+  Assert.AreEqual(1, Length(Result));
+  Assert.AreEqual(Message, Result[0].AsType<string>);
+end;
+
+procedure TEventsDrivenUtilsTests.StringPayloadToMethodParamsTranslatesCorrectlyWhenPayloadAreMultipleValuesAsAnArray;
 var
   StringValue: string;
   BooleanValue: Boolean;
@@ -126,9 +220,10 @@ begin
   Assert.AreEqual(StringValue, Values[0].AsType<string>);
   Assert.AreEqual(BooleanValue, Values[1].AsType<Boolean>);
   Assert.AreEqual(TestDataValue.Value.Value, Values[2].AsType<TTestData>.Value);
+  Values[2].Free;
 end;
 
-procedure TEventsDrivenUtilsTests.PayloadToMethodParamTranslateCorrectlyWhenPayloadIsASingleValueAsAnArray;
+procedure TEventsDrivenUtilsTests.StringPayloadToMethodParamsTranslatesCorrectlyWhenPayloadIsASingleValueAsAnArray;
 var
   StringValue: string;
   Ctx: TRttiContext;
@@ -161,6 +256,11 @@ begin
 end;
 
 procedure TTestObject.TestMethod2(const StringParam: string; const BooleanParam: Boolean; const TestData: TTestData);
+begin
+
+end;
+
+procedure TTestObject.TestMethod3(const BooleanParam: Boolean);
 begin
 
 end;

@@ -44,11 +44,11 @@ uses
   Fido.EventsDriven.Consumer.PubSub.Intf;
 
 type
-  TPubSubEventsDrivenListener = class (TInterfacedObject, IEventsDrivenListener)
+  TPubSubEventsDrivenListener<PayloadType> = class (TInterfacedObject, IEventsDrivenListener)
   private var
-    FPubSubConsumer: IPubSubEventsDrivenConsumer;
+    FPubSubConsumer: IPubSubEventsDrivenConsumer<PayloadType>;
   public
-    constructor Create(const PubSubConsumer: IPubSubEventsDrivenConsumer);
+    constructor Create(const PubSubConsumer: IPubSubEventsDrivenConsumer<PayloadType>);
 
     procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
     procedure UnsubscribeFrom(const Channel: string; const EventName: string);
@@ -58,9 +58,9 @@ type
 
 implementation
 
-{ TPubSubEventsDrivenListener }
+{ TPubSubEventsDrivenListener<PayloadType> }
 
-constructor TPubSubEventsDrivenListener.Create(const PubSubConsumer: IPubSubEventsDrivenConsumer);
+constructor TPubSubEventsDrivenListener<PayloadType>.Create(const PubSubConsumer: IPubSubEventsDrivenConsumer<PayloadType>);
 begin
   inherited Create;
 
@@ -68,12 +68,12 @@ begin
   FPubSubConsumer := PubSubConsumer;
 end;
 
-procedure TPubSubEventsDrivenListener.Stop;
+procedure TPubSubEventsDrivenListener<PayloadType>.Stop;
 begin
   FPubSubConsumer.Stop;
 end;
 
-procedure TPubSubEventsDrivenListener.SubscribeTo(
+procedure TPubSubEventsDrivenListener<PayloadType>.SubscribeTo(
   const Channel: string;
   const EventName: string;
   const ConsumerData: TConsumerData);
@@ -84,7 +84,7 @@ begin
   FPubSubConsumer.Subscribe(
     Channel,
     EventName,
-    procedure(Key: string; Payload: string)
+    procedure(Key: string; Payload: PayloadType)
     var
       Ctx: TRttiContext;
       RttiType: TRttiType;
@@ -101,12 +101,12 @@ begin
         ForEach(
           procedure(const Method: TRttiMethod)
           begin
-            Method.Invoke(LConsumerData.Consumer, TEventsDrivenUtilities.PayloadToMethodParams(Payload, Method));
+            Method.Invoke(LConsumerData.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Payload, Method));
           end);
     end);
 end;
 
-procedure TPubSubEventsDrivenListener.UnsubscribeFrom(
+procedure TPubSubEventsDrivenListener<PayloadType>.UnsubscribeFrom(
   const Channel: string;
   const EventName: string);
 begin

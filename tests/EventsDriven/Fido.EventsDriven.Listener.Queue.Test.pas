@@ -36,12 +36,12 @@ implementation
 procedure TQueueEventsDrivenListenerTests.StopDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  QueueConsumer: Mock<IQueueEventsDrivenConsumer>;
+  QueueConsumer: Mock<IQueueEventsDrivenConsumer<string>>;
 begin
-  QueueConsumer := Mock<IQueueEventsDrivenConsumer>.Create;
+  QueueConsumer := Mock<IQueueEventsDrivenConsumer<string>>.Create;
 
-  Listener := TQueueEventsDrivenListener.Create(
-    function: IQueueEventsDrivenConsumer
+  Listener := TQueueEventsDrivenListener<string>.Create(
+    function: IQueueEventsDrivenConsumer<string>
     begin
       Result := QueueConsumer;
     end);
@@ -58,12 +58,12 @@ end;
 procedure TQueueEventsDrivenListenerTests.SubscribeToDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  QueueConsumer: Mock<IQueueEventsDrivenConsumer>;
+  QueueConsumer: Mock<IQueueEventsDrivenConsumer<string>>;
 begin
-  QueueConsumer := Mock<IQueueEventsDrivenConsumer>.Create;
+  QueueConsumer := Mock<IQueueEventsDrivenConsumer<string>>.Create;
 
-  Listener := TQueueEventsDrivenListener.Create(
-    function: IQueueEventsDrivenConsumer
+  Listener := TQueueEventsDrivenListener<string>.Create(
+    function: IQueueEventsDrivenConsumer<string>
     begin
       Result := QueueConsumer;
     end);
@@ -80,12 +80,12 @@ end;
 procedure TQueueEventsDrivenListenerTests.UnsubscribeFromDoesNotRaiseAnyException;
 var
   Listener: IEventsDrivenListener;
-  QueueConsumer: Mock<IQueueEventsDrivenConsumer>;
+  QueueConsumer: Mock<IQueueEventsDrivenConsumer<string>>;
 begin
-  QueueConsumer := Mock<IQueueEventsDrivenConsumer>.Create;
+  QueueConsumer := Mock<IQueueEventsDrivenConsumer<string>>.Create;
 
-  Listener := TQueueEventsDrivenListener.Create(
-    function: IQueueEventsDrivenConsumer
+  Listener := TQueueEventsDrivenListener<string>.Create(
+    function: IQueueEventsDrivenConsumer<string>
     begin
       Result := QueueConsumer;
     end);

@@ -25,16 +25,16 @@ unit Fido.EventsDriven.Consumer.Queue.Intf;
 interface
 
 type
-  IQueueEventsDrivenConsumer = interface(IInvokable)
+  IQueueEventsDrivenConsumer<PayloadType> = interface(IInvokable)
     ['{BEDFC14E-1B40-4EB6-B686-C935DDA32F40}']
 
-    function Pop(const Key: string; var Payload: string): Boolean;
+    function Pop(const Key: string; var Payload: PayloadType): Boolean;
 
-    procedure PushBack(const Key: string; const Payload: string);
+    procedure PushBack(const Key: string; const Payload: PayloadType);
   end;
 
   {$M+}
-  IQueueEventsDrivenConsumerFactory = reference to function: IQueueEventsDrivenConsumer;
+  IQueueEventsDrivenConsumerFactory<PayloadType> = reference to function: IQueueEventsDrivenConsumer<PayloadType>;
   {$M-}
 
 implementation

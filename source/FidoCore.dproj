@@ -263,6 +263,10 @@
         <DCCReference Include="EventsDriven\Fido.EventsDriven.Utils.pas"/>
         <DCCReference Include="EventsDriven\Fido.EventsDriven.Consumer.PubSub.Intf.pas"/>
         <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.PubSub.pas"/>
+        <DCCReference Include="EventsDriven\Fido.EventsDriven.Broker.PubSub.Intf.pas"/>
+        <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.pas"/>
+        <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.pas"/>
+        <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

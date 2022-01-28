@@ -36,17 +36,65 @@ uses
   Spring.Collections,
 
   Fido.JSON.Marshalling,
+  Fido.Exceptions,
   Fido.JSON.Mapping;
 
 type
+  EEventsDrivenUtilities = class(EFidoException);
+
+  TMappingMethod = reference to function(const Payload: TValue; const ParamsCount: Integer; const Method: TRttiMethod): TArray<TValue>;
+
   TEventsDrivenUtilities = record
+  private class var
+    FMappings: IDictionary<Pointer, TMappingMethod>;
+  public
+    class constructor Create;
     class function FormatKey(const Channel: string; const EventName: string): string; static;
-    class function PayloadToMethodParams(const Payload: string; const Method: TRttiMethod): TArray<TValue>; static;
+    class function PayloadToMethodParams<PayloadType>(const Payload: PayloadType; const Method: TRttiMethod): TArray<TValue>; static;
+
+    class procedure RegisterPayloadTypeMapper<PayloadType>(const Method: TMappingMethod); static;
   end;
 
 implementation
 
 { TEventsDrivenUtilities }
+
+class constructor TEventsDrivenUtilities.Create;
+begin
+  FMappings := TCollections.CreateDictionary<Pointer, TMappingMethod>;
+
+  FMappings.Items[TypeInfo(string)] := function(const Payload: TValue; const ParamsCount: Integer; const Method: TRttiMethod): TArray<TValue>
+    var
+      JSONValue: Shared<TJSONValue>;
+      Index: Integer;
+    begin
+      SetLength(Result, ParamsCount);
+
+      JSONValue := TJSONValue.ParseJSONValue(Payload.AsType<string>);
+
+      if ParamsCount = 1 then
+      begin
+        if JSONValue.Value is TJSONArray then
+          Result[0] := JSONUnmarshaller.To(TJSONArray(JSONValue.Value).Items[0].ToJSON, Method.GetParameters[0].ParamType.Handle)
+        else
+          Result[0] := JSONUnmarshaller.To(Payload.AsType<string>, Method.GetParameters[0].ParamType.Handle);
+        Exit(Result);
+      end;
+
+      for Index := 0 to Min(TJSONArray(JSONValue.Value).Count, ParamsCount) - 1 do
+        Result[Index] := JSONUnmarshaller.To(TJSONArray(JSONValue.Value).Items[Index].ToJSON, Method.GetParameters[Index].ParamType.Handle);
+    end;
+
+  FMappings.Items[TypeInfo(TArray<TValue>)] := function(const Payload: TValue; const ParamsCount: Integer; const Method: TRttiMethod): TArray<TValue>
+    var
+      Index: Integer;
+    begin
+      SetLength(Result, ParamsCount);
+
+      for Index := 0 to Min(Length(Payload.AsType<TArray<TValue>>), ParamsCount) - 1 do
+        Result[Index] := Payload.AsType<TArray<TValue>>[Index];
+    end;
+end;
 
 class function TEventsDrivenUtilities.FormatKey(
   const Channel: string;
@@ -55,11 +103,12 @@ begin
    Result := Format('%s::%s', [Channel, EventName]);
 end;
 
-class function TEventsDrivenUtilities.PayloadToMethodParams(const Payload: string; const Method: TRttiMethod): TArray<TValue>;
+class function TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(const Payload: PayloadType; const Method: TRttiMethod): TArray<TValue>;
 var
-  JSONValue: Shared<TJSONValue>;
   ParametersNo: integer;
-  Index: Integer;
+  MappingMethod: TMappingMethod;
+  Ctx: TRttiContext;
+  PayloadTypeTypeInfo: Pointer;
 begin
   Result := [];
 
@@ -67,21 +116,19 @@ begin
   if ParametersNo = 0 then
     Exit(Result);
 
-  SetLength(Result, ParametersNo);
+  Ctx := TRttiContext.Create;
 
-  JSONValue := TJSONValue.ParseJSONValue(Payload);
+  PayloadTypeTypeInfo := TypeInfo(PayloadType);
 
-  if ParametersNo = 1 then
-  begin
-    if JSONValue.Value is TJSONArray then
-      Result[0] := JSONUnmarshaller.To(TJSONArray(JSONValue.Value).Items[0].ToJSON, Method.GetParameters[0].ParamType.Handle)
-    else
-      Result[0] := JSONUnmarshaller.To(Payload, Method.GetParameters[0].ParamType.Handle);
-    Exit(Result);
-  end;
+  if not FMappings.TryGetValue(PayloadTypeTypeInfo, MappingMethod) then
+    raise EEventsDrivenUtilities.CreateFmt('TEventsDrivenUtilities.PayloadToMethodParams: Type %s not supported.', [Ctx.GetType(PayloadTypeTypeInfo).QualifiedName]);
 
-  for Index := 0 to Min(TJSONArray(JSONValue.Value).Count, ParametersNo) - 1 do
-    Result[Index] := JSONUnmarshaller.To(TJSONArray(JSONValue.Value).Items[Index].ToJSON, Method.GetParameters[Index].ParamType.Handle);
-
+  Result := MappingMethod(TValue.From<PayloadType>(Payload), ParametersNo, Method);
 end;
+
+class procedure TEventsDrivenUtilities.RegisterPayloadTypeMapper<PayloadType>(const Method: TMappingMethod);
+begin
+  FMappings.Items[TypeInfo(PayloadType)] := Method;
+end;
+
 end.

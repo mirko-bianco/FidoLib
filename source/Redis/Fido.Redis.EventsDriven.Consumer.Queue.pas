@@ -42,7 +42,7 @@ uses
   Fido.Redis.Client.Intf;
 
 type
-  TRedisQueueEventsDrivenConsumer = class(TInterfacedObject, IQueueEventsDrivenConsumer)
+  TRedisQueueEventsDrivenConsumer = class(TInterfacedObject, IQueueEventsDrivenConsumer<string>)
   private
     FRedisClient: IFidoRedisClient;
   public

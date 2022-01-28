@@ -20,40 +20,27 @@
  * SOFTWARE.
  *)
 
-unit Fido.EventsDriven.Listener.Intf;
+unit Fido.EventsDriven.Broker.PubSub.Intf;
 
 interface
 
+uses
+  System.SysUtils,
+
+  Fido.EventsDriven.Consumer.PubSub.Intf;
+
 type
-  TConsumerData = record
-  private
-    FConsumer: TObject;
-    FMethodName: string;
-  public
-    constructor Create(const Consumer: TObject; const MethodName: string);
+  IPubSubEventsDrivenBroker<PayloadType> = interface(IInvokable)
+    ['{00565E4F-EB6F-445E-A2C4-32B5152B0DCC}']
 
-    property Consumer: TObject read FConsumer;
-    property MethodName: string read FMethodName;
-  end;
+    function Push(const Key: string; const Payload: PayloadType): Boolean;
 
+    procedure Subscribe(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>; const Key: string; const OnNotify: TProc<string, PayloadType>);
+    procedure Unsubscribe(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>; const Key: string);
 
-  IEventsDrivenListener = interface(IInvokable)
-  ['{E99B154A-8854-4C17-9357-B0E13C3DE909}']
-
-    procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
-    procedure UnsubscribeFrom(const Channel: string; const EventName: string);
-
-    procedure Stop;
+    procedure Stop(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>);
   end;
 
 implementation
-
-{ TResponderData }
-
-constructor TConsumerData.Create(const Consumer: TObject; const MethodName: string);
-begin
-  FConsumer := Consumer;
-  FMethodName := MethodName;
-end;
 
 end.
