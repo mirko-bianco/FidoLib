@@ -169,12 +169,6 @@ end;
 
 procedure TSynchedMemoryPubSubEventsDrivenBroker<PayloadType>.Run(const Proc: TProc);
 begin
-  if TThread.CurrentThread.ThreadID = System.MainThreadID then
-  begin
-    Proc();
-    Exit;
-  end;
-
   TThread.Synchronize(
     nil,
     procedure
