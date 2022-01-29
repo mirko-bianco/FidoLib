@@ -133,6 +133,8 @@ begin
     Run(100).
     Resolve;
 
+  Sleep(10);
+
   Assert.AreEqual(TAsyncFuncStatus.Failed, Result.Status);
   Assert.AreEqual(True, FinallyCalled.Value);
 end;
