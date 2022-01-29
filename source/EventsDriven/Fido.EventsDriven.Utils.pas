@@ -70,7 +70,7 @@ begin
     begin
       SetLength(Result, ParamsCount);
 
-      JSONValue := TJSONValue.ParseJSONValue(Payload.AsType<string>);
+      JSONValue := TJSONObject.ParseJSONValue(Payload.AsType<string>);
 
       if ParamsCount = 1 then
       begin
