@@ -163,6 +163,8 @@ begin
     Run.
     Resolve;
 
+  Sleep(10);
+
   Assert.AreEqual(True, FinallyCalled.Value);
 end;
 

@@ -267,6 +267,8 @@ begin
     Run(100).
     Resolve;
 
+  Sleep(10);
+
   Assert.AreEqual(TAsyncFuncStatus.Expired, Result.Status);
   Assert.AreEqual('Expired!', Result.Value.Value);
 end;
@@ -296,6 +298,8 @@ begin
       end).
     Run(100).
     Resolve;
+
+  Sleep(10);
 
   Assert.AreEqual(TAsyncFuncStatus.Expired, Result.Status);
   Assert.AreEqual('Expired!', Result.Value.Value);
