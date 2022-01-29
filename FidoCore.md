@@ -1516,7 +1516,7 @@ Depending on the system used the mechanism works as follow:
 - Queues
   - Subscribers subscribe to channels and event names and start polling the queue for new events
   - Producers publish events to channels with optional payloads
-  - One subscriber will eventually pop the event and payload and process it, In case of failure it will push it back at the end of the queue. 
+  - One subscriber will eventually pop the event and payload and process it. In case of failure it will push it back at the end of the queue. 
 
 - PubSub
   - Subscribers subscribe to channels and event names
