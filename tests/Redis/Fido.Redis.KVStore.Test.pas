@@ -25,7 +25,7 @@ type
     procedure GetReturnsTheCorrectValueIfExists;
 
     [Test]
-    procedure GetReturnsNullIfDoesNotExist;
+    procedure GetReturnsEmptyStringIfDoesNotExist;
 
     [Test]
     procedure SetWorks;
@@ -68,7 +68,7 @@ begin
   Client.Received(Times.Never).Del(Arg.IsNotIn<string>(Format('%s%s', [KEYPREFIX, Key])));
 end;
 
-procedure TRedisKVStoreTests.GetReturnsNullIfDoesNotExist;
+procedure TRedisKVStoreTests.GetReturnsEmptyStringIfDoesNotExist;
 var
   Client: Mock<IFidoRedisClient>;
   KVStore: IKVStore;
