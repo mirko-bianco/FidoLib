@@ -47,7 +47,6 @@ type
     FRedisClient: IFidoRedisClient;
   public
     constructor Create(const RedisClient: IFidoRedisClient);
-    destructor Destroy; override;
 
     function Pop(const Key: string; var Payload: string): Boolean;
     procedure PushBack(const Key: string; const Payload: string);
@@ -64,12 +63,6 @@ begin
 
   Guard.CheckNotNull(RedisClient, 'RedisClient');
   FRedisClient := RedisClient;
-end;
-
-destructor TRedisQueueEventsDrivenConsumer.Destroy;
-begin
-  FRedisClient := nil;
-  inherited;
 end;
 
 function TRedisQueueEventsDrivenConsumer.Pop(const Key: string; var Payload: string): Boolean;
