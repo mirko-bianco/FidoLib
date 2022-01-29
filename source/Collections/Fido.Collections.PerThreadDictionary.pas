@@ -102,6 +102,7 @@ end;
 
 procedure TPerThreadDictionary<T>.PerformGarbageCollection;
 var
+  ThreadIds: TArray<TThreadId>;
   LiveThreads: ISet<TThreadId>;
   GarbageThreads: ISet<TThreadId>;
 begin
@@ -111,16 +112,23 @@ begin
   if not Assigned(FLock) then
     Exit;
 
+  FLock.BeginRead;
+  try
+    ThreadIds := FItems.Keys.ToArray;
+  finally
+    FLock.EndRead;
+  end;
+
+  TCollections.CreateList<TThreadId>(ThreadIds).ForEach(
+    procedure(const Id: TThreadId)
+    begin
+      if not LiveThreads.Contains(Id) and
+         (Id <> Integer(MainThreadID)) then
+        GarbageThreads.Add(Id);
+    end);
+
   FLock.BeginWrite;
   try
-    FItems.Keys.ForEach(
-      procedure(const Id: TThreadId)
-      begin
-        if not LiveThreads.Contains(Id) and
-           (Id <> Integer(MainThreadID)) then
-          GarbageThreads.Add(Id);
-      end);
-
     GarbageThreads.ForEach(
       procedure(const Id: TThreadId)
       begin
@@ -161,6 +169,8 @@ end;
 destructor TPerThreadDictionary<T>.Destroy;
 begin
   FGarbageTask.Cancel;
+  Sleep(100);
+  PerformGarbageCollection;
   inherited;
 end;
 
