@@ -39,7 +39,6 @@ uses
   Fido.Web.Server.Abstract;
 
 type
-  {$M+}
   TResourceWebServer = class(TAbstractWebServer, IWebServer)
   private var
     FStreamResourceReader: IStreamResourceReader;

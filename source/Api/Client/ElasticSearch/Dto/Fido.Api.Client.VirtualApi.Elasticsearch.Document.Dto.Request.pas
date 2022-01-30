@@ -36,7 +36,7 @@ uses
 
 type
   {$M+}
-  TElasticsearchDocumentRequest = class(TOwningObject)
+  TElasticsearchDocumentRequest = class
   private
     FLevel: TLogLevel;
     FEventType: TLogEventType;

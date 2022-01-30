@@ -39,10 +39,12 @@ type
   TRequestMiddlewareFunc = reference to function(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
 
   TResponseMiddlewareProc = reference to procedure(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
+  {$M-}
 
   IApiServer = interface(IInvokable)
     ['{AA282BB3-418E-4835-8752-73D8DCCD326A}']
 
+    function Port: Word;
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
     procedure RegisterResource(const Resource: TObject);

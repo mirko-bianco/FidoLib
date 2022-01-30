@@ -53,6 +53,7 @@ type
     function ConvertRequestDtoToString(const Value: TValue): string; override;
     procedure CallApi(const Call: TClientVirtualApiCall); override;
   end;
+  {$M-}
 
 implementation
 
@@ -77,6 +78,7 @@ begin
   ApiClient.Value.Accept := GetAcceptHeaderWithApiVersion(Call.ContentType);
   ApiClient.Value.ContentType := Call.ContentType;
   ApiClient.Value.BaseURL := Call.Url;
+  ApiClient.Value.RaiseExceptionOn500 := False;
 
   ApiRequest.Value.Client := ApiClient;
   ApiRequest.Value.Response := ApiResponse;

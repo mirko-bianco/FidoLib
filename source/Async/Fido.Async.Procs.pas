@@ -44,6 +44,7 @@ type
 
   TAsyncProcCatch = reference to procedure(const E: Exception);
   TAsyncProcWhenExpired = TAsyncProcAction;
+  TAsyncProcFinally = reference to procedure;
 
   IAsyncProc = interface(IInvokable)
     ['{D78C8702-41D4-4821-AD15-EF3B16A4A63B}']
@@ -51,6 +52,7 @@ type
     function &Then(const Action: TAsyncProcAction): IAsyncProc;
     function Catch(const OnCatch: TAsyncProcCatch): IAsyncProc;
     function Within(const SpanInMs: Cardinal; const WhenExpired: TAsyncProcWhenExpired): IAsyncProc;
+    function &Finally(const OnFinally: TAsyncProcFinally): IAsyncProc;
 
     function Run: IAsyncProc;
 
@@ -67,6 +69,7 @@ type
       FSpanInMs: Cardinal;
       FWhenExpired: TAsyncProcWhenExpired;
       FCatch: TAsyncProcCatch;
+      FFinally: TAsyncProcFinally;
       FWorker: ITask;
       FTask: ITask;
       FStatus: IBox<TAsyncProcStatus>;
@@ -78,6 +81,7 @@ type
       function &Then(const Action: TAsyncProcAction): IAsyncProc;
       function Catch(const OnCatch: TAsyncProcCatch): IAsyncProc;
       function Within(const SpanInMs: Cardinal; const WhenExpired: TAsyncProcWhenExpired): IAsyncProc;
+      function &Finally(const OnFinally: TAsyncProcFinally): IAsyncProc;
 
       function Run: IAsyncProc;
 
@@ -92,6 +96,13 @@ type
 implementation
 
 { AsyncProcs.TAsyncProc }
+
+function AsyncProcs.TAsyncProc.&Finally(const OnFinally: TAsyncProcFinally): IAsyncProc;
+begin
+  FFinally := OnFinally;
+
+  Result := Self;
+end;
 
 function AsyncProcs.TAsyncProc.Catch(const OnCatch: TAsyncProcCatch): IAsyncProc;
 begin
@@ -113,6 +124,10 @@ begin
       raise E;
     end;
   FWhenExpired :=
+    procedure
+    begin
+    end;
+  FFinally :=
     procedure
     begin
     end;
@@ -154,39 +169,46 @@ begin
     begin
       AsyncProc := Parent;
       try
-        while FActions.TryExtract(Action) and (FStatus.Value <> Expired) do
-          Action();
+        try
+          while FActions.TryExtract(Action) and (FStatus.Value <> Expired) do
+            Action();
 
-        if FStatus.Value <> Expired then
-          FStatus.UpdateValue(Finished);
-      except
-        on E: Exception do
-        begin
-          try
-            FCatch(E);
+          if FStatus.Value <> Expired then
             FStatus.UpdateValue(Finished);
-          except
-            on E2: Exception do
-            begin
-              FStatus.UpdateValue(Failed);
-              ErrorMessage := E2.Message;
-              if not FResolving.Value then
-                TThread.ForceQueue(
-                  nil,
-                  procedure
-                  begin
-                    raise EAsyncProcs.Create(ErrorMessage);
-                  end);
+        except
+          on E: Exception do
+          begin
+            try
+              FCatch(E);
+              FStatus.UpdateValue(Finished);
+            except
+              on E2: Exception do
+              begin
+                FStatus.UpdateValue(Failed);
+                ErrorMessage := E2.Message;
+                if not FResolving.Value then
+                  TThread.ForceQueue(
+                    nil,
+                    procedure
+                    begin
+                      raise EAsyncProcs.Create(ErrorMessage);
+                    end);
+              end;
             end;
           end;
         end;
+      finally
+        FFinally();
       end;
     end);
   FStatus.UpdateValue(Running);
 
   FTask := TTask.Create(
     procedure
+    var
+      AsyncProc: IAsyncProc;
     begin
+      AsyncProc := Parent;
       Executed := FWorker.Start.Wait(FSpanInMs);
       if (not Executed) and (FStatus.Value = Running) then
       begin

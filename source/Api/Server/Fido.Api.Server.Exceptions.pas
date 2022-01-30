@@ -25,6 +25,7 @@ unit Fido.Api.Server.Exceptions;
 interface
 
 uses
+  Spring,
   Spring.Logging,
 
   Fido.Logging.Types,
@@ -45,6 +46,10 @@ type
     constructor Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string);
   end;
 
+  EApiServer503 = class(EFidoException); //Service unavailable
+
+  EApiServer504 = class(EFidoException); //Gateway timeout
+
 
 implementation
 
@@ -55,8 +60,11 @@ constructor EApiServer500.Create(
   const Logger: ILogger;
   const &Class: string;
   const Method: string);
+var
+  LoggedData: Shared<TLoggedData>;
 begin
-  Logger.LogValue(TLogLevel.Error, Msg, TLoggedData.Create('Error', &Class, Method));
+  LoggedData := TLoggedData.Create('Error', &Class, Method);
+  Logger.LogValue(TLogLevel.Error, Msg, LoggedData.Value);
   inherited Create(Msg);
 end;
 

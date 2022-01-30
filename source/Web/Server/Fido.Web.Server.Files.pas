@@ -40,7 +40,6 @@ uses
 type
   EFidoWebException = class(EFidoException);
 
-  {$M+}
   TFileWebServer = class(TAbstractWebServer, IWebServer)
   private
     FRootFolder: string;
