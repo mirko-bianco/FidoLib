@@ -11,22 +11,22 @@ uses
 type
   TPermanentFileLogAppender = class(TStreamLogAppender)
   private
-    procedure SetFileName(const Value: string);
+    procedure SetFilename(const Value: string);
   public
-    constructor Create;
-    property FileName: string write SetFileName;
+    constructor Create(const Filename: string);
   end;
 
 implementation
 
 { TPermanentFileLogAppender }
 
-constructor TPermanentFileLogAppender.Create;
+constructor TPermanentFileLogAppender.Create(const Filename: string);
 begin
   inherited CreateInternal(True, nil);
+  SetFilename(Filename);
 end;
 
-procedure TPermanentFileLogAppender.SetFileName(const Value: string);
+procedure TPermanentFileLogAppender.SetFilename(const Value: string);
 var
   Stream: TStream;
 begin
