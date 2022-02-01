@@ -136,7 +136,7 @@ begin
   FCatch :=
     function(const E: Exception): TTo
     begin
-      raise E;
+      raise EAsyncFuncs.Create(E.Message);
     end;
   FWhenExpired :=
     function: TTo
@@ -235,8 +235,7 @@ begin
       AsyncFunc: IAsyncFunc<TFrom, TTo>;
     begin
       AsyncFunc := Parent;
-      FFuture.Start;
-      Executed := FFuture.Wait(FSpanInMs);
+      Executed := FFuture.Start.Wait(FSpanInMs);
       if (not Executed) and (FStatus.Value = Running) then
       begin
         FStatus.UpdateValue(Expired);
