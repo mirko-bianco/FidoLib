@@ -34,17 +34,17 @@ uses
 
 type
   Retries = record
-    class function GetRetriesOnExceptionFunc: TPredicate<Exception>; static;
+    class function GetRetriesOnExceptionFunc: Predicate<Exception>; static;
 
-    class function Run<T>(const Func: TFunc<T>; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): T; overload; static;
-    class function Run(const Proc: TProc; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Boolean; overload; static;
+    class function Run<T>(const Func: Func<T>; const RetryOnException: Predicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): T; overload; static;
+    class function Run(const Proc: Action; const RetryOnException: Predicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Boolean; overload; static;
   end;
 
 implementation
 
 { Retries }
 
-class function Retries.GetRetriesOnExceptionFunc: TPredicate<Exception>;
+class function Retries.GetRetriesOnExceptionFunc: Predicate<Exception>;
 begin
   Result := function(const Exc: Exception): Boolean
   begin
@@ -54,12 +54,12 @@ begin
 end;
 
 class function Retries.Run(
-  const Proc: TProc;
-  const RetryOnException: TPredicate<Exception>;
+  const Proc: Action;
+  const RetryOnException: Predicate<Exception>;
   const MaxRetries: Integer;
   const RetryIntervalInMSec: Integer): Boolean;
 var
-  OnException: TPredicate<Exception>;
+  OnException: Predicate<Exception>;
   Index: Integer;
   FailCount: Integer;
 begin
@@ -97,12 +97,12 @@ begin
 end;
 
 class function Retries.Run<T>(
-  const Func: TFunc<T>;
-  const RetryOnException: TPredicate<Exception>;
+  const Func: Func<T>;
+  const RetryOnException: Predicate<Exception>;
   const MaxRetries: Integer;
   const RetryIntervalInMSec: Integer): T;
 var
-  OnException: TPredicate<Exception>;
+  OnException: Predicate<Exception>;
   Index: Integer;
   FailCount: Integer;
   Value: TClass;

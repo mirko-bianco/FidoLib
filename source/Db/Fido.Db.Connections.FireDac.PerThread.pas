@@ -30,9 +30,10 @@ uses
   System.Generics.Collections,
   FireDAC.Comp.Client,
 
+  Spring,
+
   Fido.Collections.PerThreadDictionary,
   Fido.Collections.PerXDictionary.Intf,
-
   Fido.Db.Connections.FireDac;
 
 type
@@ -49,7 +50,7 @@ constructor TFireDacPerThreadConnections.Create(const Parameters: TStrings);
 begin
   inherited Create(
     Parameters,
-    function(Ownership: TDictionaryOwnerships; ValueFactoryFunc: TFunc<TFDConnection>): IPerXDictionary<TFDConnection>
+    function(const Ownership: TDictionaryOwnerships; const ValueFactoryFunc: Func<TFDConnection>): IPerXDictionary<TFDConnection>
     begin
       Result := TPerThreadDictionary<TFDConnection>.Create(Ownership, ValueFactoryFunc);
     end);

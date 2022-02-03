@@ -92,7 +92,7 @@ begin
   Container.RegisterType<IConsulKVStoreDeleteKeyUseCase, TConsulKVStoreDeleteKeyUseCase>;
 
   Container.RegisterType<IKVStore, TConsulKVStore>;
-  Container.RegisterType<IConsulService>.DelegateTo(
+  Container.RegisterType<IConsulService>(
     function: IConsulService
     begin
       Result := TConsulService.Create(
