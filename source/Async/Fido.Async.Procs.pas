@@ -121,7 +121,7 @@ begin
   FCatch :=
     procedure(const E: Exception)
     begin
-      raise E;
+      raise EAsyncProcs.Create(E.Message);
     end;
   FWhenExpired :=
     procedure

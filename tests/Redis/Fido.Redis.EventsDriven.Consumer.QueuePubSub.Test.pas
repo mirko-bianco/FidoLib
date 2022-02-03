@@ -24,10 +24,7 @@ type
   TRedisEventsDrivenConsumerQueuePubSubTests = class
   public
     [Test]
-    procedure SubscribeDoesNotRaiseAnyException;
-
-    [Test]
-    procedure UnsubscribeDoesNotRaiseAnyException;
+    procedure SubscribeAndUnsubscribeDoNotRaiseAnyException;
 
     [Test]
     procedure StopDoesNotRaiseAnyException;
@@ -35,7 +32,7 @@ type
 
 implementation
 
-procedure TRedisEventsDrivenConsumerQueuePubSubTests.SubscribeDoesNotRaiseAnyException;
+procedure TRedisEventsDrivenConsumerQueuePubSubTests.SubscribeAndUnsubscribeDoNotRaiseAnyException;
 begin
   Assert.WillNotRaiseAny(
     procedure
@@ -45,7 +42,10 @@ begin
       EventName: string;
       Proc: TProc<string, string>;
       Key: string;
+      RedisClient: Mock<IFidoRedisClient>;
+      FactoryFunc: TFunc<IFidoRedisClient>;
     begin
+      RedisClient := Mock<IFidoRedisClient>.Create;
       Channel := MockUtils.SomeString;
       EventName := MockUtils.SomeString;
       Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
@@ -53,37 +53,17 @@ begin
         begin
         end;
 
-      Consumer := TRedisQueuePubSubEventsDrivenConsumer.Create(
-        function: IFidoRedisClient
+      FactoryFunc := function: IFidoRedisClient
         begin
-          Result := Mock<IFidoRedisClient>.Create;
-        end);
+          Result := RedisClient.Instance;
+        end;
 
+      Consumer := TRedisQueuePubSubEventsDrivenConsumer.Create(FactoryFunc);
       Consumer.Subscribe(Channel, EventName, Proc);
+      Consumer.Unsubscribe(Channel, EventName);
 
       Proc := nil;
-    end);
-end;
-
-procedure TRedisEventsDrivenConsumerQueuePubSubTests.UnsubscribeDoesNotRaiseAnyException;
-begin
-  Assert.WillNotRaiseAny(
-    procedure
-    var
-      Consumer: IPubSubEventsDrivenConsumer<string>;
-      Channel: string;
-      EventName: string;
-    begin
-      Channel := MockUtils.SomeString;
-      EventName := MockUtils.SomeString;
-
-      Consumer := TRedisQueuePubSubEventsDrivenConsumer.Create(
-        function: IFidoRedisClient
-        begin
-          Result := Mock<IFidoRedisClient>.Create;
-        end);
-
-      Consumer.Unsubscribe(Channel, EventName);
+      FactoryFunc := nil;
     end);
 end;
 
@@ -93,11 +73,13 @@ begin
     procedure
     var
       Consumer: IPubSubEventsDrivenConsumer<string>;
+      RedisClient: Mock<IFidoRedisClient>;
     begin
+      RedisClient := Mock<IFidoRedisClient>.Create;
       Consumer := TRedisQueuePubSubEventsDrivenConsumer.Create(
         function: IFidoRedisClient
         begin
-          Result := Mock<IFidoRedisClient>.Create;
+          Result := RedisClient.Instance;
         end);
 
       Consumer.Stop;

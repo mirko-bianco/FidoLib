@@ -111,24 +111,19 @@ begin
     TTask.Run(
       procedure
       var
-        Data: TDurationData;
+        Data: Shared<TDurationData>;
       begin
-        AsyncProcs.Queue(procedure
-          begin
-            Data := TDurationData.Create(ClassName, MethodName, H, M, S, MS);
-            Logger.Log(
-              TLogEvent.Create(
-                TLogLevel.Info,
-                TLogEventType.Text,
-                Format('"%s.%s" executed in %d hours, %d minutes, %d seconds, %d milliseconds.', [ClassName, MethodName, H, M, S, MS]),
-                nil,
-                Data
-              ));
-          end).&Finally(procedure
-          begin
-            Data.Free;
-          end).Run.Task.Wait;
+        Data := TDurationData.Create(ClassName, MethodName, H, M, S, MS);
+        Logger.Log(
+          TLogEvent.Create(
+            TLogLevel.Info,
+            TLogEventType.Text,
+            Format('"%s.%s" executed in %d hours, %d minutes, %d seconds, %d milliseconds.', [ClassName, MethodName, H, M, S, MS]),
+            nil,
+            Data.Value
+          ));
       end);
+
   end;
   inherited;
 end;
