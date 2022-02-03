@@ -32,9 +32,12 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Exceptions,
   Fido.Boxes;
 
 type
+  EAsyncFuncs = class(EFidoException);
+
   TAsyncFuncStatus = (NotStarted, Running, Expired, Failed, Finished);
 
   TAsyncFuncResult<T> = record
@@ -53,6 +56,7 @@ type
   TAsyncFuncAction = reference to function(const Value: TValue): TValue;
   TAsyncFuncCatch<T> = reference to function(const E: Exception): T;
   TAsyncFuncWhenExpired<T> = reference to function: T;
+  TAsyncFuncFinally = reference to procedure;
 
   IAsyncFunc<TFrom, TTo> = interface(IInvokable)
     ['{92292D61-AC9C-4A36-ADBE-D7AEEDC58449}']
@@ -60,6 +64,7 @@ type
     function &Then(const Action: TAsyncFuncAction): IAsyncFunc<TFrom, TTo>;
     function Catch(const OnCatch: TAsyncFuncCatch<TTo>): IAsyncFunc<TFrom, TTo>;
     function Within(const SpanInMs: Cardinal; const WhenExpired: TAsyncFuncWhenExpired<TTo>): IAsyncFunc<TFrom, TTo>;
+    function &Finally(const OnFinally: TAsyncFuncFinally): IAsyncFunc<TFrom, TTo>;
 
     function Run(const Value: TFrom): IAsyncFunc<TFrom, TTo>;
 
@@ -76,16 +81,19 @@ type
       FSpanInMs: Cardinal;
       FWhenExpired: TAsyncFuncWhenExpired<TTo>;
       FCatch: TAsyncFuncCatch<TTo>;
+      FFinally: TAsyncFuncFinally;
       FFuture: IFuture<TTo>;
       FTask: ITask;
       FStatus: IBox<TAsyncFuncStatus>;
       FExpiredValue: IBox<TTo>;
+      FResolving: IBox<Boolean>;
     public
       constructor Create(const Action: TAsyncFuncAction);
 
       function &Then(const Action: TAsyncFuncAction): IAsyncFunc<TFrom, TTo>;
       function Catch(const OnCatch: TAsyncFuncCatch<TTo>): IAsyncFunc<TFrom, TTo>;
       function Within(const SpanInMs: Cardinal; const WhenExpired: TAsyncFuncWhenExpired<TTo>): IAsyncFunc<TFrom, TTo>;
+      function &Finally(const OnFinally: TAsyncFuncFinally): IAsyncFunc<TFrom, TTo>;
 
       function Run(const Value: TFrom): IAsyncFunc<TFrom, TTo>;
 
@@ -105,6 +113,12 @@ implementation
 
 { AsyncFuncs<TFrom, TTo>.TAsyncFunc }
 
+function AsyncFuncs<TFrom, TTo>.TAsyncFunc.&Finally(const OnFinally: TAsyncFuncFinally): IAsyncFunc<TFrom, TTo>;
+begin
+  FFinally := OnFinally;
+  Result := Self;
+end;
+
 function AsyncFuncs<TFrom, TTo>.TAsyncFunc.Catch(const OnCatch: TAsyncFuncCatch<TTo>): IAsyncFunc<TFrom, TTo>;
 begin
   FStatus.UpdateValue(Failed);
@@ -122,17 +136,22 @@ begin
   FCatch :=
     function(const E: Exception): TTo
     begin
-      raise Exception.Create(E.Message);
+      raise EAsyncFuncs.Create(E.Message);
     end;
   FWhenExpired :=
     function: TTo
     begin
       Result := Default(TTo);
     end;
+  FFinally :=
+    procedure
+    begin
+    end;
   FFuture := nil;
   FTask := nil;
   FStatus := Box<TAsyncFuncStatus>.Setup(NotStarted);
   FExpiredValue := Box<TTo>.Setup(Default(TTo));
+  FResolving := Box<Boolean>.Setup(False);
 end;
 
 function AsyncFuncs<TFrom, TTo>.TAsyncFunc.Resolve: TAsyncFuncResult<TTo>;
@@ -140,6 +159,7 @@ var
   Value: Nullable<TTo>;
   Status: TAsyncFuncStatus;
 begin
+  FResolving.UpdateValue(True);
   while FStatus.Value = Running do
     Sleep(5);
 
@@ -166,56 +186,56 @@ begin
     var
       Action: TAsyncFuncAction;
       CurrValue: TValue;
-      LException: TObject;
-      AsyncFunc: Weak<IAsyncFunc<TFrom, TTo>>;
+      AsyncFunc: IAsyncFunc<TFrom, TTo>;
+      ErrorMessage: string;
     begin
       AsyncFunc := Parent;
-      LException := nil;
       CurrValue := TValue.From<TFrom>(Value);
       try
-        while AsyncFunc.IsAlive and FActions.TryExtract(Action) and (FStatus.Value <> Expired) do
-          CurrValue := Action(CurrValue);
+        try
+          while FActions.TryExtract(Action) and (FStatus.Value <> Expired) do
+            CurrValue := Action(CurrValue);
 
-        if not AsyncFunc.IsAlive then
-          Exit;
-
-        if FStatus.Value <> Expired then
-        begin
-          Result := CurrValue.AsType<TTo>;
-          FStatus.UpdateValue(Finished);
-        end;
-      except
-        on E: Exception do
-        begin
-          try
-            Result := FCatch(E);
-          except
-            LException := AcquireExceptionObject;
-          end;
-
-          if Assigned(LException) then
+          if FStatus.Value <> Expired then
           begin
-            FStatus.UpdateValue(Failed);
-            TThread.ForceQueue(
-              nil,
-              procedure
-              begin
-                raise Exception.Create(LException.ToString);
-              end);
-            LException.Free;
-          end
-          else
+            Result := CurrValue.AsType<TTo>;
             FStatus.UpdateValue(Finished);
+          end;
+        except
+          on E: Exception do
+          begin
+            try
+              Result := FCatch(E);
+              FStatus.UpdateValue(Finished);
+            except
+              on E2: Exception do
+              begin
+                ErrorMessage := E2.Message;
+                FStatus.UpdateValue(Failed);
+                if not FResolving.Value then
+                  TThread.ForceQueue(
+                    nil,
+                    procedure
+                    begin
+                      raise EAsyncFuncs.Create(ErrorMessage);
+                    end);
+              end;
+            end;
+          end;
         end;
+      finally
+        FFinally();
       end;
     end);
   FStatus.UpdateValue(Running);
 
   FTask := TTask.Create(
     procedure
+    var
+      AsyncFunc: IAsyncFunc<TFrom, TTo>;
     begin
-      FFuture.Start;
-      Executed := FFuture.Wait(FSpanInMs);
+      AsyncFunc := Parent;
+      Executed := FFuture.Start.Wait(FSpanInMs);
       if (not Executed) and (FStatus.Value = Running) then
       begin
         FStatus.UpdateValue(Expired);

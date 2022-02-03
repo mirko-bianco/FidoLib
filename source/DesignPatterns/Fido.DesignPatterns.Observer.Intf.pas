@@ -35,7 +35,7 @@ type
   end;
 
   // observer that needs GUI synchronisation when being notified
-  IGUIObserver = interface(IObserver)
+  ISyncObserver = interface(IObserver)
     ['{FA835B4A-8D02-4DA6-8A3D-69676A5EFE2E}']
   end;
 

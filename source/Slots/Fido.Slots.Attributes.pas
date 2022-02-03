@@ -20,52 +20,48 @@
  * SOFTWARE.
  *)
 
-unit Fido.Collections.UpdateablePerThreadDictionary;
+ unit Fido.Slots.Attributes;
 
 interface
 
 uses
   System.SysUtils,
+  System.Rtti,
 
-  Spring,
-  Spring.Collections,
-
-  Fido.Collections.PerThreadDictionary;
+  Fido.Slots.Intf,
+  Fido.DesignPatterns.Observer.Intf,
+  Fido.DesignPatterns.Observable.Intf;
 
 type
-  TUpdateablePerThreadDictionary<T, TUpdateable> = class(TPerThreadDictionary<T>)
-  strict private
-    FPredicate: TProc<T, TUpdateable>;
-    FUpdateableValue: TUpdateable;
+  SlotsAttribute = class(TCustomAttribute);
 
-    procedure SetUpdateableValue(const Updateable: TUpdateable);
+  SignalToSlotAttribute = class(SlotsAttribute)
+  private
+    FObservableName: string;
+    FMessage: string;
+    FSlotType: TSlotType;
   public
-    constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>; const Predicate: TProc<T, TUpdateable>); reintroduce;
+    constructor Create(const ObservableName: string; const Message: string; const SlotType: TSlotType);
 
-    property UpdateableValue: TUpdateable read FUpdateableValue write SetUpdateableValue;
+    property ObservableName: string read FObservableName;
+    property Message: string read FMessage;
+    property SlotType: TSlotType read FSlotType;
   end;
 
 implementation
 
-{ TUpdateablePerThreadDictionary<T, TUpdateable> }
+{ SignalToSlotAttribute }
 
-constructor TUpdateablePerThreadDictionary<T, TUpdateable>.Create(
-  const Ownership: TDictionaryOwnerships;
-  const FactoryFunc: TFunc<T>;
-  const Predicate: TProc<T, TUpdateable>);
+constructor SignalToSlotAttribute.Create(
+  const ObservableName: string;
+  const Message: string;
+  const SlotType: TSlotType);
 begin
-  Guard.CheckTrue(Assigned(Predicate), 'Predicate');
-  inherited Create(Ownership, FactoryFunc);
-  FPredicate := Predicate;
-end;
+  inherited Create;
 
-procedure TUpdateablePerThreadDictionary<T, TUpdateable>.SetUpdateableValue(const Updateable: TUpdateable);
-begin
-  FUpdateableValue := Updateable;
-
-  with FItems.GetEnumerator do
-    while MoveNext do
-      FPredicate(GetCurrent.Value, Updateable);
+  FObservableName := ObservableName;
+  FMessage := Message;
+  FSlotType := SlotType;
 end;
 
 end.

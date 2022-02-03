@@ -2,15 +2,18 @@
 
 Fido Core contains several features that can help developers improve the quality of their code.
 
-Below a list of the most important features:
+Below is a list of the most important features:
 - [Mappers](#mappers)
 - [JSON marshalling and unmarshalling](#json-marshalling-and-unmarshalling)
 - [Virtual database features](#virtual-database-features)
-- [Client virtual Apis](#client-virtual-apis)
-- [Server virtual Apis](#server-virtual-apis)
+- [Virtual Api clients](#virtual-api-clients)
+- [Virtual Api servers](#virtual-api-servers)
+- [Consul and Fabio support](#consul-and-fabio-support)
 - [Boxes](#boxes)
 - [Async procedures](#async-procedures)
 - [Async functions](#async-functions)
+- [Signals and slots](#signals-and-slots)
+- [Events driven architecture](#events-driven-architecture)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -19,7 +22,7 @@ Mappers are useful when it is required to transform from one type to another.
 
 ##### Registration
 
-The mappings are registered into the global `mappers` structure, and can be registered as following: 
+The mappings are registered into the global `mappers` structure and can be registered as following: 
 
 ```pascal
   Mappers.RegisterMapper<ISongRecord, ISong>(
@@ -32,9 +35,9 @@ The mappings are registered into the global `mappers` structure, and can be regi
 
 ##### Automapping
 
-Please note that in the previous case the registration is redundant, given that properties and methods in `ISongRecord` and `ISong` are of the same type.
+Please note that in the previous case, the registration is redundant, given that properties and methods in `ISongRecord` and `ISong` are of the same type.
 
-In case you need to migrate to and from types that have this similarities an auto mapping functionality will be used, adopting the following rules:
+In case you need to migrate to and from types that have these similarities, an auto-mapping functionality will be used, adopting the following rules:
 
 - Only published methods and properties are used
 - Only functions with no parameters are used
@@ -62,7 +65,7 @@ Both parameters of the `Map` method needs to be already instantiated.
 
 Unit `Fido.Json.Marshalling`.
 
-By using the `JSONUnmarshaller` and `JSONMarshaller` tools the developer can convert to and from JSON.
+By using the `JSONUnmarshaller` and `JSONMarshaller` tools, the developer can convert to and from JSON.
 
 The following types are supported:
 
@@ -72,21 +75,21 @@ The following types are supported:
 
 - Objects (any descendent of `TObject`). 
 
-  Any published parameter-less function and readable property is marshalled.
+  Any published parameter-less function and readable property are marshalled.
 
-  Any published one-parameter method and writeable property is unmarshalled.
+  Any published one-parameter method and writeable property are unmarshalled.
 
 - Records (other than `Spring.Nullable<T>` )
 
-  Any public field, public parameter-less function and readable property is marshalled.
+  Any public field, public parameter-less function and readable property are marshalled.
 
-  Any public field, public parameter-less function and readable property is unmarshalled.
+  Any public field, public parameter-less function and readable property are unmarshalled.
 
 - Interfaces (any descendent of `IInterface`). 
 
-  Any public parameter-less function and readable property is marshalled.
+  Any public parameter-less function and readable property are marshalled.
 
-  Any public one-parameter method and writeable property is unmarshalled.
+  Any public one-parameter method and writeable property are unmarshalled.
 
 - Lists of primitives (`Spring.Collections.IReadonlyList<T>` where T is one of the supported Primitives).
 
@@ -94,9 +97,9 @@ The following types are supported:
 
 ##### Virtual JSON implementation of interfaces
 
-It is worth noting that when it comes to the unmarshalling to interfaces the developer doesn't need to provide an implementation for the interfaces.
+It is worth noting that when it comes to the unmarshalling of interfaces, the developer doesn't need to implement the interfaces.
 
-Fido library will use the `TJSONVirtualDto` class to virtually implement the interface and expose the JSON values.
+Fido library will use the `TJSONVirtualDto` class to implement the interface virtually and expose the JSON values.
 
 ##### Aggregates
 
@@ -180,13 +183,13 @@ begin
 end;
 ```
 
-You will have access to an interface instance that expressed the JSON. And that's what I mean when I say that the Fido library philosophy is "**describe behaviour instead of coding it, whenever is possible**".
+You will have access to an interface instance that expresses the JSON. And that's what I mean when I say that the Fido library philosophy is "**describe behaviour instead of coding it, whenever is possible**".
 
 
 
 ##### Registration and overriding of the JSON mappings
 
-The JSON mappings are registered into a global structure, and can be added or overridden by using the `MappingsUtilities`.
+The JSON mappings are registered into a global structure and can be added or overridden using the `MappingsUtilities`.
 
 Let's say you don't want to encode your datetimes in ISO8601 (the standard mapping), but in another way, you can simply call:
 
@@ -240,7 +243,7 @@ You can also override the default mapping for enumeratives (that by default uses
 
 ##### Mapping classes and interfaces
 
-Fido library will unmarshall classes and interfaces, adopting the following rules:
+Fido library will unmarshal classes and interfaces, adopting the following rules:
 
 - Classes constructors must be parameter-less  
 - Only procedures called `Set<NAME_OF_JSON_VALUE>` with one parameter are used
@@ -258,7 +261,7 @@ Fido library will marshall classes, adopting the following rules:
 
 ##### Usage
 
-The usage is straight forward, to convert from JSON to type:
+The usage is straightforward, to convert from JSON to type:
 
 ```pascal
 procedure UnmarshallSong(const SongJson: string);
@@ -288,7 +291,7 @@ end;
 
 FidoLib registers for you standard primitive type conversions rules, but you could have the need for supporting multiple configurations. 
 
-Let's say you connect to two separate APIs and each of them have a different date and time format. In this case it is enough to register mappings with the  configuration name, for example:
+Let's say you connect to two separate APIs, and each of them has a different date and time format. In this case, it is enough to register mappings with the  configuration name, for example:
 
 ```pascal
   uses
@@ -308,7 +311,7 @@ Let's say you connect to two separate APIs and each of them have a different dat
 
 
 
- And the usage is again straight forward, to convert from JSON to type:
+ And the usage is again straightforward, to convert from JSON to type:
 
 ```pascal
 procedure UnmarshallSong(const SongJson: string);
@@ -336,14 +339,14 @@ end;
 
 ## Virtual database features
 
-The virtual database clients are interfaces that represent database statements (query, commands, sequences, stored procedures) and are enriched by means of attributes in order to allow the Fido library to work properly.
+The virtual database clients are interfaces that represent database statements (query, commands, sequences, stored procedures) and are enriched using attributes to allow the Fido library to work properly.
 
 ##### Connectivity
 
 Fido library enables the connection to databases through implementations of the `IStatementExecutor` interface.
 In FidoCore the FireDAC implementation is already available through the classes `TFireDacStatementExecutor` and `TFireDacConnections`.
 
-The virtual database clients will use the `IStatementExecutor` internally to reach the database. All of this possible when registering the classes into the DI container (I said DI container, not global container...). 
+The virtual database clients will use the `IStatementExecutor` internally to reach the database. All of this is possible when registering the classes into the DI container (I said DI container, not global container...). 
 
 ##### Registration in the DI container
 
@@ -359,7 +362,7 @@ begin
   Container.RegisterType<TFireDacConnections>.DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParams);
+      Result := TFireDacPerThreadConnections.Create(FireDacDatabaseParams);
     end).AsSingleton;
   Container.RegisterType<IStatementExecutor, TFireDacStatementExecutor>;
   
@@ -369,9 +372,9 @@ end;
 
 ##### SQL queries and commands as resources
 
-Fido library treats the SQL queries and commands as resources, and as such you should provide those resources.
+Fido library treats the SQL queries and commands as resources, and as such, you should provide those resources.
 
-First of all you need to add the resources to the `dpr` file.
+First of all, you need to add the resources to the `dpr` file.
 
 ```pascal
 {$R 'Queries.res' '<PATH_TO_THE_DOMAIN>\Queries.rc'}
@@ -398,14 +401,14 @@ The folder structure will end up like this.
 <DPR_LOCATION>\<PATH_TO_THE_DOMAIN>\<PATH_TO_THE_QUERIES>\sql files
 ```
 
-The reason behind this structure  is that when you start working with a medium/large project and you have 100s of resources the  `dpr` file will become very slow when edited from the IDE.
+This structure is because when you start working with a medium/large project and have 100s of resources, the `dpr` file will become very slow when edited from the IDE.
 
 ### Virtual queries
 
 Unit `Fido.VirtualQuery.Intf`.
 
-With a virtual query you can abstract an SQL query and retrieve a `Spring.Collections.IReadonlyList<T: IInvokable>`.
-You just need to declare the DTO (Data Transfer Object) interface and the query interface descendent from `IVirtualQuery` and  then use it.
+With a virtual query, you can abstract an SQL query and retrieve a `Spring.Collections.IReadonlyList<T: IInvokable>`.
+You just need to declare the DTO (Data Transfer Object) interface, and the query interface descendent from `IVirtualQuery` and  then use it.
 
 ##### Declaration
 
@@ -473,7 +476,7 @@ end;
 
 Unit `Fido.VirtualStatement.Intf`.
 
-With a virtual query you can abstract an SQL command or call to stored procedure or sequence.
+With a virtual query, you can abstract an SQL command or call to stored procedure or sequence.
 
 A virtual statement can use a fully qualified DB object name (i.e. when a procedure or sequence is needed) or a resource.
 
@@ -493,11 +496,11 @@ unit `Fido.VirtualStatement.Attributes`.
 
 ###### [Statement(Type, RESOURCE_NAME)]
 
-It sets statement type and the resource that needs to be used. Values can be: `stSequence, stFunction, stStoredProc, stCommand`.
+It sets the statement type and the resource that needs to be used. Values can be: `stSequence, stFunction, stStoredProc, stCommand`.
 
 For `stCommand` it is necessary to provide a resource.
 
-For `stSequence, stFunction, stStoredProc` it is necessary to provide the fully qualified database object name.
+For `stSequence, stFunction, stStoredProc`, it is necessary to provide the fully qualified database object name.
 
 ###### [Execute]
 
@@ -509,7 +512,7 @@ If the method is already called `Execute` or if the interface contains only one 
 
 It sets the database name of a specific parameter.
 
-i.e. in the previous declaration the second parameter of the `Update` method is called `Name` in the Delphi code, but `title` in the related resource.
+i.e. in the previous declaration, the second parameter of the `Update` method is called `Name` in the Delphi code, but `title` in the related resource.
 
 ###### [PagingLimit]
 
@@ -537,7 +540,7 @@ end;
 
 ##### Using multiple databases
 
-If you need to connect to multiple database in your application, just register the `TXXXConnections`' and the `IStatementExecutor`s using  service  names and then register the virtual statements and virtual query using the appropriate service name.
+If you need to connect to multiple databases in your application, just register the `TXXXConnections`' and the `IStatementExecutor`s using  service  names and then register the virtual statements and virtual query using the appropriate service name.
 
 ```pascal
 var
@@ -553,7 +556,7 @@ begin
   Container.RegisterType<TFireDacConnections>('First_Database').DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParamsFirstDatabase);
+      Result := TFireDacPerThreadConnections.Create(FireDacDatabaseParamsFirstDatabase);
     end).AsSingleton;
   Container.RegisterType<IStatementExecutor>('First_Database_Connector').DelegateTo(
     function: IStatementExecutor
@@ -564,7 +567,7 @@ begin
    Container.RegisterType<TFireDacConnections>('Second_Database').DelegateTo(
     function: TFireDacConnections
     begin
-      Result := TFireDacConnections.Create(FireDacDatabaseParamsSecondDatabase);
+      Result := TFireDacPerThreadConnections.Create(FireDacDatabaseParamsSecondDatabase);
     end).AsSingleton;
   Container.RegisterType<IStatementExecutor>('Second_Database_Connector').DelegateTo(
     function: IStatementExecutor
@@ -604,14 +607,14 @@ IIdentityApi = interface(IClientVirtualApi)
 end;
 ```
 
-A virtual Api client is always linked to an `IClientVirtualApiConfiguration` (that is injected into it) and it is able to extract information from it.
+A virtual Api client is always linked to an `IClientVirtualApiConfiguration` (that is injected into it), and it is able to extract information from it.
 Every parameter-less function will be scanned in order to [resolve](#resolving-the-parameters) the call parameters.
 
 #### Attributes
 
 ###### [EndPoint(Method, Endpoint)]
 The **EndPoint** attribute defines what method and endpoint will be used during the call.
-The EndPoint variable can contain [Mustache](https://mustache.github.io/) templates, that will be [resolved](#resolving-the-parameters) during the call.
+The EndPoint variable can contain [Mustache](https://mustache.github.io/) templates that will be [resolved](#resolving-the-parameters) during the call.
 
 Example:
 ```pascal
@@ -620,7 +623,7 @@ Example:
 
 ###### [Content(ContentType)]
 
-The **Content** attribute is used to override the content of both request and response. By default the value is `application/json` so there's no need to define it if your service uses it.
+The **Content** attribute is used to override the content of both request and response. By default, the value is `application/json`, so there's no need to define it if your service uses it.
 
 Example:
 
@@ -645,12 +648,12 @@ Examples:
   [HeaderParam('ApiKey', 'Api-Key')]
 ```
 
-The `MethodParam` is the name of the parameter as it can be found in the Delphi code (call parameter or Configuration function name), while the `RestParam` is the optional name of the parameter as is requested by the service. This is required usually only when, for example, the parameter name must be `something-somethingelse` and Delphi won't be able to find any parameter or method called that way (in case you are wondering why it is because Delphi do not allows to define names containing `-`).
+The `MethodParam` is the name of the parameter as it can be found in the Delphi code (call parameter or Configuration function name), while the `RestParam` is the optional name of the parameter as is requested by the service. This is required usually only when, for example, the parameter name must be `something-somethingelse`, and Delphi won't be able to find any parameter or method called that way (in case you are wondering why it is because Delphi does not allow to define names containing `-`).
 
 ###### [Request(MethodParam)]
 
-The **Request** attribute is used when the call requires a JSON content, to inform the Fido library which parameter is to be converted in JSON and become the body of the request. 
-If the body is an aggregate we strongly suggest to descend it from `TOwningObject` so that the whole hierarchy of children objects will be freed upon destruction of the aggregate.
+The **Request** attribute is used when the call requires JSON content to inform the Fido library which parameter is to be converted in JSON and become the body of the request. 
+If the body is an aggregate, we strongly suggest descending it from `TOwningObject` so that the whole hierarchy of children objects will be freed upon the destruction of the aggregate.
 
 Example
 
@@ -688,8 +691,9 @@ Usage Examples:
 ###### [ResponseHeaderParam(MethodParam, RestParam='')]
 
 The **ResponseHeaderParam** attribute is used when a POST call is expected to return a header parameter when the response code is a specific number (usually 201), as explained [here](https://knpuniversity.com/screencast/rest/post). 
-if ParamName is not set then it assumes it has the same value as HeaderParam.
-The interface parameter must be out and of type string .
+
+If ParamName is not set then it assumes it has the same value as HeaderParam.
+The interface parameter must be out and of type string.
 
 Declaration Example:
 
@@ -723,10 +727,12 @@ Let's assume we have this Api definition:
     function AccountByAccountIdPut([RestParam('AccountId')] Account_Id: Integer; Request: TUpdateIdentityRequest): TUpdateIdentityResponse;          
   end;                    
           
-  IMySettings = interface(IBaseRestApiConfiguration)            
+  IMySettings = interface(IClientVirtualApiConfiguration)            
     ['{D875BB18-F217-4208-8B41-17A867BA9F2B}']            
     
-    function GetApiKey: string;          
+    [ApiParam('Api-Key')]
+    function GetApiKey: string;
+    procedure SetApiKey(const Value: string);
   end;
 ```
 
@@ -738,12 +744,16 @@ When the `AccountByAccountIdPut` method is called the Fido library executes the 
 
 And finally calls the REST service.
 
+**Updating the ApiConfiguration**
+
+If an Api call outputs a parameter that is called as one of the ApiConfiguration parameters (using the convention `Set<ParameterName>`) the library will automatically update it. This is useful, for example, in case of headers or tokens that can be updated by server (i.e. Access tokens).
+
 ##### Out of the box and craftsmanship
 
 The Fido library supports, out of the box, Apis based on JSON.
 The unit `Fido.Api.Client.VirtualApi.json.pas` contains the class `TJSONClientVirtualApi<T: IClientVirtualApi; IConfiguration: IClientVirtualApiConfiguration>` that can be used to consume JSON based Apis.
 
-If you need to support other flavours or you want to specialize the behaviour of the class please feel free to inherit from `TAbstractClientVirtualApi<T: IClientVirtualApi; IConfiguration: IClientVirtualApiConfiguration>` declared in `Fido.Api.Client.VirtualApi.Abstract.pas`.
+If you need to support other flavours or you want to specialize the behaviour of the class, please feel free to inherit from `TAbstractClientVirtualApi<T: IClientVirtualApi; IConfiguration: IClientVirtualApiConfiguration>` declared in `Fido.Api.Client.VirtualApi.Abstract.pas`.
 
 The inherited class will implement the following methods:
 
@@ -751,19 +761,19 @@ The inherited class will implement the following methods:
     function ConvertTValueToString(const Value: TValue): string; virtual; abstract;    
 ```
 
-In this function you will convert a TValue into a string. The Virtual Api works with RTTI so it required a way to convert a parameter from TValue to a string (JSON and XML end up writing strings).
+In this function you will convert a TValue into a string. The Virtual Api works with RTTI, so it required a way to convert a parameter from TValue to a string (JSON and XML end up writing strings).
 
 ```pascal
     function ConvertResponseToDto(const Response: string; const ConvertToClass: TClass): TValue; virtual; abstract;
 ```
 
-In this conversion you will convert from a string response  (JSON or XML depend on the Service implementation) to a instance.
+In this conversion, you will convert from a string response  (JSON or XML depending on the Service implementation) to a instance.
 
 ```pascal
     function ConvertRequestDtoToString(const Value: TValue): string; virtual; abstract;
 ```
 
-In this function you will convert the request from a TValue to a string.
+In this function, you will convert the request from a TValue to a string.
 
 ```pascal
 procedure CallApi(
@@ -780,7 +790,7 @@ procedure CallApi(
 ```
 
 This is the core procedure that will perform the Api call. 
-Is it important that you catch all the exceptions on this call because if you do not do that you will raise a generic exception, instead of getting the proper HTTP status code.
+Is it important that you catch all the exceptions on this call because if you do not do that, you will raise a generic exception instead of getting the proper HTTP status code.
 
 ### Virtual Api servers
 
@@ -954,7 +964,7 @@ end;
 end.
 ```
 
-Resources are decorated with attributes so that the server can understand how to process it.
+Resources are decorated with attributes so that the server can understand how to process them.
 
 #### Attributes
 
@@ -991,7 +1001,7 @@ Example:
 ###### [Path(Method, Path)]
 
 The **Path** attribute defines to what method and endpoint the decorated method will respond.
-The Path variable can contain [Mustache](https://mustache.github.io/) templates, that will be [resolved](#resolving-the-parameters) during the call.
+The Path variable can contain [Mustache](https://mustache.github.io/) templates that will be [resolved](#resolving-the-parameters) during the call.
 
 Example:
 
@@ -1028,7 +1038,7 @@ Examples:
   [HeaderParam('ApiKey', 'Api-Key')]
 ```
 
-The `MethodParam` is the name of the parameter as it can be found in the Delphi code (call parameter or Configuration function name), while the `RestParam` is the optional name of the parameter as is requested by the service. This is required usually only when, for example, the parameter name must be `something-somethingelse` and Delphi won't be able to find any parameter or method called that way (in case you are wondering why it is because Delphi do not allows to define names containing `-`).
+The `MethodParam` is the name of the parameter as it can be found in the Delphi code (call parameter or Configuration function name), while the `RestParam` is the optional name of the parameter as is requested by the service. This is required usually only when, for example, the parameter name must be `something-somethingelse`, and Delphi won't be able to find any parameter or method called that way (in case you are wondering why, it is because Delphi does not allow to define names containing `-`).
 
 ###### [WebSocketPath(Path)]
 
@@ -1061,6 +1071,89 @@ Example:
 ```
 
 
+
+### Consul and Fabio support
+
+Unit: `Fido.Api.Server.Consul`.
+
+If you plan to develop a (micro)services architecture then [Consul](https://www.consul.io/) and [Fabio](https://fabiolb.net/) will help you manage the whole mesh and present it as a single API reachable from a single IP address. Do you need to scale horizontally? No worries, spawn your new service instance, register it into Consul and Fabio will pick it up and do the load balancing for you.
+
+FidoLib has a ready-to-go solution that will register your API server into Consul, with a little bit of configuration.
+
+##### The ini file
+
+The code needs to know where Consul is and the token to use.
+
+```ini
+...
+
+[Consul]
+URL=http://192.168.178.11:8500
+Token=3b12990b-b69f-3f9c-0fbc-5a627ee6a7be
+
+...
+```
+
+##### Registration
+
+After that the `TConsulAwareApiServer` will simply decorate the `IApiServer` and provide the registration and deregistration with Consul.
+
+```pascal
+  Fido.Consul.DI.Registration.Register(Container, IniFile);
+  Container.RegisterType<IApiServer>.DelegateTo(
+    function: IApiServer
+    begin
+      Result := TConsulAwareApiServer.Create(
+        TIndyApiServer.Create(
+          IniFile.ReadInteger('Server', 'Port', 8080),
+          IniFile.ReadInteger('Server', 'MaxConnections', 50),
+          TNullWebServer.Create,
+          TSSLCertData.CreateEmpty),
+        Container.Resolve<IConsulService>,
+        IniFile.ReadString('Server', 'ServiceName', 'Authentication'));
+    end);
+```
+
+##### Decoration
+
+The `ConsulHealthCheck` attribute tells FidoLib that the endpoint  will be used as healthcheck by Consul and Fabio.
+
+```pascal
+type  
+  [BaseUrl('/api')]
+  [Consumes(mtJson)]
+  [Produces(mtJson)]
+  THealthResource = class(TObject)
+  private
+    FLogger: ILogger;
+  public
+    constructor Create(const Logger: ILogger);
+
+    [Path(rmGet, '/health')]
+    [ConsulHealthCheck]
+    function Default: TResult<string>;
+  end;
+```
+
+
+
+The result is: 
+
+- FidoLib will make the api available under the `{fabiolburl}/{ServiceName.Lowercase}/{EndpointURI}`, in this case `{fabiolburl}/authentication/api/health`
+- If more than one instances of the service run simultaneously Fabio will automatically load balance them.
+- If one instance shuts down or dies Fabio will automatically stop using it.
+
+FidoLib allows you to consume the Consul KVStore by means of the `TConsulKVStore` class which implements the `IKVStore` interface.
+
+##### Usage
+
+```pascal
+  KVStore := Container.Resolve<IKVStore>;
+  
+  PublicKeyContent := KVStore.Get('key');
+  Flag := KVStore.Put('key', 'a test value');
+  Flag := KVStore.Delete('key');
+```
 
 ### Boxes
 
@@ -1116,7 +1209,7 @@ Async procedures let you run a procedure or a sequence of procedures in a separa
 
 - *fire and forget*. A separate task is created and executed without the caller having any control of how and when it will terminate.
 - *fire and get ITask*. A separate task is created and executed and the caller gets an `ITask` that the caller can use.
-- *fire and wait*. A separate task is created and executed and the caller waits for the `Resolve` method to finish to know the final status of the async procedure.
+- *fire and wait*. A separate task is created and executed, and the caller waits for the `Resolve` method to finish to know the final status of the async procedure.
 
 ##### Usage
 
@@ -1155,7 +1248,7 @@ begin
 
   AsyncProc.Run; //Fire and forget
   
-  AsyncProc.Run.Task; //Fire and get ITask
+  Task := AsyncProc.Run.Task; //Fire and get ITask
   
   FinalStatus := AsyncProc.Run.Resolve; //Fire and wait
 end;
@@ -1171,7 +1264,7 @@ Async functions let you run a function or a sequence of functions in a separate 
 
 - *fire and forget*. A separate task is created and executed without the caller having any control of how and when it will terminate.
 - *fire and get ITask*. A separate task is created and executed and the caller gets an `ITask` that the caller can use.
-- *fire and wait*. A separate task is created and executed and the caller waits for the `Resolve` method to finish to know the final status and value of the async function.
+- *fire and wait*. A separate task is created, and executed and the caller waits for the `Resolve` method to finish to know the final status and value of the async function.
 
 ##### Usage
 
@@ -1211,9 +1304,325 @@ begin
 
   AsyncFunc.Run(100); //Fire and forget
   
-  AsyncFunc.Run(100).Task; //Fire and get ITask
+  Future := AsyncFunc.Run(100).Task; //Fire and get ITask
   
   FuncResult := AsyncProc.Run(100).Resolve; //Fire and wait
 end;
 ```
 
+## Signals and slots
+
+Unit: `Fido.Slots.Intf`.
+
+When you work with MVVM, it is easy to consume the View model from the View. The binding functionalities from [FidoGui](./FidoGui.md) allow you to easily bind components and entities (or other components). But, to be really workable, a solution should also provide a mechanism to link, without coupling, the View model to the View (or two components that are not supposed to see each other).
+
+We based our functionalities on the signal and slots from the Qt C++ library.
+
+##### The mechanism
+
+The mechanism is pretty simple:
+
+- Signals are messages broadcasted by an `IObserver` 
+- Signals values must be formatted as `TArray<TValue>`
+- Slots can be either a `Spring.TAction<TArray<TValue>>`, or a `public` procedure whose parameters are compatible with the signal. If the signal values are not in the same format, there is the possibility to map the values to the parameters required by the slot.  
+- The signal can contain a number of parameters greater than the number required by the slot.
+
+##### Usage
+
+You can bind signals and slots in two ways:
+
+The first is by code:
+
+```pascal
+type
+  TMainView = class(TForm)
+    ...
+  private
+    FTokenScheduler: ITokenScheduler;
+    FSlots: ISlots;
+    FViewModel: IMainViewModel;
+
+    ...
+    procedure SetupTokenSchedulerSlots;
+    procedure SetupViewModelSlots;
+  public
+    ...
+    procedure SetMemo(const Text: string);
+    procedure OnLogStatusChanged(const Logged: Boolean);
+  end;
+  
+implementation
+
+...
+
+procedure TMainView.SetupTokenSchedulerSlots;
+begin
+  // When the FTokenScheduler broadcasts the LOGGED_MESSAGE message the MainView.OnLogStatusChanged procedure will be called
+  Slots.RegisterWithClass<TMainView>(
+    FSlots,
+    FTokenScheduler,
+    LOGGED_MESSAGE,
+    ftSynched,
+    Self,
+    'OnLogStatusChanged',
+    function(params: TArray<TValue>): TArray<TValue>
+    begin
+      SetLength(Result, 1);
+      Result[0] := Params[0].AsType<Integer> = 1; // Converts from Integer to Boolean; 
+    end);
+    
+  // When the FTokenScheduler broadcasts the TOKEN_CHANGED_MESSAGE message the MainView.SetMemo procedure will be called
+  Slots.RegisterWithClass<TMainView>(
+    FSlots,
+    FTokenScheduler,
+    TOKEN_CHANGED_MESSAGE,
+    ftSynched,
+    Self,
+    'SetMemo');
+
+  // When the FTokenScheduler broadcasts the TOKEN_REFRESH_FAILED_MESSAGE message the anonymous action will be called.
+  FSlots.Register(
+    FTokenScheduler,
+    TOKEN_REFRESH_FAILED_MESSAGE,
+    ftSynched,
+    procedure(const Params: TArray<TValue>)
+    var
+      Exc: Exception;
+    begin
+      Exc := Params[0].AsType<Exception>;
+      if Exc is EFidoClientApiException then
+        TDialogService.MessageDialog(
+          Format('[%d] %s', [(Exc as EFidoClientApiException).ErrorCode, (Exc as EFidoClientApiException).ErrorMessage]),
+          TMsgDlgType.mtError,
+          [TMsgDlgBtn.mbOK],
+          TMsgDlgBtn.mbOK,
+          0,
+          nil)
+      else
+        TDialogService.MessageDialog(
+          Exc.Message,
+          TMsgDlgType.mtError,
+          [TMsgDlgBtn.mbOK],
+          TMsgDlgBtn.mbOK,
+          0,
+          nil)
+    end);
+end;
+
+procedure TMainView.SetupViewModelSlots;
+begin
+  // When theFViewModel broadcasts the VIEW_BUSY_MESSAGE message the anonymous action will be called.
+  FSlots.Register(
+    FViewModel,
+    VIEW_BUSY_MESSAGE,
+    ftSynched,
+    procedure(const Params: TArray<TValue>)
+    var
+      Busy: Boolean;
+    begin
+      Busy := Params[0].AsType<Boolean>;
+
+      MainToolBar.Enabled := not Busy;
+
+      if Busy then
+        Self.OnCloseQuery := FormCloseQueryNo
+      else
+        Self.OnCloseQuery := FormCloseQueryYes;
+    end);
+end;
+```
+
+The second one is by attributes, but in this case there is not parameters overriding functionality:
+
+```pascal
+type
+  TMainView = class(TForm)
+    ...
+  private
+    FTokenScheduler: ITokenScheduler;
+    FSlots: ISlots;
+    FViewModel: IMainViewModel;
+    ....
+
+    procedure SetupTokenSchedulerSlots;
+    procedure SetupViewModelSlots;
+  public
+    ...
+
+    [SignalToSlot('FTokenScheduler', TOKEN_CHANGED_MESSAGE, ftSynched)]
+    procedure OnTokenChanged(const Text: string);
+    [SignalToSlot('FTokenScheduler', LOGGED_MESSAGE, ftSynched)]
+    procedure OnLogStatusChanged(const Logged: Boolean);
+    [SignalToSlot('FTokenScheduler', TOKEN_REFRESH_FAILED_MESSAGE, ftSynched)]
+    procedure OnTokenRefreshFailed(const E: Exception);
+    [SignalToSlot('FViewModel', VIEW_BUSY_MESSAGE, ftSynched)]
+    procedure OnBusyChange(const Busy: Boolean);
+
+    ...
+  end; 
+  
+implementation
+
+...
+
+procedure TMainView.SetupTokenSchedulerSlots;
+begin
+  Slots.Register(FSlots, FTokenScheduler, Self)
+end;
+
+procedure TMainView.SetupViewModelSlots;
+begin
+  Slots.Register(FSlots, FViewModel, Self)
+end;
+```
+
+Slots can be of two types:
+
+- `stSynched`, the slot will be synchronized with the main thread  
+- `stNotSynched`, the slot will not be synchronized with the main thread.
+
+## Events driven architecture
+
+Units folder: `EventsDriven`.
+
+![](diagrams\Events driven.svg)
+
+> An event-driven architecture uses events to trigger and communicate between decoupled services and is common in modern applications built with microservices. An event is a change in state, or an update, like an item being placed in a shopping cart on an e-commerce website. Events can either carry the state (the item purchased, its price, and a delivery address) or events can be identifiers (a notification that an order was shipped).
+>
+> Event-driven architectures have three key components: event producers, event routers, and event consumers. A producer publishes an event to the router, which filters and pushes the events to consumers. Producer services and consumer services are decoupled, which allows them to be scaled, updated, and deployed independently.  [Source](https://aws.amazon.com/event-driven-architecture/)
+
+
+
+With FidoLib you can design your system adhering to the Events driven architecture.
+
+Out of the box you can use:
+
+- a Redis implementation that would use Queues, PubSub or an hybrid Queues + PubSub system to manage the events
+- an intra-app memory based implementation that would use a PubSub system to manage the events.
+
+But as always nothing stops you from implementing your own flavour and to contribute.
+
+The events can be associated to a payload. Fidolib support out of the box two types of payload:
+
+- **string** - Used by Redis, that does a JSON marshalling of the payload.
+- **TArray<TValue>** - Used by the intra-app memory implementation.
+
+To add support for yet another  payload type just add conversion by means of the `TEventsDrivenUtilities.RegisterPayloadTypeMapper<PayloadType>` method. `TEventsDrivenUtilities.Create` contains the code for the registration of the supported payload types, you can use them as a reference.
+
+##### The mechanism
+
+Depending on the system used the mechanism works as follow:
+
+- Queues
+  - Subscribers subscribe to channels and event names and start polling the queue for new events
+  - Producers publish events to channels with optional payloads
+  - One subscriber will eventually pop the event and payload and process it. In case of failure it will push it back at the end of the queue. 
+
+- PubSub
+  - Subscribers subscribe to channels and event names
+  - Producers publish events to channels with optional payloads
+  - All active subscribers will get the event and the payload and process it.
+- Hybrid
+  - Subscribers subscribe to channels and event names
+  - Producers publish events to channels with optional payloads
+  - All active subscribers will get the notification of a new event and try to pop it from a queue
+  - The first one will get event and the payload and process it.
+
+As you can see each flavour has its on peculiarities and behaviors. You can choose the system you find suitable for your own processes or implement a new one, if needed.
+
+##### **Registration**
+
+To use the Qeues system please use the following registration:
+
+```pascal
+  Container.RegisterType<IQueueEventsDrivenConsumer<string>, TRedisQueueEventsDrivenConsumer>;
+  Container.RegisterFactory<IQueueEventsDrivenConsumerFactory<string>>;
+  Container.RegisterType<IEventsDrivenProducer<string>, TRedisQueueEventsDrivenProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory<string>>;
+  Container.RegisterType<IEventsDrivenListener, TQueueEventsDrivenListener<string>>;
+  Container.RegisterType<IEventsDrivenPublisher<string>, TEventsDrivenPublisher<string>>;
+  Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
+```
+
+To use the PubSub system please use the following registration:
+
+```pascal
+  Container.RegisterType<IPubSubEventsDrivenConsumer<string>, TRedisPubSubEventsDrivenConsumer>;
+  Container.RegisterType<IEventsDrivenProducer<string>, TRedisPubSubEventsDrivenProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory<string>>;
+  Container.RegisterType<IEventsDrivenListener, TPubSubEventsDrivenListener<string>>;
+  Container.RegisterType<IEventsDrivenPublisher<string>, TEventsDrivenPublisher<string>>;
+  Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
+```
+
+To use the hybrid system please use the following registration:
+
+```pascal
+  Container.RegisterType<IPubSubEventsDrivenConsumer<string>, TRedisPubSubEventsDrivenQueueConsumer>;
+  Container.RegisterFactory<IPubSubEventsDrivenConsumerFactory<string>>;
+  Container.RegisterType<IEventsDrivenProducer<string>, TRedisPubSubEventsDrivenQueueProducer>;
+  Container.RegisterFactory<IEventsDrivenProducerFactory<string>>;
+  Container.RegisterType<IEventsDrivenListener, TPubSubEventsDrivenListener<string>>;
+  Container.RegisterType<IEventsDrivenPublisher<string>, TEventsDrivenPublisher<string>>;
+  Container.RegisterType<IEventsDrivenSubscriber, TEventsDrivenSubscriber>;
+```
+
+##### Usage
+
+We tried to make the usage as straight forward as possible.
+
+In the example below `TAddUserConsumer` is a consumer for the event `UserAdded` triggered in the  `Authentication` channel.
+
+It is assumed that the payload of the event will be a Json compatible to the `IUserCreatedDto` Dto.
+
+The class is also publishing (via the `IEventsDrivenPublisher`)  events to the `Users` channel. 
+
+```pascal
+type
+  IUserCreatedDto = interface(IInvokable)
+    function UserId: TGuid;
+    function FirstName: string;
+    function LastName: string;
+  end;
+
+  TAddUserConsumer = class
+  private
+    FLogger: ILogger;
+    FAddUseCase: IAddUseCase;
+    FDistribuitedEventPublisher: IEventsDrivenPublisher;
+  public
+    constructor Create(const Logger: ILogger; const AddUseCase: IAddUseCase; const DistribuitedEventPublisher: IEventsDrivenPublisher);
+
+    [TriggeredByEvent('Authentication', 'UserAdded')]
+    procedure Run(const UserCreatedDto: IUserCreatedDto);
+  end;
+  
+implementation
+
+...
+
+procedure TAddUserConsumer.Run(const UserCreatedDto: IUserCreatedDto);
+begin
+  Logging.LogDuration(
+    FLogger,
+    Self.ClassName,
+    'Run',
+    procedure
+    begin
+      try
+        FAddUseCase.Run(UserCreatedDto.UserId, UserCreatedDto.FirstName, UserCreatedDto.LastName);
+        FDistribuitedEventPublisher.Trigger('Users', 'UserAdded', JSONMarshaller.From(UserCreatedDto.UserId).DeQuotedString('"'));
+      except
+        FDistribuitedEventPublisher.Trigger('Users', 'UserAddFailed', JSONMarshaller.From(UserCreatedDto.UserId).DeQuotedString('"'));
+        raise;
+      end;
+    end);
+end;
+```
+
+The instance of `TAddUserConsumer` is registered in the `EventsDrivenSubscriber`. This way it will be able to receive the events notifications. 
+
+```pascal
+  EventsDrivenSubscriber := Container.Value.Resolve<IEventsDrivenSubscriber>;
+  EventsDrivenSubscriber.RegisterConsumer(Container.Value.Resolve<TAddUserConsumer>);
+```

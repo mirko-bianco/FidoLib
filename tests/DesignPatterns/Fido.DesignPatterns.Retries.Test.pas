@@ -8,9 +8,13 @@ uses
 
   Spring,
 
+  Fido.Exceptions,
   Fido.DesignPatterns.Retries;
 
 type
+  ERetriesTestsSupported = class(EFidoException);
+  ERetriesTestsNotSupported = class(EFidoException);
+
   [TestFixture]
   TRetriesTests = class
   public
@@ -18,26 +22,38 @@ type
     procedure RunFuncCallsFuncOnceWhenThereIsNoFailure;
 
     [Test]
-    procedure RunFuncDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
+    procedure RunFuncDoesNotRaiseEFidoTestExceptionWhenThereAreLessFailuresThanMax;
 
     [Test]
-    procedure RunFuncRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+    procedure RunFuncRaisesEFidoTestExceptionWhenThereAreMoreOrEqualFailuresThanMax;
 
     [Test]
     procedure RunProcCallsProcOnceWhenThereIsNoFailure;
 
     [Test]
-    procedure RunProcDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
+    procedure RunProcDoesNotRaiseEFidoTestExceptionWhenThereAreLessFailuresThanMax;
 
     [Test]
-    procedure RunProcRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+    procedure RunProcRaisesEFidoTestExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+
+    [Test]
+    procedure RunFuncRaisesEFidoTestExceptionWhenItIsNotPartOfTheManagedExceptions;
+
+    [Test]
+    procedure RunProcRaisesEFidoTestExceptionWhenItIsNotPartOfTheManagedExceptions;
+
+    [Test]
+    procedure RunProcRaisesEFidoTestExceptionWhenItIsNotPartOfTheManagedExceptionsAndItIsRaisedOnSubsequentAttempt;
+
+    [Test]
+    procedure RunFuncRaisesEFidoTestExceptionWhenItIsNotPartOfTheManagedExceptionsAndItIsRaisedOnSubsequentAttempt;
   end;
 
 implementation
 
 { TRetriesTests }
 
-procedure TRetriesTests.RunFuncDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
+procedure TRetriesTests.RunFuncDoesNotRaiseEFidoTestExceptionWhenThereAreLessFailuresThanMax;
 var
   Result: Boolean;
   Count: Integer;
@@ -52,15 +68,19 @@ begin
         begin
           Inc(Count);
           if Count < 3 then
-            raise Exception.Create('Error Message');
+            raise EFidoTestException.Create('Error Message');
           Result := True;
+        end,
+        function(const Exc: Exception): Boolean
+        begin
+          Result := Exc.InheritsFrom(EFidoTestException);
         end);
     end);
 
   Assert.AreEqual(True, Result);
 end;
 
-procedure TRetriesTests.RunFuncRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+procedure TRetriesTests.RunFuncRaisesEFidoTestExceptionWhenThereAreMoreOrEqualFailuresThanMax;
 var
   Result: Boolean;
   Count: Integer;
@@ -75,12 +95,95 @@ begin
         begin
           Inc(Count);
           if Count <= 3 then
-            raise Exception.Create('Error Message');
+            raise EFidoTestException.Create('Error Message');
           Result := True;
-
+        end,
+        function(const Exc: Exception): Boolean
+        begin
+          Result := Exc.InheritsFrom(EFidoTestException);
         end);
     end,
-    Exception);
+    EFidoTestException);
+end;
+
+procedure TRetriesTests.RunFuncRaisesEFidoTestExceptionWhenItIsNotPartOfTheManagedExceptions;
+var
+  Result: Boolean;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Result := Retries.Run<Boolean>(
+        function: Boolean
+        begin
+          raise EFidoTestException.Create('Error Message');
+        end);
+    end,
+    EFidoTestException);
+end;
+
+procedure TRetriesTests.RunProcRaisesEFidoTestExceptionWhenItIsNotPartOfTheManagedExceptions;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Retries.Run(
+        procedure
+        begin
+          raise EFidoTestException.Create('Error Message');
+        end);
+    end,
+    EFidoTestException);
+end;
+
+procedure TRetriesTests.RunProcRaisesEFidoTestExceptionWhenItIsNotPartOfTheManagedExceptionsAndItIsRaisedOnSubsequentAttempt;
+var
+  Count: Integer;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Count := 0;
+      Retries.Run(
+        procedure
+        begin
+          Inc(Count);
+          if Count = 1 then
+            raise ERetriesTestsSupported.Create('Error Message')
+          else
+            raise ERetriesTestsNotSupported.Create('Error Message');
+        end,
+        function(const Exc: Exception): Boolean
+        begin
+          Result := Exc.InheritsFrom(ERetriesTestsSupported);
+        end);
+    end,
+    ERetriesTestsNotSupported);
+end;
+
+procedure TRetriesTests.RunFuncRaisesEFidoTestExceptionWhenItIsNotPartOfTheManagedExceptionsAndItIsRaisedOnSubsequentAttempt;
+var
+  Count: Integer;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Count := 0;
+      Retries.Run<Boolean>(
+        function: Boolean
+        begin
+          Inc(Count);
+          if Count = 1 then
+            raise ERetriesTestsSupported.Create('Error Message')
+          else
+            raise ERetriesTestsNotSupported.Create('Error Message');
+        end,
+        function(const Exc: Exception): Boolean
+        begin
+          Result := Exc.InheritsFrom(ERetriesTestsSupported);
+        end);
+    end,
+    ERetriesTestsNotSupported);
 end;
 
 procedure TRetriesTests.RunFuncCallsFuncOnceWhenThereIsNoFailure;
@@ -124,7 +227,7 @@ begin
   Assert.AreEqual(1, Count);
 end;
 
-procedure TRetriesTests.RunProcDoesNotRaiseExceptionWhenThereAreLessFailuresThanMax;
+procedure TRetriesTests.RunProcDoesNotRaiseEFidoTestExceptionWhenThereAreLessFailuresThanMax;
 var
   Count: Integer;
 begin
@@ -138,12 +241,16 @@ begin
         begin
           Inc(Count);
           if Count < 3 then
-            raise Exception.Create('Error Message');
+            raise EFidoTestException.Create('Error Message');
+        end,
+        function(const Exc: Exception): Boolean
+        begin
+          Result := Exc.InheritsFrom(EFidoTestException);
         end);
     end);
 end;
 
-procedure TRetriesTests.RunProcRaisesExceptionWhenThereAreMoreOrEqualFailuresThanMax;
+procedure TRetriesTests.RunProcRaisesEFidoTestExceptionWhenThereAreMoreOrEqualFailuresThanMax;
 var
   Count: Integer;
 begin
@@ -157,10 +264,14 @@ begin
         begin
           Inc(Count);
           if Count <= 3 then
-            raise Exception.Create('Error Message');
+            raise EFidoTestException.Create('Error Message');
+        end,
+        function(const Exc: Exception): Boolean
+        begin
+          Result := Exc.InheritsFrom(EFidoTestException);
         end);
     end,
-    Exception);
+    EFidoTestException);
 end;
 
 initialization

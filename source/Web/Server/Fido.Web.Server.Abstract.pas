@@ -35,7 +35,6 @@ uses
   Fido.Web.Server.intf;
 
 type
-  {$M+}
   TAbstractWebServer = class(TInterfacedObject, IWebServer)
   protected
     FInterpreters: TArray<IWebServerInterpreter>;

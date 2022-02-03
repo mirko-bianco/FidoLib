@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   System.Rtti,
 
+  Fido.Exceptions,
   Fido.Boxes,
   Fido.Async.Funcs;
 
@@ -24,22 +25,28 @@ type
     procedure AsyncFuncsWithOneStepAndResolveSetsStatusToCancelledWhenItExpires;
 
     [Test]
-    procedure AsyncFuncsWithOneStepAndResolveThatRaisesAnExceptionSetStatusToFailed;
+    procedure AsyncFuncsWithOneStepAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 
     [Test]
-    procedure AsyncFuncsWithOneStepAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinishedAndReturnsTheManagedValue;
+    procedure AsyncFuncsWithOneStepAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinishedAndReturnsTheManagedValue;
 
     [Test]
     procedure AsyncFuncsWithMultipleStepsAndResolveWaitsFinishesAndReturnsTheCorrectValue;
 
     [Test]
-    procedure AsyncFuncsWithMultipleStepsAndResolveThatRaisesAnExceptionSetStatusToFailed;
+    procedure AsyncFuncsWithMultipleStepsAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 
     [Test]
-    procedure AsyncFuncsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinishedAndReturnsTheManagedValue;
+    procedure AsyncFuncsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinishedAndReturnsTheManagedValue;
 
     [Test]
     procedure AsyncFuncsWithMultipleStepsAndResolveSetsStatusToCancelledWhenItExpires;
+
+    [Test]
+    procedure AsyncFuncsWithFinallyRunsItWhenEnds;
+
+    [Test]
+    procedure AsyncFuncsWithFinallyRunsItWhenAnExceptionIsRaised;
   end;
 
 implementation
@@ -80,6 +87,58 @@ begin
   Assert.AreEqual('100', Result.Value.Value);
 end;
 
+procedure TAsyncFuncsTests.AsyncFuncsWithFinallyRunsItWhenEnds;
+var
+  Result: TAsyncFuncResult<string>;
+  FinallyCalled: IBox<Boolean>;
+begin
+  FinallyCalled := Box<Boolean>.Setup(False);
+
+  Result := AsyncFuncs<Integer, string>.
+    Queue(
+      AsyncFuncMapping.Action<Integer, string>(function(const Value: Integer): string
+      begin
+        Result := IntToStr(Value);
+        Sleep(25);
+      end)).
+    &Finally(procedure
+    begin
+      FinallyCalled.UpdateValue(True);
+    end).
+    Run(100).
+    Resolve;
+
+  Assert.AreEqual(TAsyncFuncStatus.Finished, Result.Status);
+  Assert.AreEqual('100', Result.Value.Value);
+  Assert.AreEqual(True, FinallyCalled.Value);
+end;
+
+procedure TAsyncFuncsTests.AsyncFuncsWithFinallyRunsItWhenAnExceptionIsRaised;
+var
+  Result: TAsyncFuncResult<string>;
+  FinallyCalled: IBox<Boolean>;
+begin
+  FinallyCalled := Box<Boolean>.Setup(False);
+
+  Result := AsyncFuncs<Integer, string>.
+    Queue(
+      AsyncFuncMapping.Action<Integer, string>(function(const Value: Integer): string
+      begin
+        raise EFidoTestException.Create('Error Message');
+      end)).
+    &Finally(procedure
+    begin
+      FinallyCalled.UpdateValue(True);
+    end).
+    Run(100).
+    Resolve;
+
+  Sleep(10);
+
+  Assert.AreEqual(TAsyncFuncStatus.Failed, Result.Status);
+  Assert.AreEqual(True, FinallyCalled.Value);
+end;
+
 procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndResolveWaitsFinishesAndReturnsTheCorrectValue;
 var
   Result: TAsyncFuncResult<string>;
@@ -103,7 +162,7 @@ begin
   Assert.AreEqual('200', Result.Value.Value);
 end;
 
-procedure TAsyncFuncsTests.AsyncFuncsWithOneStepAndResolveThatRaisesAnExceptionSetStatusToFailed;
+procedure TAsyncFuncsTests.AsyncFuncsWithOneStepAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 var
   Result: TAsyncFuncResult<string>;
 begin
@@ -111,7 +170,7 @@ begin
     Queue(
       AsyncFuncMapping.Action<Integer, string>(function(const Value: Integer): string
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end)).
     Run(100).
     Resolve;
@@ -120,7 +179,7 @@ begin
   Assert.AreEqual(False, Result.Value.HasValue);
 end;
 
-procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndResolveThatRaisesAnExceptionSetStatusToFailed;
+procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFailed;
 var
   Result: TAsyncFuncResult<Integer>;
 begin
@@ -132,7 +191,7 @@ begin
       end)).
     &Then(AsyncFuncMapping.Action<Integer, Integer>(function(const Value: Integer): Integer
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end)).
     Run(100).
     Resolve;
@@ -141,7 +200,7 @@ begin
   Assert.AreEqual(False, Result.Value.HasValue);
 end;
 
-procedure TAsyncFuncsTests.AsyncFuncsWithOneStepAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinishedAndReturnsTheManagedValue;
+procedure TAsyncFuncsTests.AsyncFuncsWithOneStepAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinishedAndReturnsTheManagedValue;
 var
   Result: TAsyncFuncResult<string>;
 begin
@@ -149,7 +208,7 @@ begin
     Queue(
       AsyncFuncMapping.Action<Integer, string>(function(const Value: Integer): string
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end)).
     Catch(
       function(const E: Exception): string
@@ -163,7 +222,7 @@ begin
   Assert.AreEqual('Managed result', Result.Value.Value);
 end;
 
-procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnExceptionSetStatusToFinishedAndReturnsTheManagedValue;
+procedure TAsyncFuncsTests.AsyncFuncsWithMultipleStepsAndManagedCatchAndResolveThatRaisesAnEFidoTestExceptionSetStatusToFinishedAndReturnsTheManagedValue;
 var
   Result: TAsyncFuncResult<string>;
 begin
@@ -176,7 +235,7 @@ begin
     &Then(
       AsyncFuncMapping.Action<Integer, Integer>(function(const Value: Integer): Integer
       begin
-        raise Exception.Create('Error Message');
+        raise EFidoTestException.Create('Error Message');
       end)).
     Catch(
       function(const E: Exception): string
@@ -210,6 +269,8 @@ begin
     Run(100).
     Resolve;
 
+  Sleep(10);
+
   Assert.AreEqual(TAsyncFuncStatus.Expired, Result.Status);
   Assert.AreEqual('Expired!', Result.Value.Value);
 end;
@@ -239,6 +300,8 @@ begin
       end).
     Run(100).
     Resolve;
+
+  Sleep(10);
 
   Assert.AreEqual(TAsyncFuncStatus.Expired, Result.Status);
   Assert.AreEqual('Expired!', Result.Value.Value);

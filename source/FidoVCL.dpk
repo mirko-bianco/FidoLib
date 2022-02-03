@@ -1,0 +1,43 @@
+package FidoVCL;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$RUNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  vcl,
+  FidoCore,
+  FidoGui;
+
+contains
+  Fido.Gui.Vcl.Binding in 'Binding\Fido.Gui.Vcl.Binding.pas',
+  Fido.Gui.Vcl.DesignPatterns.Observer.Anon in 'DesignPatterns\Fido.Gui.Vcl.DesignPatterns.Observer.Anon.pas',
+  Fido.Gui.Vcl.NotifyEvent.Delegated in 'Events\Fido.Gui.Vcl.NotifyEvent.Delegated.pas',
+  Fido.Gui.Vcl.Action.Anon in 'Actions\Fido.Gui.Vcl.Action.Anon.pas';
+
+end.

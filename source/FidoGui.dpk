@@ -30,19 +30,10 @@ package FidoGui;
 
 requires
   rtl,
-{$IF not declared(FireMonkeyVersion)}
-  vcl,
-{$ELSE}
-  Fmx,
-{$IFEND}
   Spring.Base,
   FidoCore;
 
 contains
-  Fido.Gui.Action.Anon in 'Actions\Fido.Gui.Action.Anon.pas',
-  Fido.Gui.Binding in 'Binding\Fido.Gui.Binding.pas',
-  Fido.Gui.DesignPatterns.Observer.Anon in 'DesignPatterns\Fido.Gui.DesignPatterns.Observer.Anon.pas',
-  Fido.Gui.NotifyEvent.Delegated in 'Events\Fido.Gui.NotifyEvent.Delegated.pas',
   Fido.Gui.Binding.Attributes in 'Binding\Fido.Gui.Binding.Attributes.pas',
   Fido.Gui.Types in 'Fido.Gui.Types.pas';
 

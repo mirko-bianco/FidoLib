@@ -110,8 +110,8 @@ type
     property Path: string read FPath;
   end;
 
-  RequestMiddlewareAttribute = MiddlewareAttribute;
-  ResponseMiddlewareAttribute = MiddlewareAttribute;
+  RequestMiddlewareAttribute = class(MiddlewareAttribute);
+  ResponseMiddlewareAttribute = class(MiddlewareAttribute);
 
 implementation
 

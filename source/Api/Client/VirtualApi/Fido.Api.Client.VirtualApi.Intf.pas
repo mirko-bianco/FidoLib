@@ -30,7 +30,6 @@ uses
   Spring;
 
 type
-  {$M+}
   IClientVirtualApi = interface(IInvokable)
     ['{45CC9535-0749-493D-81FB-14A31615D3FF}']
 

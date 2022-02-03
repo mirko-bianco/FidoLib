@@ -33,16 +33,18 @@ uses
   Spring.Collections,
 
   Fido.Win.Db.Connection.NestedTransactions.Ado,
-  Fido.Collections.UpdateablePerThreadDictionary;
+  Fido.Collections.PerXDictionary.Intf,
+  Fido.Collections.UpdateablePerXDictionary;
 
 type
   TAdoConnections = class
   private type
-    TFidoAdoConnections = TUpdateablePerThreadDictionary<TADONestedTransactionsConnection, string>;
+    TFidoAdoConnections = TUpdateablePerXDictionary<TADONestedTransactionsConnection, string>;
   private var
     FAdoConnections: TFidoAdoConnections;
   public
-    constructor Create(const ConnectionString: string);
+    constructor Create(const ConnectionString: string;
+      const PerXDictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<TADONestedTransactionsConnection>, IPerXDictionary<TADONestedTransactionsConnection>>);
     destructor Destroy; override;
 
     function GetCurrent: TADONestedTransactionsConnection;
@@ -50,16 +52,19 @@ type
 
 implementation
 
-constructor TAdoConnections.Create(const ConnectionString: string);
+constructor TAdoConnections.Create(
+  const ConnectionString: string;
+  const PerXDictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<TADONestedTransactionsConnection>, IPerXDictionary<TADONestedTransactionsConnection>>);
 begin
   inherited Create;
 
   FAdoConnections := TFidoAdoConnections.Create(
+    PerXDictionaryFactoryFunc,
     [doOwnsValues],
     function: TADONestedTransactionsConnection
     begin
       Result := TADONestedTransactionsConnection.Create(nil);
-      Result.ConnectionString := FAdoConnections.UpdateableValue;
+      Result.ConnectionString := FAdoConnections.GetUpdateableValue;
       Result.CommandTimeout := 90;
       Result.ConnectionTimeout := 30;
       Result.CursorLocation := clUseClient;
@@ -74,7 +79,7 @@ begin
       Connection.ConnectionString := ConnectionString;
     end);
 
-    FAdoConnections.UpdateableValue := ConnectionString;
+    FAdoConnections.SetUpdateableValue(ConnectionString);
 end;
 
 destructor TAdoConnections.Destroy;

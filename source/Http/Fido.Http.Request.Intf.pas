@@ -36,9 +36,9 @@ type
     function Method: THttpMethod;
     function URI: string;
     function Body: string;
-    function FormParams: IReadOnlyDictionary<string, string>;
-    function HeaderParams: IReadOnlyDictionary<string, string>;
-    function QueryParams: IReadOnlyDictionary<string, string>;
+    function FormParams: IDictionary<string, string>;
+    function HeaderParams: IDictionary<string, string>;
+    function QueryParams: IDictionary<string, string>;
     function MimeType: TMimeType;
   end;
 

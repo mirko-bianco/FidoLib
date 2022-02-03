@@ -19,7 +19,7 @@ uses
   Spring,
 
   Fido.Gui.Binding.Attributes,
-  Fido.Gui.Binding,
+  Fido.Gui.Vcl.Binding,
   Fido.Gui.Types,
 
   Main.ViewModel.Intf;
@@ -31,7 +31,7 @@ type
     [MethodToActionBinding('ShowSong', oeetBefore)]
     // The View observes the ViewModel and sets the Button.Enabled to ViewModel.IsModelNotEmpty
     // everytime there is a notification.
-    [UnidirectionalToGuiBinding('IsModelNotEmpty',  'Enabled')]
+    [UnidirectionalToSyncGuiBinding('IsModelNotEmpty',  'Enabled')]
     ShowButton: TButton;
     SongsDataSource: TDataSource;
     // The SongsGrid.OnTitleClick is bound to the ViewModel.SongsGridTitleClick method that returns the exact
@@ -49,7 +49,7 @@ type
     [MethodToActionBinding('DeleteSong', oeetBefore)]
     // The View observes the ViewModel and sets the Button.Enabled to ViewModel.IsModelNotEmpty
     // everytime there is a notification.
-    [UnidirectionalToGuiBinding('IsModelNotEmpty',  'Enabled')]
+    [UnidirectionalToSyncGuiBinding('IsModelNotEmpty',  'Enabled')]
     DeleteButton: TButton;
     actDeleteSong: TAction;
     procedure SongsGridDblClick(Sender: TObject);

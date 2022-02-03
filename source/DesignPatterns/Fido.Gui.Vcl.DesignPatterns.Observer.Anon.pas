@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.Gui.DesignPatterns.Observer.Anon;
+unit Fido.Gui.Vcl.DesignPatterns.Observer.Anon;
 
 interface
 
@@ -28,11 +28,7 @@ uses
   System.SysUtils,
   System.Classes,
 
-{$IF not declared(FireMonkeyVersion)}
   Vcl.Forms,
-{$ELSE}
-  Fmx.Forms,
-{$IFEND}
 
   Spring,
   Spring.Collections,
@@ -40,7 +36,7 @@ uses
   Fido.DesignPatterns.Observer.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
   Fido.Gui.Types,
-  Fido.Gui.NotifyEvent.Delegated;
+  Fido.Gui.Vcl.NotifyEvent.Delegated;
 
 type
   TAnonObserver<T: class> = class(TInterfacedObject, IObserver)
@@ -59,7 +55,7 @@ type
     procedure Notify(const Sender: IInterface; const Notification: INotification);
   end;
 
-  TAnonGUIObserver<T: class> = class(TAnonObserver<T>, IGUIObserver);
+  TAnonSyncObserver<T: class> = class(TAnonObserver<T>, ISyncObserver);
 
 implementation
 

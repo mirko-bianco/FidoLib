@@ -30,7 +30,6 @@ uses
   Fido.Web.Server.intf;
 
 type
-  {$M+}
   TNullWebServer = class(TInterfacedObject, IWebServer)
   public
     function Process(const RestRequest: IHttpRequest; const RestResponse: IHttpResponse): Boolean;

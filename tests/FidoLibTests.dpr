@@ -37,7 +37,26 @@ uses
   Fido.DesignPatterns.Retries.Test in 'DesignPatterns\Fido.DesignPatterns.Retries.Test.pas',
   Fido.Boxes.Test in 'Fido.Boxes.Test.pas',
   Fido.Async.Funcs.Test in 'Async\Fido.Async.Funcs.Test.pas',
-  Fido.Async.Procs.Test in 'Async\Fido.Async.Procs.Test.pas';
+  Fido.Async.Procs.Test in 'Async\Fido.Async.Procs.Test.pas',
+  Fido.Slots.Binding.Tests in 'Slots\Fido.Slots.Binding.Tests.pas',
+  Fido.Consul.KVStore.Test in 'Consul\Fido.Consul.KVStore.Test.pas',
+  Fido.Consul.Service.Test in 'Consul\Fido.Consul.Service.Test.pas',
+  Fido.Consul.UseCases.KVStore.Get.Test in 'Consul\Fido.Consul.UseCases.KVStore.Get.Test.pas',
+  Fido.EventsDriven.Listener.Queue.Test in 'EventsDriven\Fido.EventsDriven.Listener.Queue.Test.pas',
+  Fido.EventsDriven.Publisher.Test in 'EventsDriven\Fido.EventsDriven.Publisher.Test.pas',
+  Fido.EventsDriven.Subscriber.Test in 'EventsDriven\Fido.EventsDriven.Subscriber.Test.pas',
+  Fido.EventsDriven.Listener.PubSub.Test in 'EventsDriven\Fido.EventsDriven.Listener.PubSub.Test.pas',
+  Fido.Redis.KVStore.Test in 'Redis\Fido.Redis.KVStore.Test.pas',
+  Fido.Redis.EventsDriven.Consumer.Queue.Test in 'Redis\Fido.Redis.EventsDriven.Consumer.Queue.Test.pas',
+  Fido.Redis.EventsDriven.Producer.Queue.Test in 'Redis\Fido.Redis.EventsDriven.Producer.Queue.Test.pas',
+  Fido.Redis.EventsDriven.Producer.PubSub.Test in 'Redis\Fido.Redis.EventsDriven.Producer.PubSub.Test.pas',
+  Fido.Redis.EventsDriven.Consumer.PubSub.Test in 'Redis\Fido.Redis.EventsDriven.Consumer.PubSub.Test.pas',
+  Fido.Redis.EventsDriven.Producer.QueueQueuePubSub.Test in 'Redis\Fido.Redis.EventsDriven.Producer.QueueQueuePubSub.Test.pas',
+  Fido.Redis.EventsDriven.Consumer.QueuePubSub.Test in 'Redis\Fido.Redis.EventsDriven.Consumer.QueuePubSub.Test.pas',
+  Fido.EventsDriven.Utils.Test in 'EventsDriven\Fido.EventsDriven.Utils.Test.pas',
+  Fido.Memory.EventsDriven.Producer.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.Test.pas',
+  Fido.Memory.EventsDriven.Consumer.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.Test.pas',
+  Fido.Memory.EventsDriven.Broker.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.Test.pas';
 
 var
   runner : ITestRunner;

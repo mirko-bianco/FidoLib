@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.Gui.NotifyEvent.Delegated;
+unit Fido.Gui.Vcl.NotifyEvent.Delegated;
 
 interface
 
@@ -30,19 +30,17 @@ uses
   System.Classes,
   System.Sysutils,
 
-{$IF not declared(FireMonkeyVersion)}
   VCL.Controls,
   VCL.ActnList,
-{$ELSE}
-  Fmx.Controls,
-  Fmx.ActnList,
-{$IFEND}
 
   Spring,
 
+  Fido.Exceptions,
   Fido.Gui.Types;
 
 type
+  EDelegatedNotifyEvent = class(EFidoException);
+
   DelegatedNotifyEvent = class
   private type
     TNotifyEventWrapper = class(TComponent)
@@ -125,9 +123,9 @@ var
 begin
   LProperty := Context.GetType(Owner.ClassType).GetProperty(EventName);
   if not Assigned(LProperty) then
-    Exit;
+    raise EDelegatedNotifyEvent.CreateFmt('Property "%s.%s" does not exist', [Owner.Name, EventName]);
   if LProperty.PropertyType.TypeKind <> tkMethod then
-    Exit;
+    raise EDelegatedNotifyEvent.CreateFmt('Property "%s.%s" is not a method', [Owner.Name, EventName]);
 
   OriginalEvent := nil;
   Value := LProperty.GetValue(Owner);
@@ -135,7 +133,7 @@ begin
   begin
     MethodRecPtr := Value.GetReferenceToRawData;
     if not(Value.TypeInfo = TypeInfo(TNotifyEvent)) then
-      Exit;
+      raise EDelegatedNotifyEvent.CreateFmt('Property "%s.%s" is not compatible with the event', [Owner.Name, EventName]);
 
     OriginalEvent := TNotifyEvent(MethodRecPtr^);
   end;

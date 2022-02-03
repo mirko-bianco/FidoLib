@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
- unit Fido.Gui.Binding;
+ unit Fido.Gui.Fmx.Binding;
 
 interface
 
@@ -29,13 +29,8 @@ uses
   System.SysUtils,
   System.TypInfo,
   System.Classes,
-{$IF not declared(FireMonkeyVersion)}
-  Vcl.Forms,
-  Vcl.Controls,
-{$ELSE}
   Fmx.Forms,
   Fmx.Controls,
-{$IFEND}
 
   Spring.Collections,
 
@@ -43,17 +38,20 @@ uses
   Fido.DesignPatterns.Observable.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
   Fido.Gui.Types,
-  Fido.Gui.DesignPatterns.Observer.Anon,
-  Fido.Gui.NotifyEvent.Delegated,
-  Fido.Gui.Action.Anon,
-  Fido.Gui.Binding.Attributes;
+  Fido.Gui.Binding.Attributes,
+  Fido.Gui.Fmx.DesignPatterns.Observer.Anon,
+  Fido.Gui.Fmx.NotifyEvent.Delegated,
+  Fido.Gui.Fmx.Action.Anon;
 
 type
   EFidoGuiBindingException = class(EFidoException);
 
   GuiBinding = class
   private
-    class procedure SetupObservableToComponent<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
+    class procedure SetupObservableToSyncGUIComponent<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
+      const DestinationAttributeName: string); overload; static;
+
+    class procedure SetupObservableToNoSyncGUIComponent<DomainObject: IObservable; Component: TComponent>(const Source: DomainObject; const SourceAttributeName: string; const Destination: Component;
       const DestinationAttributeName: string); overload; static;
 
     class procedure SetupComponentToObservable<Component: TComponent; DomainObject: IObservable>(const Source: Component; const SourceAttributeName: string; const SourceEventName: string;
@@ -96,7 +94,7 @@ begin
     SourceProperty := nil;
 
   if not Assigned(SourceProperty) then
-    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s" does not exist for "%s".', [SourceAttributeName, Source.Name]);
+    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s.%s" does not exist.', [Source.Name, SourceAttributeName]);
 
   DestinationMethod := nil;
   DestinationProperty := nil;
@@ -130,7 +128,7 @@ begin
     oeetAfter);
 end;
 
-class procedure GuiBinding.SetupObservableToComponent<DomainObject, Component>(
+class procedure GuiBinding.SetupObservableToNoSyncGUIComponent<DomainObject, Component>(
   const Source: DomainObject;
   const SourceAttributeName: string;
   const Destination: Component;
@@ -147,7 +145,7 @@ begin
     DestinationProperty := nil;
 
   if not Assigned(DestinationProperty) then
-    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s" does not exist for "%s".', [DestinationAttributeName, Destination.Name]);
+    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s.%s" does not exist.', [Destination.Name, DestinationAttributeName]);
 
   SourceMethod := nil;
   SourceProperty := nil;
@@ -171,7 +169,65 @@ begin
   end;
 
   Source.RegisterObserver(
-    TAnonGUIObserver<Component>.Create(
+    TAnonObserver<Component>.Create(
+      Destination,
+      procedure(Dest: Component; Notification: INotification)
+      var
+        Value: TValue;
+      begin
+        if Assigned(SourceProperty) then
+          Value := SourceProperty.GetValue(TValue.From(Source).AsType<IObserver>)
+        else if Assigned(SourceMethod) then
+          Value := SourceMethod.Invoke(TValue.From(Source), []);
+
+        if Assigned(DestinationProperty) then
+          DestinationProperty.SetValue(Dest as TComponent, Value);
+
+      end));
+end;
+
+class procedure GuiBinding.SetupObservableToSyncGUIComponent<DomainObject, Component>(
+  const Source: DomainObject;
+  const SourceAttributeName: string;
+  const Destination: Component;
+  const DestinationAttributeName: string);
+var
+  RttiContext: TRttiContext;
+  DestinationProperty: TRttiProperty;
+  SourceProperty: TRttiProperty;
+  SourceMethod: TRttiMethod;
+begin
+  DestinationProperty := nil;
+  DestinationProperty := RttiContext.GetType(Destination.ClassType).GetProperty(DestinationAttributeName);
+  if Assigned(DestinationProperty) and not DestinationProperty.IsWritable then
+    DestinationProperty := nil;
+
+  if not Assigned(DestinationProperty) then
+    raise EFidoGuiBindingException.CreateFmt('Binding error. Property "%s.%s" does not exist.', [Destination.Name, DestinationAttributeName]);
+
+  SourceMethod := nil;
+  SourceProperty := nil;
+  SourceProperty := RttiContext.GetType(TypeInfo(DomainObject)).GetProperty(SourceAttributeName);
+  if Assigned(SourceProperty) and not SourceProperty.IsReadable then
+    SourceProperty := nil;
+  if not Assigned(SourceProperty) then
+  begin
+    if SourceAttributeName.StartsWith('Get') then
+      SourceMethod := RttiContext.GetType(TypeInfo(DomainObject)).GetMethod(SourceAttributeName)
+    else
+    begin
+      SourceMethod := RttiContext.GetType(TypeInfo(DomainObject)).GetMethod(SourceAttributeName);
+      if not Assigned(SourceMethod) then
+        SourceMethod := RttiContext.GetType(TypeInfo(DomainObject)).GetMethod('Get' +SourceAttributeName);
+    end;
+    if Assigned(SourceMethod) and not ((SourceMethod.MethodKind = mkFunction) and (Length(SourceMethod.GetParameters) = 0)) then
+      SourceMethod := nil;
+    if not Assigned(SourceMethod) then
+      raise EFidoGuiBindingException.CreateFmt('Binding error. Attribute "%s" does not exist for source.', [SourceAttributeName]);
+  end;
+
+  Source.RegisterObserver(
+    TAnonSyncObserver<Component>.Create(
       Destination,
       procedure(Dest: Component; Notification: INotification)
       var
@@ -206,12 +262,18 @@ begin
       TCollections.CreateList<TCustomAttribute>(Field.GetAttributes).ForEach(
         procedure(const Attribute: TCustomAttribute)
         begin
-          if Attribute is UnidirectionalToGuiBindingAttribute then
-            GuiBinding.SetupObservableToComponent(
+          if Attribute is UnidirectionalToSyncGUIBindingAttribute then
+            GuiBinding.SetupObservableToSyncGUIComponent(
               Observable,
-              (Attribute as UnidirectionalToGuiBindingAttribute).SourceAttributeName,
+              (Attribute as UnidirectionalToSyncGUIBindingAttribute).SourceAttributeName,
               GuiComponent.FindComponent(Field.Name),
-              (Attribute as UnidirectionalToGuiBindingAttribute).DestinationAttributeName);
+              (Attribute as UnidirectionalToSyncGUIBindingAttribute).DestinationAttributeName);
+          if Attribute is UnidirectionalToNoSyncGUIBindingAttribute then
+            GuiBinding.SetupObservableToNoSyncGUIComponent(
+              Observable,
+              (Attribute as UnidirectionalToNoSyncGUIBindingAttribute).SourceAttributeName,
+              GuiComponent.FindComponent(Field.Name),
+              (Attribute as UnidirectionalToNoSyncGUIBindingAttribute).DestinationAttributeName);
           if Attribute is UnidirectionalToObservableBindingAttribute then
             GuiBinding.SetupComponentToObservable<Component, DomainObject>(
               GuiComponent.FindComponent(Field.Name),
@@ -252,14 +314,15 @@ begin
   ControllerRttiType := Ctx.GetType(TypeInfo(Controller));
 
   ControllerMethod := ControllerRttiType.GetMethod(ObservableEventFunc);
+
   if not Assigned(ControllerMethod) then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Method "%s" does not exists.', [ObservableEventFunc]);
 
   if ControllerMethod.MethodKind <> mkFunction then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Method "%s" is not a function.', [ObservableEventFunc]);
 
   if Length(ControllerMethod.GetParameters) <> 0 then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Method "%s" is not a parameterless function.', [ObservableEventFunc]);
 
   ReturnType := ControllerMethod.ReturnType;
 
@@ -267,13 +330,13 @@ begin
 
   GuiProperty := GuiRttiType.GetProperty(ComponentEventName);
   if not Assigned(GuiProperty) then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Property "%s" does not exists.', [ComponentEventName]);
 
   if not GuiProperty.IsWritable then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Property "%s" is not writable.', [ComponentEventName]);
 
   if ReturnType <> GuiProperty.PropertyType then
-    Exit;
+    raise EFidoGuiBindingException.CreateFmt('Property "%s" Type is not compatible.', [ComponentEventName]);
 
   GuiProperty.SetValue(GuiComponent, ControllerMethod.Invoke(TValue.From<Controller>(TheController), []));
 end;
@@ -344,7 +407,7 @@ class procedure GuiBinding.SetupBidirectional<DomainObject, Component>(
   const DestinationAttributeName: string;
   const DestinationEventName: string);
 begin
-  Guibinding.SetupObservableToComponent<DomainObject, Component>(Source, SourceAttributeName, Destination, DestinationAttributeName);
+  Guibinding.SetupObservableToSyncGUIComponent<DomainObject, Component>(Source, SourceAttributeName, Destination, DestinationAttributeName);
   Guibinding.SetupComponentToObservable<Component, DomainObject>(Destination, DestinationAttributeName, DestinationEventName, Source, SourceAttributeName);
 end;
 

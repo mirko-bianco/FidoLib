@@ -27,11 +27,13 @@ interface
 uses
   System.Classes,
   System.SysUtils,
+  System.Threading,
 
   Spring,
   Spring.Logging,
   Spring.Logging.Appenders.Base,
 
+  Fido.Async.Procs,
   Fido.Logging.Types,
   Fido.Api.Client.VirtualApi.ElasticSearch.Document.Intf,
   Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Request;
@@ -93,20 +95,35 @@ end;
 
 destructor TDeadManSwitchDurationLogger.Destroy;
 var
+  ClassName: string;
+  MethodName: string;
+  Logger: ILogger;
   H, M, S, MS: Word;
 begin
   if not FIsCancelled then
   begin
     FDuration := Now - FDuration;
     DecodeTime(FDuration, H, M, S, MS);
-    FLogger.Log(
-      TLogEvent.Create(
-        TLogLevel.Info,
-        TLogEventType.Text,
-        Format('"%s.%s" executed in %d hours, %d minutes, %d seconds, %d milliseconds.', [FClassName, FMethodName, H, M, S, MS]),
-        nil,
-        TDurationData.Create(FClassName, FMethodName, H, M, S, MS)
-      ));
+    ClassName := FClassName;
+    MethodName := FMethodName;
+    Logger := FLogger;
+
+    TTask.Run(
+      procedure
+      var
+        Data: Shared<TDurationData>;
+      begin
+        Data := TDurationData.Create(ClassName, MethodName, H, M, S, MS);
+        Logger.Log(
+          TLogEvent.Create(
+            TLogLevel.Info,
+            TLogEventType.Text,
+            Format('"%s.%s" executed in %d hours, %d minutes, %d seconds, %d milliseconds.', [ClassName, MethodName, H, M, S, MS]),
+            nil,
+            Data.Value
+          ));
+      end);
+
   end;
   inherited;
 end;
