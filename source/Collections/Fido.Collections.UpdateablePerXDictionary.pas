@@ -36,12 +36,12 @@ uses
 type
   TUpdateablePerXDictionary<T, TUpdateable> = class
   strict private
-    FPredicate: TProc<T, TUpdateable>;
+    FPredicate: Action<T, TUpdateable>;
     FUpdateableValue: TUpdateable;
     FDictionary: IPerXDictionary<T>;
   public
-    constructor Create(const DictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<T>, IPerXDictionary<T>>; const Ownership: TDictionaryOwnerships; const ValueFactoryFunc: TFunc<T>;
-      const Predicate: TProc<T, TUpdateable>); reintroduce;
+    constructor Create(const DictionaryFactoryFunc: Func<TDictionaryOwnerships, Func<T>, IPerXDictionary<T>>; const Ownership: TDictionaryOwnerships; const ValueFactoryFunc: Func<T>;
+      const Predicate: Action<T, TUpdateable>); reintroduce;
 
     function GetCurrent: T;
     procedure ReleaseCurrent;
@@ -55,10 +55,10 @@ implementation
 { TUpdateablePerXDictionary<T, TUpdateable> }
 
 constructor TUpdateablePerXDictionary<T, TUpdateable>.Create(
-  const DictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<T>, IPerXDictionary<T>>;
+  const DictionaryFactoryFunc: Func<TDictionaryOwnerships, Func<T>, IPerXDictionary<T>>;
   const Ownership: TDictionaryOwnerships;
-  const ValueFactoryFunc: TFunc<T>;
-  const Predicate: TProc<T, TUpdateable>);
+  const ValueFactoryFunc: Func<T>;
+  const Predicate: Action<T, TUpdateable>);
 begin
   inherited Create;
   FPredicate := Utilities.CheckNotNullAndSet<TProc<T, TUpdateable>>(Predicate, 'Predicate');

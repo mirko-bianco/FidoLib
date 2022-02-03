@@ -81,7 +81,8 @@ begin
       TLogEventType.Text,
       'This is a log with extra data',
       nil,
-      LogData));
+
+      LogData));
 
   try
     raise Exception.Create('Ouch!');
@@ -89,6 +90,5 @@ begin
     on E: Exception do
       Logger.Log('Some error happened.', E);
   end;
-
   Readln;
 end.

@@ -48,11 +48,11 @@ type
     TThreadId = Int64;
   strict private
     FLock: IReadWriteSync;
-    FFactoryFunc: TFunc<T>;
+    FFactoryFunc: Func<T>;
   protected
     FItems: IDictionary<TThreadId, T>;
   public
-    constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>); reintroduce;
+    constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: Func<T>); reintroduce;
     destructor Destroy; override;
 
     function GetCurrent: T;
@@ -67,7 +67,7 @@ implementation
 
 constructor TPerThreadDictionary<T>.Create(
   const Ownership: TDictionaryOwnerships;
-  const FactoryFunc: TFunc<T>);
+  const FactoryFunc: Func<T>);
 begin
   inherited Create;
   FLock := TMREWSync.Create;

@@ -65,7 +65,7 @@ type
 implementation
 
 ...
-  Container.RegisterType<IElasticsearchDocumentApiConfiguration>.DelegateTo(
+  Container.RegisterType<IElasticsearchDocumentApiConfiguration>(
     function: IElasticsearchDocumentApiConfiguration
     begin
       Result := TElasticsearchDocumentApiConfiguration.Create(
