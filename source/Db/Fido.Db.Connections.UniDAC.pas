@@ -167,7 +167,12 @@ function TUniDACConnections.GetCurrent: TUniConnection;
 begin
   Result := FUniDACConnections.GetCurrent;
   if not Result.Connected then
+  begin
     Result.Connect;
+    {$if defined(DEBUG)}
+    Result.Debug := True;
+    {$ifend}
+  end;
 end;
 
 { TUniDacParams }

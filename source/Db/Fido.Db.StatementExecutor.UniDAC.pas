@@ -99,6 +99,9 @@ begin
           with TUniQuery(Result) do begin
             Connection := FUniDACConnections.GetCurrent;
             SQL.Text := SQLData;
+            {$if defined(DEBUG)}
+            Debug := True;
+            {$ifend}
           end;
         end;
       stStoredProc:
@@ -113,6 +116,9 @@ begin
           with TUniQuery(Result) do begin
             Connection := FUniDACConnections.GetCurrent;
             SQL.Text := SQLData;
+            {$if defined(DEBUG)}
+            Debug := True;
+            {$ifend}
           end;
         end;
     end;
