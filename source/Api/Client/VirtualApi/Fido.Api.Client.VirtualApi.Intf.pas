@@ -27,7 +27,9 @@ interface
 uses
   Rest.Types,
 
-  Spring;
+  Spring,
+
+  Fido.Api.Client.VirtualApi.Configuration.Intf;
 
 type
   IClientVirtualApi = interface(IInvokable)
@@ -35,6 +37,8 @@ type
 
     function IsActive: Boolean;
     function GetLastStatusCode: integer;
+
+    function GetConfiguration: IClientVirtualApiConfiguration;
   end;
 
 implementation

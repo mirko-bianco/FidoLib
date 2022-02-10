@@ -167,6 +167,7 @@ type
     constructor Create(const Configuration: IConfiguration); overload;
 
     function IsActive: Boolean;
+    function GetConfiguration: IConfiguration;
   end;
   {$M-}
 
@@ -249,6 +250,11 @@ begin
   Result := AcceptHeader;
   if not ApiVersion.IsEmpty then
     Result := Result + ';version=' + ApiVersion;
+end;
+
+function TAbstractClientVirtualApi<T, IConfiguration>.GetConfiguration: IConfiguration;
+begin
+  Result := FConfiguration;
 end;
 
 class procedure TAbstractClientVirtualApi<T, IConfiguration>.FindApiParamAttribute(
