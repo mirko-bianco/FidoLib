@@ -397,7 +397,10 @@ begin
 
         if Params.TryGetValue(MethodParam, ApiParam) then
           Call.SetParameter(Kind, ApiParam, ConvertTValueToString(ParamValue.Value));
-      end;
+      end
+      else if Params.TryGetValue(MethodParam, ApiParam) and
+         Arguments.TryGetValue(ApiParam, ParamValue) then
+        Call.SetParameter(Kind, ApiParam, ConvertTValueToString(ParamValue.Value));
     end);
 end;
 
