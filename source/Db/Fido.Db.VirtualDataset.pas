@@ -1344,7 +1344,11 @@ procedure TCustomVirtualDataset.InternalSetFieldData(
       ftLargeInt:
         begin
           TVarData(Data).VType := VT_DECIMAL;
+          {$IFDEF CPUX86}
           Decimal(Data).Lo64 := Int64(Buffer^);
+          {$ELSE}
+          Data := Integer(Buffer^);
+          {$ENDIF}
         end;
 
     else

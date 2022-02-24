@@ -26,6 +26,7 @@ interface
 
 uses
   System.SysUtils,
+  System.Math,
 
   JOSE.Types.Bytes,
   JOSE.Encoding.Base64,
@@ -44,7 +45,7 @@ type
   public
     function VerifyToken(const CompactToken: string; const Secret: TJOSEBytes): TJWT;
 
-    function GenerateToken(const Issuer: string; const DefaultValidityInSecs: Integer): TJWT;
+    function GenerateToken(const Issuer: string; const DefaultValidityInSecs: Extended = System.Math.Infinity): TJWT;
 
     function SignTokenAndReturn(const Token: TJWT; const Algorithm: TJOSEAlgorithmId; const SigningSecret: TJOSEBytes; const VerificationSecret: TJOSEBytes): string;
   end;
@@ -72,12 +73,13 @@ end;
 
 function TJWTManager.GenerateToken(
   const Issuer: string;
-  const DefaultValidityInSecs: Integer): TJWT;
+  const DefaultValidityInSecs: Extended): TJWT;
 begin
   Result := TJWT.Create;
   Result.Claims.Issuer := Issuer;
   Result.Claims.IssuedAt := Now;
-  Result.Claims.Expiration := Result.Claims.IssuedAt + (DefaultValidityInSecs / 60 / 60 / 24);
+  if not IsInfinite(DefaultValidityInSecs) then
+    Result.Claims.Expiration := Result.Claims.IssuedAt + (DefaultValidityInSecs / 60 / 60 / 24);
 end;
 
 function TJWTManager.SignTokenAndReturn(
