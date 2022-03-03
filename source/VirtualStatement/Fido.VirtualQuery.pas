@@ -147,8 +147,8 @@ constructor TVirtualQuery<TRecord, T>.Create(
   const ResReader: IStringResourceReader;
   const StatementExecutor: IStatementExecutor);
 begin
-  Guard.CheckNotNull(ResReader, 'ResReader');
-  Guard.CheckNotNull(StatementExecutor, 'StatementExecutor');
+  Spring.Guard.CheckNotNull(ResReader, 'ResReader');
+  Spring.Guard.CheckNotNull(StatementExecutor, 'StatementExecutor');
   inherited Create(DoInvoke);
 
   FExecutor := StatementExecutor;
