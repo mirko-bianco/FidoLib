@@ -200,11 +200,28 @@ type
     procedure TestCallApiThatRequiresAResponseHeaderParamReturnsTheValueWhenTheCodeIsCorrect;
     [Test]
     procedure TestCallApiThatRequiresAResponseHeaderParamReturnsTheValueWhenTheCodeIsIncorrect;
+    [Test]
+    procedure ConvertResponseForErrorCodeAttributeWorks;
   end;
 
 implementation
 
 { TClientVirtualApiJsonTest }
+procedure TClientVirtualApiJsonTest.ConvertResponseForErrorCodeAttributeWorks;
+var
+  Attribute: Shared<ConvertResponseForErrorCodeAttribute>;
+  ErrorCode: Integer;
+  ParamName: string;
+begin
+  ErrorCode := MockUtils.SomeInteger;
+  ParamName := MockUtils.SomeString;
+
+  Attribute := ConvertResponseForErrorCodeAttribute.Create(ErrorCode, ParamName);
+
+  Assert.AreEqual(ErrorCode, Attribute.Value.ErrorCode);
+  Assert.AreEqual(ParamName, Attribute.Value.ParamName);
+end;
+
 procedure TClientVirtualApiJsonTest.TestCallApiReturnsProperData;
 var
   Response: ITestResponse;
@@ -504,6 +521,8 @@ var
   Something: string;
   Dto: Shared<TTestRequest>;
   ApiKey: string;
+  ResponseHeaders: Shared<TStrings>;
+  OutValue: string;
 begin
   Something := StringReplace(Call.Url, BASEURL + GETSOMETHING, '', []);
 
@@ -512,7 +531,19 @@ begin
     Dto.Value.TheApiKey := ApiKey;
   Dto.Value.AString := Something;
 
-  Call.Finish(200, JSONMarshaller.From<TTestRequest>(Dto));
+  ResponseHeaders := TStringList.Create;
+
+  Call.Finish(200, JSONMarshaller.From<TTestRequest>(Dto), ResponseHeaders);
+
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Call.DurationInMsecs;
+      Call.Parameters;
+      Call.SetParameter(pkPath, 'test', 'test');
+      Call.SetParameter(pkPath, 'test', '');
+      Call.TryGetParameterValue(pkPath, 'test', OutValue);
+    end);
 end;
 
 procedure TTestApiImplementation.ImplementGetAcceptHeader(const Call: TClientVirtualApiCall);

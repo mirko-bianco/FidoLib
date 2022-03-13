@@ -123,10 +123,6 @@ begin
     begin
       raise EAsyncProcs.Create(E.Message);
     end;
-  FWhenExpired :=
-    procedure
-    begin
-    end;
   FFinally :=
     procedure
     begin
