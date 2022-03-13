@@ -69,7 +69,8 @@ type
     FParams: IDictionary<string, TParamDescriptor>;
     FMethods: IDictionary<string, TMethodDescriptor>;
 
-    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType; const Direction: TParamType; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean): TParamDescriptor;
+    function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType; const Direction: TParamType; const IsPagingLimit: Boolean; const IsPagingOffset: Boolean;
+      const SqlInjectTag: string): TParamDescriptor;
     procedure ProcessAllAttributes;
     function ExtractSQLString(const ResString: string): string;
     function GetSQLData: string;
@@ -83,8 +84,9 @@ type
     procedure RaiseError(const Msg: string; const Args: array of const);
     procedure TestDatasetOpen(const MethodToBeCalled: string);
     procedure SetExecMethod(const Value: TMethodDescriptor);
-    procedure DefineStatement(const Method: TRttiMethod);
+    procedure DefineStatement(const Method: TRttiMethod;const Args: TArray<TValue>);
     procedure ValidateStatement;
+    function ReplaceSqlInject(const Sql: string; const Args: TArray<TValue>): string;
   private
     procedure DoInvoke(Method: TRttiMethod; const Args: TArray<TValue>; out Result: TValue);
 
@@ -115,7 +117,8 @@ function TVirtualQuery<TRecord, T>.AddOrUpdateDescriptor(
   const RttiType: TRttiType;
   const Direction: TParamType;
   const IsPagingLimit: Boolean;
-  const IsPagingOffset: Boolean): TParamDescriptor;
+  const IsPagingOffset: Boolean;
+  const SqlInjectTag: string): TParamDescriptor;
 var
   MappedName: string;
 begin
@@ -138,6 +141,7 @@ begin
     Result.Direction := Direction;
     Result.IsPagingLimit := IsPagingLimit;
     Result.IsPagingOffset := IsPagingOffset;
+    Result.SqlInjectTag := SqlInjectTag;
     if Direction in [ptInput, ptInputOutput] then
       FParameterCommaList := FParameterCommaList + ', :' + MappedName;
   end;
@@ -162,7 +166,9 @@ begin
   FResourcedSQL := ExtractSQLString(ResReader.GetStringResource(SQLResource));
 end;
 
-procedure TVirtualQuery<TRecord, T>.DefineStatement(const Method: TRttiMethod);
+procedure TVirtualQuery<TRecord, T>.DefineStatement(
+  const Method: TRttiMethod;
+  const Args: TArray<TValue>);
 var
   ParamsList: IList<TParamDescriptor>;
 begin
@@ -177,6 +183,7 @@ begin
     var
       IsPagingLimit: Boolean;
       IsPagingOffset: Boolean;
+      SqlInjectTag: string;
     begin
       IsPagingLimit := False;
       IsPagingOffset := False;
@@ -187,10 +194,12 @@ begin
           if Attribute is PagingLimitAttribute then
             IsPagingLimit := True
           else if Attribute is PagingOffsetAttribute then
-            IsPagingOffset := True;
+            IsPagingOffset := True
+          else if Attribute is SqlInjectAttribute then
+            SqlInjectTag := (Attribute as SqlInjectAttribute).Tag;
         end);
 
-      ParamsList.Add(AddOrUpdateDescriptor(Arg.Name, Arg.ParamType, ptInput, IsPagingLimit, IsPagingOffset));
+      ParamsList.Add(AddOrUpdateDescriptor(Arg.Name, Arg.ParamType, ptInput, IsPagingLimit, IsPagingOffset, SqlInjectTag));
     end);
 
   // TODO param values could also be set with setters
@@ -199,7 +208,7 @@ begin
   Delete(FParameterCommaList, 1, 2);
 
   // tell Executor to construct object
-  Executor.BuildObject(stQuery, GetSQLData);
+  Executor.BuildObject(stQuery, ReplaceSqlInject(GetSQLData, Args));
 
   // define parameters in executor once Direction and ParameterList is finally established
   ParamsList
@@ -211,7 +220,7 @@ begin
       begin
         Executor.AddParameter(Item.MappedName, Item.DataType.FieldType, Item.Direction);
       end);
-  
+
   Executor.Prepare;
 end;
 
@@ -259,7 +268,7 @@ var
 begin
   // define statement (assign SQL data, declare parameters) if necessary
   if not GetIsDefined then
-    DefineStatement(Method);
+    DefineStatement(Method, Args);
 
   PagingLimit := -1;
   PagingOffset := -1;
@@ -494,6 +503,24 @@ procedure TVirtualQuery<TRecord, T>.RaiseError(
   const Args: array of const);
 begin
   raise EFidoVirtualQueryError.CreateFmt(Msg, Args);
+end;
+
+function TVirtualQuery<TRecord, T>.ReplaceSqlInject(
+  const Sql: string;
+  const Args: TArray<TValue>): string;
+var
+  FixedSql: string;
+begin
+  FixedSql := Sql;
+
+  FParams.Values.ForEach(
+    procedure(const Descriptor: TParamDescriptor)
+    begin
+      if not Descriptor.SqlInjectTag.IsEmpty then
+        FixedSql := FixedSql.Replace(Format('%%%s%%', [Descriptor.SqlInjectTag]), Descriptor.DataType.GetAsVariant(Args[Descriptor.Index]), [rfReplaceAll]);
+    end);
+
+  Result := FixedSql
 end;
 
 procedure TVirtualQuery<TRecord, T>.SetEnumeratorValue(out Result: TValue);

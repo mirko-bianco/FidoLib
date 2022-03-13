@@ -451,6 +451,25 @@ It sets the paging limit of the query, the number of records to return.
 
 It sets the paging Offset of the query, the number of records to skip.
 
+###### [SqlInject]
+
+It tells Fido that the associated parameter (`string`) will replace the tag in the sql.
+
+Example:
+
+```pascal
+  [Statement(stQuery, 'Q_AN_EXAMPLE_QUERY')]
+  function Open(const [SqlInject('ORDERBY')] OrderBy: string);
+```
+
+will replace the tag `%ORDERBY%` of the sql resource called `Q_AN_EXAMPLE_QUERY` with the content of the `OrderBy` parameter. 
+
+```sql
+select * from sometable order by %ORDERBY%
+```
+
+
+
 ##### Registrations
 
 ```pascal
@@ -521,6 +540,23 @@ It sets the paging limit of the query, the number of records to return.
 ###### [PagingOffset]
 
 It sets the paging Offset of the query, the number of records to skip.
+
+###### [SqlInject]
+
+It tells Fido that the associated parameter (`string`) will replace the tag in the sql.
+
+Example:
+
+```pascal
+  [Statement(stQuery, 'Q_AN_EXAMPLE_QUERY')]
+  function Open(const [SqlInject('ORDERBY')] OrderBy: string);
+```
+
+will replace the tag `%ORDERBY%` of the sql resource called `Q_AN_EXAMPLE_QUERY` with the content of the `OrderBy` parameter. 
+
+```sql
+select * from sometable order by %ORDERBY%
+```
 
 ##### Registrations
 

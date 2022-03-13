@@ -71,7 +71,7 @@ type
     FMethods: IDictionary<string, TMethodDescriptor>;
 
     function AddOrUpdateDescriptor(const OriginalName: string; const RttiType: TRttiType; const Direction: TParamType; const IsFunction: Boolean; const IsPagingLimit: Boolean;
-      const IsPagingOffset: Boolean): TParamDescriptor;
+      const IsPagingOffset: Boolean; const SqlInjectTag: string): TParamDescriptor;
     procedure ProcessAllAttributes;
     procedure CacheColumns;
   private
@@ -88,8 +88,9 @@ type
     procedure RaiseError(const Msg: string; const Args: array of const);
     procedure TestDatasetOpen(const MethodToBeCalled: string);
     procedure SetExecMethod(const Value: TMethodDescriptor);
-    procedure DefineStatement(const Method: TRttiMethod);
+    procedure DefineStatement(const Method: TRttiMethod; const Args: TArray<TValue>);
     procedure ValidateStatement;
+    function ReplaceSqlInject(const Sql: string; const Args: TArray<TValue>): string;
 
     property Executor: IStatementExecutor read FExecutor;
     property ExecMethod: TMethodDescriptor read FExecMethod write SetExecMethod;
@@ -122,7 +123,8 @@ function TVirtualStatement<T>.AddOrUpdateDescriptor(
   const Direction: TParamType;
   const IsFunction: Boolean;
   const IsPagingLimit: Boolean;
-  const IsPagingOffset: Boolean): TParamDescriptor;
+  const IsPagingOffset: Boolean;
+  const SqlInjectTag: string): TParamDescriptor;
 var
   MappedName: string;
 begin
@@ -145,6 +147,7 @@ begin
     Result.Direction := Direction;
     Result.IsPagingLimit := IsPagingLimit;
     Result.IsPagingOffset := IsPagingOffset;
+    Result.SqlInjectTag := SqlInjectTag;
     if Direction in [ptInput, ptInputOutput] then
       FParameterCommaList := FParameterCommaList + ', :' + MappedName;
   end;
@@ -218,12 +221,33 @@ begin
     FResourcedSQL := ExtractSQLString(ResReader.GetStringResource(ResName));
 end;
 
-procedure TVirtualStatement<T>.DefineStatement(const Method: TRttiMethod);
+function TVirtualStatement<T>.ReplaceSqlInject(
+  const Sql: string;
+  const Args: TArray<TValue>): string;
+var
+  FixedSql: string;
+begin
+  FixedSql := Sql;
+
+  FParams.Values.ForEach(
+    procedure(const Descriptor: TParamDescriptor)
+    begin
+      if not Descriptor.SqlInjectTag.IsEmpty then
+        FixedSql := FixedSql.Replace(Format('%%%s%%', [Descriptor.SqlInjectTag]), Descriptor.DataType.GetAsVariant(Args[Descriptor.Index]), [rfReplaceAll]);
+    end);
+
+  Result := FixedSql
+end;
+
+procedure TVirtualStatement<T>.DefineStatement(
+  const Method: TRttiMethod;
+  const Args: TArray<TValue>);
 var
   ParamsList: IList<TParamDescriptor>;
   Param: TParamDescriptor;
   IsPagingLimit: Boolean;
   IsPagingOffset: Boolean;
+  SqlInjectTag: string;
   MappedName: string;
 begin
   Assert((StatementType in stValid) and not Executor.IsBuilt and Method.Name.Equals(ExecMethod.OriginalName));
@@ -250,10 +274,12 @@ begin
             else if Attribute is PagingOffsetAttribute then
               IsPagingOffset := True
             else if Attribute is ColumnAttribute then
-              MappedName := ColumnAttribute(Attribute).Line;
+              MappedName := ColumnAttribute(Attribute).Line
+            else if Attribute is SqlInjectAttribute then
+              SqlInjectTag := (Attribute as SqlInjectAttribute).Tag;
           end);
 
-        Param := AddOrUpdateDescriptor(Arg.Name, Arg.ParamType, ptInput, False, IsPagingLimit, IsPagingOffset);
+        Param := AddOrUpdateDescriptor(Arg.Name, Arg.ParamType, ptInput, False, IsPagingLimit, IsPagingOffset, SqlInjectTag);
         if MappedName <> '' then
           Param.MappedName := MappedName;
 
@@ -262,7 +288,7 @@ begin
 
     // define OUT ora update IN/OUT parameter in stored procedures
     if ExecMethod.IsFunction and (StatementType = stStoredProc) then
-      ParamsList.Add(AddOrUpdateDescriptor(Method.Name, Method.ReturnType, ptOutput, True, False, False));
+      ParamsList.Add(AddOrUpdateDescriptor(Method.Name, Method.ReturnType, ptOutput, True, False, False, ''));
 
     // TODO param values could also be set with setters
 
@@ -271,7 +297,7 @@ begin
   end;
 
   // tell Executor to construct object
-  Executor.BuildObject(StatementType, GetSQLData);
+  Executor.BuildObject(StatementType, ReplaceSqlInject(GetSQLData, Args));
 
   // define parameters in executor once Direction and ParameterList is finally established
   ParamsList
@@ -340,7 +366,7 @@ var
 begin
   // define statement (assign SQL data, declare parameters) if necessary
   if not GetIsDefined then
-    DefineStatement(Method);
+    DefineStatement(Method, Args);
 
   PagingLimit := -1;
   PagingOffset := -1;
@@ -489,7 +515,7 @@ begin
       Result := Format(FResourcedSQL, [StatementData, FParameterCommaList]);
     stStoredProc:
       Result := StatementData;
-    stCommand, stQuery:
+    stCommand, stQuery, stScalarQuery:
       Result := FResourcedSQL;
     else
       Assert(false, 'Unimplemented type');
