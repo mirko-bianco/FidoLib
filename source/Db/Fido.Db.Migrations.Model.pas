@@ -46,6 +46,7 @@ type
     constructor Create(const ScriptRunner: IDatabaseScriptRunner; const DatabaseMigrationsRepository: IDatabaseMigrationsRepository; const ScriptsFolder: string);
 
     procedure Run;
+    procedure ExecSql(const Sql: string);
   end;
 
 implementation
@@ -64,6 +65,11 @@ begin
   FScriptRunner := ScriptRunner;
   FDatabaseMigrationsRepository := DatabaseMigrationsRepository;
   FScriptsFolder := ScriptsFolder;
+end;
+
+procedure TDatabaseMigrationsModel.ExecSql(const Sql: string);
+begin
+  FDatabaseMigrationsRepository.ExecSQL(Sql);
 end;
 
 procedure TDatabaseMigrationsModel.Run;
