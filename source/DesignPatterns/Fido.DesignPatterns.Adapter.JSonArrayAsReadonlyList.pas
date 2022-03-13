@@ -44,6 +44,16 @@ type
     destructor Destroy; override;
   end;
 
+  TJsonArrayAsReadonlyObjectList<T: class> = class(TAnonymousReadOnlyList<T>, IReadOnlyList<T>)
+  private
+    FJsonArray: TJSONArray;
+    FObjectsArray: TArray<T>;
+  public
+    constructor Create(const JsonArray: TJSONArray); overload;
+    constructor Create(const JsonArray: TJSONArray; const TypeInfo: PTypeInfo); overload;
+    destructor Destroy; override;
+  end;
+
   TJsonArrayAsReadonlyList<T> = class(TAnonymousReadOnlyList<T>, IReadOnlyList<T>)
   private
     FJsonArray: TJSONArray;
@@ -111,6 +121,57 @@ end;
 destructor TJsonArrayAsReadonlyList<T>.Destroy;
 begin
   FJsonArray.Free;
+  inherited;
+end;
+
+{ TJsonArrayAsReadonlyObjectList<T> }
+
+constructor TJsonArrayAsReadonlyObjectList<T>.Create(const JsonArray: TJSONArray);
+begin
+  inherited Create(
+    function: Integer
+    begin
+      Result := FJsonArray.Count;
+    end,
+    function(Index: Integer): T
+    begin
+      if not Assigned(FObjectsArray[Index]) then
+        FObjectsArray[Index] := JSONUnmarshaller.To<T>((FJsonArray.Items[Index] as TJSONObject).ToJSON);
+
+      Result := FObjectsArray[Index];
+    end);
+  FJsonArray := TJSONObject.ParseJSONValue(JsonArray.ToJSON) as TJSONArray;
+  SetLength(FObjectsArray, FJsonArray.Count);
+end;
+
+constructor TJsonArrayAsReadonlyObjectList<T>.Create(const JsonArray: TJSONArray; const TypeInfo: PTypeInfo);
+begin
+  inherited Create(
+    function: Integer
+    begin
+      Result := FJsonArray.Count;
+    end,
+    function(Index: Integer): T
+    begin
+      if not Assigned(FObjectsArray[Index]) then
+        FObjectsArray[Index] := JSONUnmarshaller.To((FJsonArray.Items[Index] as TJSONObject).ToJSON, TypeInfo).AsType<T>;
+
+      Result := FObjectsArray[Index];
+    end);
+  FJsonArray := TJSONObject.ParseJSONValue(JsonArray.ToJSON) as TJSONArray;
+  SetLength(FObjectsArray, FJsonArray.Count);
+end;
+
+destructor TJsonArrayAsReadonlyObjectList<T>.Destroy;
+var
+  Item: T;
+begin
+  FJsonArray.Free;
+
+  for Item in FObjectsArray do
+    if Assigned(Item) then
+      Item.Free;
+
   inherited;
 end;
 
