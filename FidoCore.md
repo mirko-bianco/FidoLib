@@ -458,7 +458,7 @@ It tells Fido that the associated parameter (`string`) will replace the tag in t
 Example:
 
 ```pascal
-  [Statement(stQuery, 'Q_AN_EXAMPLE_QUERY')]
+  [SQLResource('Q_AN_EXAMPLE_QUERY')]
   function Open(const [SqlInject('ORDERBY')] OrderBy: string);
 ```
 
