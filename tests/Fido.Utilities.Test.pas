@@ -18,6 +18,12 @@ type
 
     [Test]
     procedure GuardCheckNotNullAndSetThrowsIfValueIsNil;
+
+    [Test]
+    procedure GuardCheckNotNullAndSetReturnsIfAnonymousIsNotNil;
+
+    [Test]
+    procedure GuardCheckNotNullAndSetThrowsIfAnonymousIsNil;
   end;
 
   ITestValue = interface
@@ -36,7 +42,7 @@ var
   Input, Value: ITestValue;
 begin
   Input := TestValue.Create;
-  Value := Guard.CheckNotNullAndSet(Input, 'TestValue');
+  Value := Utilities.CheckNotNullAndSet(Input, 'TestValue');
   Assert.AreEqual(Input, Value);
 end;
 
@@ -46,7 +52,51 @@ var
 begin
   Assert.WillRaise(procedure
     begin
-      Guard.CheckNotNullAndSet(Input, 'TestValue');
+      Utilities.CheckNotNullAndSet(Input, 'TestValue');
+    end,
+  EArgumentNilException);
+end;
+
+procedure TUtilitiesTests.GuardCheckNotNullAndSetReturnsIfAnonymousIsNotNil;
+var
+  LCounter: Integer;
+  LProc, LProcOriginal: TProc;
+  LFunc, LFuncOriginal: TFunc<Integer>;
+begin
+  LProcOriginal := procedure
+    begin
+      Inc(LCounter);
+    end;
+
+  LFuncOriginal := function: Integer
+    begin
+      Result := 42;
+    end;
+
+  LProc := Utilities.CheckNotNullAndSet<TProc>(LProcOriginal, 'Proc expected');
+  LFunc := Utilities.CheckNotNullAndSet<TFunc<Integer>>(LFuncOriginal, 'Proc expected');
+
+  LProc;
+  LProcOriginal;
+  Assert.AreEqual(2, LCounter);
+
+  Assert.AreEqual(LFuncOriginal, LFunc);
+end;
+
+procedure TUtilitiesTests.GuardCheckNotNullAndSetThrowsIfAnonymousIsNil;
+var
+  LProc: TProc;
+  LFunc: TFunc<Integer>;
+begin
+  Assert.WillRaise(procedure
+    begin
+      Utilities.CheckNotNullAndSet<TProc>(LProc, 'TestValue');
+    end,
+  EArgumentNilException);
+
+  Assert.WillRaise(procedure
+    begin
+      Utilities.CheckNotNullAndSet<TFunc<Integer>>(LFunc, 'TestValue');
     end,
   EArgumentNilException);
 end;
