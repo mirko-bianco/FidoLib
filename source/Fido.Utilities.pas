@@ -34,9 +34,7 @@ type
     class function IfThen<T>(const PredicateResult: Boolean; const IfTrue: T; const IfFalse: T): T; overload; static;
 
     class function TryStringToTGuid(const Input: string; out Guid: TGuid): Boolean; static;
-  end;
 
-  Guard = record
     class function CheckNotNullAndSet<T>(const Value: T; const ArgumentName: String): T; overload; static;
   end;
 
@@ -73,7 +71,7 @@ begin
   end;
 end;
 
-class function Guard.CheckNotNullAndSet<T>(const Value: T; const ArgumentName: String): T;
+class function Utilities.CheckNotNullAndSet<T>(const Value: T; const ArgumentName: String): T;
 begin
   Spring.Guard.CheckNotNull(Value, ArgumentName);
   Result := Value;
