@@ -211,6 +211,7 @@
         <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.Test.pas"/>
         <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.Test.pas"/>
         <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.Test.pas"/>
+        <DCCReference Include="Fido.Utilities.Test.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

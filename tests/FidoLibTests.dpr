@@ -56,7 +56,8 @@ uses
   Fido.EventsDriven.Utils.Test in 'EventsDriven\Fido.EventsDriven.Utils.Test.pas',
   Fido.Memory.EventsDriven.Producer.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.Test.pas',
   Fido.Memory.EventsDriven.Consumer.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.Test.pas',
-  Fido.Memory.EventsDriven.Broker.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.Test.pas';
+  Fido.Memory.EventsDriven.Broker.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.Test.pas',
+  Fido.Utilities.Test in 'Fido.Utilities.Test.pas';
 
 var
   runner : ITestRunner;
