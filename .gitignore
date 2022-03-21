@@ -49,3 +49,4 @@ __recovery/
 Win32/Debug/dunitx-results.xml
 tests/dunitx-results.xml
 tests/TestInsightSettings.ini
+built/CodeCoverageResults/
