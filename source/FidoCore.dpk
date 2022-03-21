@@ -43,8 +43,6 @@ requires
   Spring.Data,
   JOSE,
   DbxCommonDriver,
-  IndyIPCommon,
-  IndyIPClient,
   FireDAC,
   FireDACCommonDriver,
   FireDACCommon;
