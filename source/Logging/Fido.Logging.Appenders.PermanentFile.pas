@@ -13,7 +13,7 @@ type
   private
     procedure SetFilename(const Value: string);
   public
-    constructor Create(const Filename: string; const DateTimeFormat: string);
+    constructor Create(const Filename: string; const DateTimeFormat: string = 'yyyy-mm-dd hh:nn:ss:zzz');
   end;
 
 implementation
