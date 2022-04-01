@@ -80,7 +80,7 @@ function TConsulKVStore.Put(
   const Key: string;
   const Value: string): Boolean;
 begin
-  REsult := FPutUseCase.Run(Key, Value);
+  Result := FPutUseCase.Run(Key, Value);
 end;
 
 end.

@@ -62,15 +62,16 @@ implementation
 procedure Register(
   const Container: TContainer;
   const IniFile: TMemIniFile);
+var
+  Url: string;
+  Token: string;
 begin
+  Url := IniFile.ReadString('Consul', 'URL', 'http://127.0.0.1:8500');
+  Token := IniFile.ReadString('Consul', 'Token', '');
   Container.RegisterType<IConsulClientVirtualApiConfiguration>.DelegateTo(
     function: IConsulClientVirtualApiConfiguration
     begin
-      Result := TConsulClientVirtualApiConfiguration.Create(
-        IniFile.ReadString('Consul', 'URL', 'http://127.0.0.1:8500'),
-        IniFile.ReadString('Consul', 'Token', ''),
-        True,
-        True);
+      Result := TConsulClientVirtualApiConfiguration.Create(Url, Token, True, True);
     end).AsSingleton;
 
   Containers.RegisterJSONClientApi<IConsulAgentServiceApiV1, IConsulClientVirtualApiConfiguration>(Container);

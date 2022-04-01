@@ -697,6 +697,15 @@ Example
   [RequestParam(''Request')]
 ```
 
+###### [RawRequest(MethodParam)]
+
+The **RawRequest** attribute is used when the call requires raw content to inform the Fido library which parameter is to be converted in string and become the body of the request. 
+Example
+
+```pascal
+  [RawRequestParam(''Request')]
+```
+
 ###### [RestParam(MethodParam, RestParam='')]
 
 The **RestParam** attribute is used when a configuration function name or a call parameter does not have the same name of the actual parameter the service needs.
