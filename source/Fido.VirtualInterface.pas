@@ -74,7 +74,11 @@ end;
 
 function TVirtualInterface<T>.GetSelf: T;
 begin
+{$IFDEF MSWINDOWS}
   Self.QueryInterface(FInterfaceTable.Entries[0].IID, Result);
+{$ELSE}
+  Self.QueryInterface(GetTypeData(TypeInfo(T)).Guid, Result);
+{$ENDIF}
 end;
 
 constructor TVirtualInterface<T>.Create(InvokeEvent: TVirtualInterfaceInvokeEvent);
