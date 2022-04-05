@@ -703,7 +703,7 @@ The **RawRequest** attribute is used when the call requires raw content to infor
 Example
 
 ```pascal
-  [RawRequestParam(''Request')]
+  [RawRequestParam('Request')]
 ```
 
 ###### [RestParam(MethodParam, RestParam='')]
