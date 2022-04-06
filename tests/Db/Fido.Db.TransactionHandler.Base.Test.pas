@@ -29,6 +29,8 @@ type
     procedure NestedTransactionRollbackedReturnsFalseWhenNestedCommitsAndMainRollBacks;
     [Test]
     procedure NestedTransactionRollbackedReturnsFalseWhenAllCommit;
+    [Test]
+    procedure TestProperties;
   end;
 
 implementation
@@ -70,6 +72,19 @@ begin
         Sut.Free;
       end;
     end);
+end;
+
+procedure TBaseTransactionHandlerTests.TestProperties;
+var
+  Sut: TTestTransactionHandler;
+begin
+  Sut := TTestTransactionHandler.Create;
+  try
+    Assert.AreEqual(False, Sut.NestedTransactionRollbacked);
+    Assert.AreEqual(0, Sut.NestingLevel);
+  finally
+    Sut.Free;
+  end;
 end;
 
 procedure TBaseTransactionHandlerTests.NestedTransactionRollbackedReturnsFalseWhenCommits;

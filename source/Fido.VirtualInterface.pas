@@ -25,35 +25,32 @@ unit Fido.VirtualInterface;
 interface
 
 uses
-  System.Rtti;
-
-type
-  // stops RTTI from complaining that VI doesn't really implement an interface
-  // see: https://groups.google.com/forum/#!topic/spring4d/6Su_OqYXXnA
-  TVirtualInterface<T: IInterface> = class(TVirtualInterface)
-{$IFDEF MSWINDOWS}
-  private
-    class var FInterfaceTable: PInterfaceTable;
-    function GetSelf: T;
-  public
-    class constructor Create;
-    class destructor Destroy;
-{$ENDIF}
-    constructor Create(InvokeEvent: TVirtualInterfaceInvokeEvent);
-  end;
-
-implementation
-
-uses
+  System.SysUtils,
+  System.Rtti,
   System.TypInfo
 {$IFDEF MSWINDOWS}
   ,WinAPI.Windows
 {$ENDIF}
   ;
 
+type
+  // stops RTTI from complaining that VI doesn't really implement an interface
+  // see: https://groups.google.com/forum/#!topic/spring4d/6Su_OqYXXnA
+  TVirtualInterface<T: IInterface> = class(TVirtualInterface)
+  private
+    class var FInterfaceTable: PInterfaceTable;
+  public
+    class constructor Create;
+    class destructor Destroy;
+    constructor Create(InvokeEvent: TVirtualInterfaceInvokeEvent);
+
+    function GetSelf: T;
+  end;
+
+implementation
+
 { TVirtualInterface<T> }
 
-{$IFDEF MSWINDOWS}
 class constructor TVirtualInterface<T>.Create;
 var
   NumberOfBytesWritten: NativeUInt;
@@ -64,9 +61,10 @@ begin
   FInterfaceTable.Entries[0].VTable := nil;
   FInterfaceTable.Entries[0].IOffset := 0;
   FInterfaceTable.Entries[0].ImplGetter := NativeUInt(@TVirtualInterface<T>.GetSelf);
-
+{$IFDEF MSWINDOWS}
   WriteProcessMemory(GetCurrentProcess, PPointer(NativeInt(TVirtualInterface<T>) + vmtIntfTable),
     @FInterfaceTable, SizeOf(Pointer), NumberOfBytesWritten);
+{$ENDIF}
 end;
 
 class destructor TVirtualInterface<T>.Destroy;
@@ -76,16 +74,16 @@ end;
 
 function TVirtualInterface<T>.GetSelf: T;
 begin
+{$IFDEF MSWINDOWS}
   Self.QueryInterface(FInterfaceTable.Entries[0].IID, Result);
-end;
-
+{$ELSE}
+  Self.QueryInterface(GetTypeData(TypeInfo(T)).Guid, Result);
 {$ENDIF}
+end;
 
 constructor TVirtualInterface<T>.Create(InvokeEvent: TVirtualInterfaceInvokeEvent);
 begin
   inherited Create(TypeInfo(T), InvokeEvent);
 end;
-
-
 
 end.

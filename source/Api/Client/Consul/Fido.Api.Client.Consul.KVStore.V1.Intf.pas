@@ -58,6 +58,7 @@ type
 
     [Endpoint(rmPut, '/v1/kv/{key}')]
     [HeaderParam('Token', CONSUL_TOKEN)]
+    [RawRequestParam('Value')]
     function Put(const Key: string; const Value: string): Boolean;
 
     [Endpoint(rmDelete, '/v1/kv/{key}')]

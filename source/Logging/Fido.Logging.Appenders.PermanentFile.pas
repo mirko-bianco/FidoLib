@@ -13,17 +13,18 @@ type
   private
     procedure SetFilename(const Value: string);
   public
-    constructor Create(const Filename: string);
+    constructor Create(const Filename: string; const DateTimeFormat: string = 'yyyy-mm-dd hh:nn:ss:zzz');
   end;
 
 implementation
 
 { TPermanentFileLogAppender }
 
-constructor TPermanentFileLogAppender.Create(const Filename: string);
+constructor TPermanentFileLogAppender.Create(const Filename: string; const DateTimeFormat: string);
 begin
   inherited CreateInternal(True, nil);
   SetFilename(Filename);
+  Format := DateTimeFormat;
 end;
 
 procedure TPermanentFileLogAppender.SetFilename(const Value: string);

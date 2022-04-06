@@ -96,6 +96,9 @@ type
   // function AccountByAccountIdPut([ApiParam('AccountId')] Account_Id: Integer; Request: TUpdateIdentityRequest): TUpdateIdentityResponse;
   RequestParamAttribute = class(ParamAttribute);
 
+  // Same as RequestParam, but the value is not converted to a Json value
+  RawRequestParamAttribute = class(ParamAttribute);
+
   // This attribute indicates the Api name of a parameter and can be attached to an Api method parameter or a Configuration function
   // i.e.:
   // IIdentityApi = interface(IClientVirtualApi)
