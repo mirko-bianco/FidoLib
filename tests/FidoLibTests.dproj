@@ -195,7 +195,6 @@
         <DCCReference Include="Slots\Fido.Slots.Binding.Tests.pas"/>
         <DCCReference Include="Consul\Fido.Consul.KVStore.Test.pas"/>
         <DCCReference Include="Consul\Fido.Consul.Service.Test.pas"/>
-        <DCCReference Include="Consul\Fido.Consul.UseCases.KVStore.Get.Test.pas"/>
         <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.Queue.Test.pas"/>
         <DCCReference Include="EventsDriven\Fido.EventsDriven.Publisher.Test.pas"/>
         <DCCReference Include="EventsDriven\Fido.EventsDriven.Subscriber.Test.pas"/>

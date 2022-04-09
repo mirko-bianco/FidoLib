@@ -27,6 +27,7 @@ interface
 uses
   Spring,
 
+  Fido.Utilities,
   Fido.KVStore.Intf,
   Fido.Consul.UseCases.KVStore.Get.Intf,
   Fido.Consul.UseCases.KVStore.Put.Intf,
@@ -57,13 +58,9 @@ constructor TConsulKVStore.Create(
 begin
   inherited Create;
 
-  Guard.CheckNotNull(GetUseCase, 'GetUseCase');
-  Guard.CheckNotNull(PutUseCase, 'PutUseCase');
-  Guard.CheckNotNull(DeleteUseCase, 'DeleteUseCase');
-
-  FGetUseCase := GetUseCase;
-  FPutUseCase := PutUseCase;
-  FDeleteUseCase := DeleteUseCase;
+  FGetUseCase := Utilities.CheckNotNullAndSet(GetUseCase, 'GetUseCase');
+  FPutUseCase := Utilities.CheckNotNullAndSet(PutUseCase, 'PutUseCase');
+  FDeleteUseCase := Utilities.CheckNotNullAndSet(DeleteUseCase, 'DeleteUseCase');
 end;
 
 function TConsulKVStore.Delete(const Key: string): Boolean;

@@ -8,9 +8,9 @@ uses
   VCL.Dialogs,
   Vcl.DBGrids,
 
-  Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Db.ListDatasets,
   Fido.DesignPatterns.Observer.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
@@ -66,19 +66,16 @@ constructor TMainViewModel.Create(
 var
   ObservableIntf: IObservable;
 begin
-  Guard.CheckNotNull(SongModel, 'Model');
-  Guard.CheckTrue(Assigned(SongViewModelFactoryFunc), 'SongViewModelFactoryFunc is not assigned');
-  Guard.CheckTrue(Assigned(SongViewFactoryFunc), 'SongViewFactoryFunc is not assigned');
   inherited Create(nil);
+  FSongModel := Utilities.CheckNotNullAndSet(SongModel, 'Model');
+  FSongViewModelFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<Integer, ISongModel, ISongViewModel>>(SongViewModelFactoryFunc, 'SongViewModelFactoryFunc');
+  FSongViewFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<ISongViewModel, TSongView>>(SongViewFactoryFunc, 'SongViewFactoryFunc');
   FList := SongModel.GetList;
   if Supports(FList, IObservable, ObservableIntf) then
     // Starts observing the list for changes
     ObservableIntf.RegisterObserver(Self);
 
   FDataSet := ListDatasets.ListOfObservablesToDataset<ISong>(FList);
-  FSongModel := SongModel;
-  FSongViewModelFactoryFunc := SongViewModelFactoryFunc;
-  FSongViewFactoryFunc := SongViewFactoryFunc;
   Broadcast('Initilialized');
 end;
 

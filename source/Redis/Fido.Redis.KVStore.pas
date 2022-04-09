@@ -26,6 +26,7 @@ interface
 
 uses
   System.SysUtils,
+  Generics.Collections,
 
   Spring,
 
@@ -60,10 +61,8 @@ constructor TRedisKVStore.Create(
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClient, 'RedisClient');
-
   FKeyPrefix := KeyPrefix;
-  FRedisClient := RedisClient;
+  FRedisClient := Utilities.CheckNotNullAndSet(RedisClient, 'RedisClient');
 end;
 
 function TRedisKVStore.Delete(const Key: string): Boolean;

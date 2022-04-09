@@ -31,7 +31,9 @@ uses
   REST.Types,
 
   Spring,
-  Spring.Collections;
+  Spring.Collections,
+
+  Fido.Utilities;
 
 type
   THttpMethod = (rmUnknown, rmGET, rmPOST, rmPUT, rmPATCH, rmDELETE, rmCOPY, rmHEAD, rmOPTIONS, rmLINK, rmUNLINK, rmPURGE, rmLOCK, rmUNLOCK, rmPROPFIND, rmVIEW);
@@ -177,9 +179,8 @@ constructor TEndPoint.Create(
   const PreProcessPipelineSteps: IList<TPair<string, string>>;
   const PostProcessPipelineSteps: IList<TPair<string, string>>);
 begin
-  Guard.CheckNotNull(Instance, 'Instance');
+  FInstance := Utilities.CheckNotNullAndSet(Instance, 'Instance');
 
-  FInstance := Instance;
   FMethodName := MethodName;
   FPath := Path;
   FHttpMethod := HttpMethod;

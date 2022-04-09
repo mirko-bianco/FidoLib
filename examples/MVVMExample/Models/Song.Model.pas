@@ -5,9 +5,9 @@ interface
 uses
   System.SysUtils,
 
-  Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Exceptions,
   Fido.Collections.DeepObservableList.Intf,
 
@@ -42,10 +42,8 @@ implementation
 
 constructor TSongModel.Create(const SongRepository: ISongRepository);
 begin
-  Guard.CheckNotNull(SongRepository, 'SongRepository');
-
   inherited Create;
-  FSongRepository := SongRepository;
+  FSongRepository := Utilities.CheckNotNullAndSet(SongRepository, 'SongRepository');
 end;
 
 procedure TSongModel.Delete(const Id: Integer);

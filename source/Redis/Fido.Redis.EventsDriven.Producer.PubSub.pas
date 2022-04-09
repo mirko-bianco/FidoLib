@@ -30,13 +30,13 @@ uses
   System.Threading,
   System.Generics.Collections,
 
-  Spring,
   Spring.Collections,
 
   Redis.Values,
   Redis.Commons,
   Redis.Client,
 
+  Fido.Utilities,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Producer.Intf,
@@ -62,8 +62,7 @@ constructor TRedisPubSubEventsDrivenProducer.Create(const RedisClient: IFidoRedi
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClient, 'RedisClient');
-  FRedisClient := RedisClient;
+  FRedisClient := Utilities.CheckNotNullAndSet(RedisClient, 'RedisClient');
 end;
 
 function TRedisPubSubEventsDrivenProducer.Push(

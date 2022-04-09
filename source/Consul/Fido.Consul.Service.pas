@@ -29,9 +29,9 @@ uses
 
   IdStack,
 
-  Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Consul.Service.Intf,
   Fido.Consul.Types,
   Fido.Consul.UseCases.Service.Register.Intf,
@@ -66,15 +66,12 @@ constructor TConsulService.Create(
 begin
   inherited Create;
 
-  Guard.CheckNotNull(ConsulRegisterServiceUseCase, 'ConsulRegisterServiceUseCase');
-  Guard.CheckNotNull(ConsulDeregisterServiceUseCase, 'ConsulDeregisterServiceUseCase');
-
   FGetIPsFunc := GetIps;
   if Assigned(GetIPsFunc) then
     FGetIPsFunc := GetIPsFunc;
 
-  FConsulRegisterServiceUseCase := ConsulRegisterServiceUseCase;
-  FConsulDeregisterServiceUseCase := ConsulDeregisterServiceUseCase;
+  FConsulRegisterServiceUseCase := Utilities.CheckNotNullAndSet(ConsulRegisterServiceUseCase, 'ConsulRegisterServiceUseCase');
+  FConsulDeregisterServiceUseCase := Utilities.CheckNotNullAndSet(ConsulDeregisterServiceUseCase, 'ConsulDeregisterServiceUseCase');
 
   FServiceIds := TCollections.CreateList<string>;
 end;

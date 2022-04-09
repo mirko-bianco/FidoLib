@@ -29,6 +29,9 @@ uses
   System.TypInfo,
   System.Classes,
   System.StrUtils,
+  System.SysUtils,
+  System.Variants,
+  System.Generics.Collections,
   Data.DB,
 
   Spring,
@@ -105,11 +108,6 @@ type
 
 implementation
 
-uses
-  System.SysUtils,
-  System.Variants,
-  System.Generics.Collections;
-
 { TVirtualStatement<TRecord, T> }
 
 function TVirtualQuery<TRecord, T>.AddOrUpdateDescriptor(
@@ -152,10 +150,9 @@ constructor TVirtualQuery<TRecord, T>.Create(
   const StatementExecutor: IStatementExecutor);
 begin
   Guard.CheckNotNull(ResReader, 'ResReader');
-  Guard.CheckNotNull(StatementExecutor, 'StatementExecutor');
   inherited Create(DoInvoke);
 
-  FExecutor := StatementExecutor;
+  FExecutor := Utilities.CheckNotNullAndSet(StatementExecutor, 'StatementExecutor');
   FParams := TCollections.CreateDictionary<string, TParamDescriptor>([doOwnsValues]);
   FMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([doOwnsValues]);
 

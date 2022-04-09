@@ -41,7 +41,6 @@ uses
   Fido.Slots.Binding.Tests in 'Slots\Fido.Slots.Binding.Tests.pas',
   Fido.Consul.KVStore.Test in 'Consul\Fido.Consul.KVStore.Test.pas',
   Fido.Consul.Service.Test in 'Consul\Fido.Consul.Service.Test.pas',
-  Fido.Consul.UseCases.KVStore.Get.Test in 'Consul\Fido.Consul.UseCases.KVStore.Get.Test.pas',
   Fido.EventsDriven.Listener.Queue.Test in 'EventsDriven\Fido.EventsDriven.Listener.Queue.Test.pas',
   Fido.EventsDriven.Publisher.Test in 'EventsDriven\Fido.EventsDriven.Publisher.Test.pas',
   Fido.EventsDriven.Subscriber.Test in 'EventsDriven\Fido.EventsDriven.Subscriber.Test.pas',

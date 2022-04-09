@@ -25,7 +25,11 @@ unit Fido.Resource.StringReader;
 interface
 
 uses
+  System.Classes,
+
   Spring,
+
+  Fido.Utilities,
   Fido.Resource.StreamReader.Intf,
   Fido.Resource.StringReader.Intf;
 
@@ -40,15 +44,11 @@ type
 
 implementation
 
-uses
-  System.Classes;
-
 { TStringResourceReader }
 
 constructor TStringResourceReader.Create(const StreamResourceReader: IStreamResourceReader);
 begin
-  Guard.CheckNotNull(StreamResourceReader, 'StreamResourceReader');
-  FStreamResourceReader := StreamResourceReader;
+  FStreamResourceReader := Utilities.CheckNotNullAndSet(StreamResourceReader, 'StreamResourceReader');
 end;
 
 function TStringResourceReader.GetStringResource(const ResName: string): string;

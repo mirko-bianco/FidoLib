@@ -31,8 +31,7 @@ uses
   FireDac.Stan.Param,
   FireDAC.Comp.Client,
 
-  Spring,
-
+  Fido.Utilities,
   Fido.Types.TGuid.Variant,
   Fido.Db.Connections.FireDac,
   Fido.VirtualStatement.Intf,
@@ -126,8 +125,7 @@ end;
 constructor TFireDacStatementExecutor.Create(FireDacConnections: TFireDacConnections);
 begin
   inherited Create;
-  Guard.CheckNotNull(FireDacConnections, 'FireDacConnections');
-  FFireDacConnections := FireDacConnections;
+  FFireDacConnections := Utilities.CheckNotNullAndSet(FireDacConnections, 'FireDacConnections');
 end;
 
 procedure TFireDacStatementExecutor.Execute;

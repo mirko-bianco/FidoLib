@@ -28,8 +28,7 @@ uses
   System.Classes,
   System.SysUtils,
 
-  Spring,
-
+  Fido.Utilities,
   Fido.EventsDriven.Consumer.PubSub.Intf,
   Fido.EventsDriven.Utils,
   Fido.EventsDriven.Broker.PubSub.Intf;
@@ -60,8 +59,7 @@ constructor TMemoryPubSubEventsDrivenConsumer<PayloadType>.Create(const Broker: 
 begin
   inherited Create;
 
-  Guard.CheckNotNull(Broker, 'Broker');
-  FBroker := Broker;
+  FBroker := Utilities.CheckNotNullAndSet(Broker, 'Broker');
 end;
 
 procedure TMemoryPubSubEventsDrivenConsumer<PayloadType>.Subscribe(

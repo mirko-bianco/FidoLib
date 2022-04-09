@@ -40,6 +40,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.VirtualInterface,
   Fido.Api.Client.VirtualApi.Intf,
   Fido.Api.Client.VirtualApi.Attributes,
@@ -384,8 +385,7 @@ end;
 constructor TAbstractClientVirtualApi<T, IConfiguration>.Create(const Configuration: IConfiguration);
 begin
   inherited Create(DoInvoke);
-  Guard.CheckNotNull(Configuration, 'Configuration');
-  FConfiguration := Configuration;
+  FConfiguration := Utilities.CheckNotNullAndSet<IConfiguration>(Configuration, 'Configuration');
 end;
 
 procedure TAbstractClientVirtualApi<T, IConfiguration>.ParamNamesToParamNameValues(

@@ -40,6 +40,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Http.RequestInfo.Intf,
   Fido.Http.ResponseInfo.Intf;
 
@@ -87,13 +88,9 @@ constructor TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.Create(
   const ResponseInfo: TIdHTTPResponseInfo);
 begin
   inherited Create;
-  Guard.CheckNotNull(Context, 'Context');
-  Guard.CheckNotNull(RequestInfo, 'RequestInfo');
-  Guard.CheckNotNull(ResponseInfo, 'ResponseInfo');
-
-  FContext := Context;
-  FRequestInfo := RequestInfo;
-  FResponseInfo := ResponseInfo;
+  FContext := Utilities.CheckNotNullAndSet(Context, 'Context');
+  FRequestInfo := Utilities.CheckNotNullAndSet(RequestInfo, 'RequestInfo');
+  FResponseInfo := Utilities.CheckNotNullAndSet(ResponseInfo, 'ResponseInfo');
 end;
 
 destructor TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.Destroy;

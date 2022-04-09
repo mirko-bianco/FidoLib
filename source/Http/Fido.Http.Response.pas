@@ -32,6 +32,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Http.Types,
   Fido.Http.RequestInfo.Intf,
   Fido.Http.ResponseInfo.Intf,
@@ -155,10 +156,8 @@ var
         Exit(THttpMethod(I));
   end;
 begin
-  Guard.CheckNotNull(RequestInfo, 'RequestInfo');
-  Guard.CheckNotNull(ResponseInfo, 'ResponseInfo');
-  FRequestInfo := RequestInfo;
-  FResponseInfo := ResponseInfo;
+  FRequestInfo := Utilities.CheckNotNullAndSet(RequestInfo, 'RequestInfo');
+  FResponseInfo := Utilities.CheckNotNullAndSet(ResponseInfo, 'ResponseInfo');
 
   inherited Create;
 
