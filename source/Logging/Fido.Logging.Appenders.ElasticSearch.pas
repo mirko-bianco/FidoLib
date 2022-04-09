@@ -59,8 +59,8 @@ constructor TElasticsearchAppender.Create(
 begin
   inherited Create;
   FApi := Utilities.CheckNotNullAndSet(Api, 'Api');
-  FIndex := Utilities.CheckAndSet(Index, Utilities.Not(Utilities.IsEmpty(Index)), 'Index is empty');
-  FTypeName := Utilities.CheckAndSet(TypeName, Utilities.Not(Utilities.IsEmpty(TypeName)), 'TypeName is empty');
+  FIndex := Utilities.CheckAndSet(Index, Utilities.F.IsNotEmpty(Index), 'Index is empty');
+  FTypeName := Utilities.CheckAndSet(TypeName, Utilities.F.IsNotEmpty(TypeName), 'TypeName is empty');
 end;
 
 procedure TElasticsearchAppender.DoSend(const Event: TLogEvent);

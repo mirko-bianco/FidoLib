@@ -40,9 +40,13 @@ type
 
     class function CheckNotNullAndSet<T>(const Value: T; const ArgumentName: String): T; static;
     class function CheckAndSet<T>(const Value: T; const Predicate: TCheckPredicate; const ErrorMessage: String): T; static;
+  type
+    F = record
+      class function IsEmpty(const Value: string): TCheckPredicate; static;
+      class function &Not(const Check: TCheckPredicate): TCheckPredicate; static;
+      class function IsNotEmpty(const Value: string): TCheckPredicate; static;
 
-    class function IsEmpty(const Value: string): TCheckPredicate; static;
-    class function &Not(const Check: TCheckPredicate): TCheckPredicate; static;
+    end;
   end;
 
 implementation
@@ -78,14 +82,6 @@ begin
   end;
 end;
 
-class function Utilities.&Not(const Check: TCheckPredicate): TCheckPredicate;
-begin
-  Result := function: Boolean
-    begin
-      Result := not Check;
-    end;
-end;
-
 class function Utilities.CheckAndSet<T>(
   const Value: T;
   const Predicate: TCheckPredicate;
@@ -103,7 +99,20 @@ begin
   Result := Value;
 end;
 
-class function Utilities.IsEmpty(const Value: string): TCheckPredicate;
+class function Utilities.F.IsNotEmpty(const Value: string): TCheckPredicate;
+begin
+  Result := &Not(IsEmpty(Value));
+end;
+
+class function Utilities.F.&Not(const Check: TCheckPredicate): TCheckPredicate;
+begin
+  Result := function: Boolean
+    begin
+      Result := not Check;
+    end;
+end;
+
+class function Utilities.F.IsEmpty(const Value: string): TCheckPredicate;
 begin
   Result := function: Boolean
     begin

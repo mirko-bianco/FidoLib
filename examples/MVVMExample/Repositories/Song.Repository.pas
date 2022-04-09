@@ -5,6 +5,7 @@ interface
 uses
   System.SysUtils,
 
+  Spring,
   Spring.Collections,
 
   Fido.Utilities,

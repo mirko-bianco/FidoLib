@@ -62,7 +62,7 @@ begin
   inherited Create;
   FScriptRunner := Utilities.CheckNotNullAndSet(ScriptRunner, 'ScriptRunner');
   FDatabaseMigrationsRepository := Utilities.CheckNotNullAndSet(DatabaseMigrationsRepository, 'DatabaseMigrationsRepository');
-  FScriptsFolder := Utilities.CheckAndSet(ScriptsFolder, Utilities.Not(Utilities.IsEmpty(ScriptsFolder)), 'ScriptsFolder cannot be empty');
+  FScriptsFolder := Utilities.CheckAndSet(ScriptsFolder, Utilities.F.IsNotEmpty(ScriptsFolder), 'ScriptsFolder cannot be empty');
 end;
 
 procedure TDatabaseMigrationsModel.ExecSql(const Sql: string);
