@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   DUnitX.TestFramework,
 
+  Fido.Testing.Mock.Utils,
   Fido.Utilities;
 
 type
@@ -24,6 +25,11 @@ type
 
     [Test]
     procedure GuardCheckNotNullAndSetThrowsIfAnonymousIsNil;
+
+    [Test]
+    procedure CheckAndSetReturnsIfPredicateReturnsTrue;
+    [Test]
+    procedure CheckAndSetThrowsIfPredicateReturnsFalse;
   end;
 
   ITestValue = interface
@@ -53,6 +59,27 @@ begin
   Assert.WillRaise(procedure
     begin
       Utilities.CheckNotNullAndSet(Input, 'TestValue');
+    end,
+  EArgumentNilException);
+end;
+
+procedure TUtilitiesTests.CheckAndSetReturnsIfPredicateReturnsTrue;
+var
+  Source: string;
+  Destination: string;
+begin
+  Source := MockUtils.SomeString;
+
+  Destination := Utilities.CheckAndSet<string>(Source, Utilities.F.IsNotEmpty(Source), 'there is an error');
+
+  Assert.AreEqual(Source, Destination);
+end;
+
+procedure TUtilitiesTests.CheckAndSetThrowsIfPredicateReturnsFalse;
+begin
+  Assert.WillRaise(procedure
+    begin
+      Utilities.CheckAndSet<string>('', Utilities.F.IsNotEmpty(''), 'there is an error');
     end,
   EArgumentNilException);
 end;
