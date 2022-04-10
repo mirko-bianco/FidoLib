@@ -8,6 +8,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Exceptions,
   Fido.Collections.DeepObservableList.Intf,
 
