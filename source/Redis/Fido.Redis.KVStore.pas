@@ -30,6 +30,7 @@ uses
 
   Spring,
 
+  Fido.Utilities,
   Fido.DesignPatterns.Retries,
   Fido.KVStore.Intf,
 
