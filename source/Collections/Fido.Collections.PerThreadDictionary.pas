@@ -38,6 +38,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Collections.PerXDictionary.Intf;
 
 type
@@ -68,11 +69,10 @@ constructor TPerThreadDictionary<T>.Create(
   const Ownership: TDictionaryOwnerships;
   const FactoryFunc: TFunc<T>);
 begin
-  Guard.CheckTrue(Assigned(FactoryFunc), 'FFactoryFunc');
   inherited Create;
   FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<TThreadId, T>(Ownership);
-  FFactoryFunc := FactoryFunc;
+  FFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<T>>(FactoryFunc, 'FFactoryFunc');
 end;
 
 destructor TPerThreadDictionary<T>.Destroy;

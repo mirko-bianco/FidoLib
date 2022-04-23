@@ -37,6 +37,7 @@ uses
   Redis.Command,
   Redis.Client,
 
+  Fido.Utilities,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Consumer.PubSub.Intf,
@@ -102,8 +103,7 @@ constructor TRedisQueuePubSubEventsDrivenConsumer.Create(const RedisClientFactor
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClientFactoryFunc, 'RedisClientFactoryFunc');
-  FRedisClientFactoryFunc := RedisClientFactoryFunc;
+  FRedisClientFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<IFidoRedisClient>>(RedisClientFactoryFunc, 'RedisClientFactoryFunc');
 
   FLock := TMREWSync.Create;
   FTasks := TCollections.CreateDictionary<string, ITask>;

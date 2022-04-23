@@ -26,16 +26,27 @@ interface
 
 uses
   System.SysUtils,
+
   Spring;
 
 type
+  TCheckPredicate = reference to function: Boolean;
+
   Utilities = record
     class function IfThen<T>(const PredicateFunc: TFunc<Boolean>; const IfTrue: T; const IfFalse: T): T; overload; static;
     class function IfThen<T>(const PredicateResult: Boolean; const IfTrue: T; const IfFalse: T): T; overload; static;
 
     class function TryStringToTGuid(const Input: string; out Guid: TGuid): Boolean; static;
 
-    class function CheckNotNullAndSet<T>(const Value: T; const ArgumentName: String): T; overload; static;
+    class function CheckNotNullAndSet<T>(const Value: T; const ArgumentName: String): T; static;
+    class function CheckAndSet<T>(const Value: T; const Predicate: TCheckPredicate; const ErrorMessage: String): T; static;
+  type
+    F = record
+      class function IsEmpty(const Value: string): TCheckPredicate; static;
+      class function &Not(const Check: TCheckPredicate): TCheckPredicate; static;
+      class function IsNotEmpty(const Value: string): TCheckPredicate; static;
+
+    end;
   end;
 
 implementation
@@ -71,10 +82,42 @@ begin
   end;
 end;
 
-class function Utilities.CheckNotNullAndSet<T>(const Value: T; const ArgumentName: String): T;
+class function Utilities.CheckAndSet<T>(
+  const Value: T;
+  const Predicate: TCheckPredicate;
+  const ErrorMessage: String): T;
+begin
+  Spring.Guard.CheckTrue(Predicate, ErrorMessage);
+  Result := Value;
+end;
+
+class function Utilities.CheckNotNullAndSet<T>(
+  const Value: T;
+  const ArgumentName: String): T;
 begin
   Spring.Guard.CheckNotNull(Value, ArgumentName);
   Result := Value;
+end;
+
+class function Utilities.F.IsNotEmpty(const Value: string): TCheckPredicate;
+begin
+  Result := &Not(IsEmpty(Value));
+end;
+
+class function Utilities.F.&Not(const Check: TCheckPredicate): TCheckPredicate;
+begin
+  Result := function: Boolean
+    begin
+      Result := not Check;
+    end;
+end;
+
+class function Utilities.F.IsEmpty(const Value: string): TCheckPredicate;
+begin
+  Result := function: Boolean
+    begin
+      Result := Value.IsEmpty;
+    end;
 end;
 
 end.

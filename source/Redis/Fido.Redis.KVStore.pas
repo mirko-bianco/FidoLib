@@ -26,9 +26,11 @@ interface
 
 uses
   System.SysUtils,
+  Generics.Collections,
 
   Spring,
 
+  Fido.Utilities,
   Fido.DesignPatterns.Retries,
   Fido.KVStore.Intf,
 
@@ -60,10 +62,8 @@ constructor TRedisKVStore.Create(
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClient, 'RedisClient');
-
   FKeyPrefix := KeyPrefix;
-  FRedisClient := RedisClient;
+  FRedisClient := Utilities.CheckNotNullAndSet(RedisClient, 'RedisClient');
 end;
 
 function TRedisKVStore.Delete(const Key: string): Boolean;

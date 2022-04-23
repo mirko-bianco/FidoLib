@@ -26,11 +26,13 @@ interface
 
 uses
   System.Rtti,
+  System.SysUtils,
+  System.Variants,
+
   Data.DB,
   Data.Win.ADODB,
 
-  Spring,
-
+  Fido.Utilities,
   Fido.Win.Db.Connections.Ado,
   Fido.VirtualStatement.Intf,
   Fido.VirtualStatement.Attributes,
@@ -56,10 +58,6 @@ type
   end;
 
 implementation
-
-uses
-  System.SysUtils,
-  System.Variants;
 
 { TADOStatementExecutor }
 
@@ -127,8 +125,7 @@ end;
 
 constructor TADOStatementExecutor.Create(AdoConnections: TAdoConnections);
 begin
-  Guard.CheckNotNull(AdoConnections, 'AdoConnections');
-  FAdoConnections := AdoConnections;
+  FAdoConnections := Utilities.CheckNotNullAndSet(AdoConnections, 'AdoConnections');
 end;
 
 procedure TADOStatementExecutor.Execute;

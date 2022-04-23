@@ -30,9 +30,9 @@ uses
 
   IdStack,
 
-  Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Api.Server.Resource.Attributes,
   Fido.Api.Server.Intf,
 
@@ -69,11 +69,8 @@ constructor TConsulAwareApiServer.Create(
   const ServiceName: string);
 begin
   inherited Create;
-  Guard.CheckNotNull(ApiServer, 'ApiServer');
-  Guard.CheckNotNull(ConsulService, 'ConsulService');
-
-  FApiServer := ApiServer;
-  FConsulService := ConsulService;
+  FApiServer := Utilities.CheckNotNullAndSet(ApiServer, 'ApiServer');
+  FConsulService := Utilities.CheckNotNullAndSet(ConsulService, 'ConsulService');
   FServiceName := ServiceName;
   FHealthEndpoint := '';
 end;

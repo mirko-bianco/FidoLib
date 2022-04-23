@@ -29,9 +29,9 @@ uses
   System.Rtti,
   System.Generics.Collections,
 
-  Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.EventsDriven.Attributes,
   Fido.EventsDriven.Subscriber.Intf,
   Fido.EventsDriven.Listener.Intf;
@@ -85,8 +85,7 @@ constructor TEventsDrivenSubscriber.Create(const Listener: IEventsDrivenListener
 begin
   inherited Create;
 
-  Guard.CheckNotNull(Listener, 'Listener');
-  FListener := Listener;
+  FListener := Utilities.CheckNotNullAndSet(Listener, 'Listener');
 
   FConsumers := TCollections.CreateObjectList<TObject>(False);
   FChannels := TCollections.CreateList<TChannelEventPair>;

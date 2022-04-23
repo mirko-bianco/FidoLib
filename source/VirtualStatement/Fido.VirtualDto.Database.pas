@@ -28,10 +28,13 @@ uses
   System.Rtti,
   System.TypInfo,
   System.Classes,
+  System.SysUtils,
+  System.Generics.Collections,
   Data.DB,
 
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Db.TypeConverter,
   Fido.VirtualStatement.Attributes,
   Fido.VirtualInterface,
@@ -62,12 +65,6 @@ type
 
 implementation
 
-uses
-  System.SysUtils,
-  System.Generics.Collections,
-
-  Spring;
-
 { TDatabaseVirtualDto<T> }
 
 procedure TDatabaseVirtualDto<T>.AfterConstruction;
@@ -91,8 +88,7 @@ end;
 constructor TDatabaseVirtualDto<T>.Create(const Dataset: TDataSet);
 begin
   inherited Create;
-  Guard.CheckNotNull(Dataset, 'Dataset');
-  FDataset := Dataset;
+  FDataset := Utilities.CheckNotNullAndSet(Dataset, 'Dataset');
 
   FRecordMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([doOwnsValues]);
 end;

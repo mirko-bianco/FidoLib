@@ -32,6 +32,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Db.ScriptRunner.Intf,
   Fido.Db.Migrations.Repository.Intf,
   Fido.Db.Migrations.Model.Intf;
@@ -59,12 +60,9 @@ constructor TDatabaseMigrationsModel.Create(
   const ScriptsFolder: string);
 begin
   inherited Create;
-  Guard.CheckNotNull(ScriptRunner, 'ScriptRunner');
-  Guard.CheckNotNull(DatabaseMigrationsRepository, 'DatabaseMigrationsRepository');
-  Guard.CheckTrue(not ScriptsFolder.IsEmpty, 'ScriptsFolder cannot be empty');
-  FScriptRunner := ScriptRunner;
-  FDatabaseMigrationsRepository := DatabaseMigrationsRepository;
-  FScriptsFolder := ScriptsFolder;
+  FScriptRunner := Utilities.CheckNotNullAndSet(ScriptRunner, 'ScriptRunner');
+  FDatabaseMigrationsRepository := Utilities.CheckNotNullAndSet(DatabaseMigrationsRepository, 'DatabaseMigrationsRepository');
+  FScriptsFolder := Utilities.CheckAndSet(ScriptsFolder, Utilities.F.IsNotEmpty(ScriptsFolder), 'ScriptsFolder cannot be empty');
 end;
 
 procedure TDatabaseMigrationsModel.ExecSql(const Sql: string);

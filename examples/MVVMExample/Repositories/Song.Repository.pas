@@ -8,6 +8,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Exceptions,
   Fido.Collections.DeepObservableList.Intf,
   Fido.Collections,
@@ -61,21 +62,14 @@ constructor TSongRepository.Create(
   const SongDeleteByIdCommand: ISongDeleteByIdCommand;
   const SongFactoryFunc: TFunc<ISong>);
 begin
-  Guard.CheckNotNull(SongListQuery, 'SongListQuery');
-  Guard.CheckNotNull(SongByIdQuery, 'SongListById');
-  Guard.CheckNotNull(SongUpdateByIdCommand, 'SongUpdateByIdCommand');
-  Guard.CheckNotNull(SongInsertCommand, 'SongInsertCommand');
-  Guard.CheckNotNull(SongLastIdQuery, 'ISongLastIdQuery');
-  Guard.CheckNotNull(SongDeleteByIdCommand, 'SongDeleteByIdCommand');
-  Guard.CheckTrue(Assigned(SongFactoryFunc), 'FSongFactoryFunc is not assigned');
   inherited Create;
-  FSongListQuery := SongListQuery;
-  FSongByIdQuery := SongByIdQuery;
-  FSongUpdateByIdCommand := SongUpdateByIdCommand;
-  FSongInsertCommand := SongInsertCommand;
-  FSongLastIdQuery := SongLastIdQuery;
-  FSongDeleteByIdCommand := SongDeleteByIdCommand;
-  FSongFactoryFunc := SongFactoryFunc;
+  FSongListQuery := Utilities.CheckNotNullAndSet(SongListQuery, 'SongListQuery');
+  FSongByIdQuery := Utilities.CheckNotNullAndSet(SongByIdQuery, 'SongByIdQuery');
+  FSongUpdateByIdCommand := Utilities.CheckNotNullAndSet(SongUpdateByIdCommand, 'SongUpdateByIdCommand');
+  FSongInsertCommand := Utilities.CheckNotNullAndSet(SongInsertCommand, 'SongInsertCommand');
+  FSongLastIdQuery := Utilities.CheckNotNullAndSet(SongLastIdQuery, 'SongLastIdQuery');
+  FSongDeleteByIdCommand := Utilities.CheckNotNullAndSet(SongDeleteByIdCommand, 'SongDeleteByIdCommand');
+  FSongFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<ISong>>(SongFactoryFunc, 'SongFactoryFunc');
 end;
 
 procedure TSongRepository.Delete(const Id: Integer);

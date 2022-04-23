@@ -34,6 +34,7 @@ uses
   Redis.Commons,
   Redis.Client,
 
+  Fido.Utilities,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Consumer.Queue.Intf,
@@ -61,8 +62,7 @@ constructor TRedisQueueEventsDrivenConsumer.Create(const RedisClient: IFidoRedis
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClient, 'RedisClient');
-  FRedisClient := RedisClient;
+  FRedisClient := Utilities.CheckNotNullAndSet(RedisClient, 'RedisClient');
 end;
 
 function TRedisQueueEventsDrivenConsumer.Pop(const Key: string; var Payload: string): Boolean;

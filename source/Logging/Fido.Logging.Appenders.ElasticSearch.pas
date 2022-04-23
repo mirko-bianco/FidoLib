@@ -28,10 +28,10 @@ uses
   System.Classes,
   System.SysUtils,
 
-  Spring,
   Spring.Logging,
   Spring.Logging.Appenders.Base,
 
+  Fido.Utilities,
   Fido.Api.Client.VirtualApi.ElasticSearch.Document.Intf,
   Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Request,
   Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Response;
@@ -58,12 +58,9 @@ constructor TElasticsearchAppender.Create(
   const TypeName: string);
 begin
   inherited Create;
-  Guard.CheckNotNull(Api, 'Api');
-  Guard.CheckTrue(not Index.IsEmpty, 'Index is empty');
-  Guard.CheckTrue(not TypeName.IsEmpty, 'TypeName is empty');
-  FApi := Api;
-  FIndex := Index;
-  FTypeName := TypeName;
+  FApi := Utilities.CheckNotNullAndSet(Api, 'Api');
+  FIndex := Utilities.CheckAndSet(Index, Utilities.F.IsNotEmpty(Index), 'Index is empty');
+  FTypeName := Utilities.CheckAndSet(TypeName, Utilities.F.IsNotEmpty(TypeName), 'TypeName is empty');
 end;
 
 procedure TElasticsearchAppender.DoSend(const Event: TLogEvent);

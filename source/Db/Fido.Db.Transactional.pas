@@ -27,8 +27,7 @@ interface
 uses
   System.SysUtils,
 
-  Spring,
-
+  Fido.Utilities,
   Fido.Db.Transactional.Intf,
   Fido.Db.Transaction.Intf,
   Fido.Db.Transaction.Handler.Intf;
@@ -53,10 +52,8 @@ implementation
 
 constructor TTransactional.Create(const Handler: ITransactionHandler; const TransactionFactory: TFunc<ITransactionHandler, ITransaction>);
 begin
-  Guard.CheckNotNull(Handler, 'Handler');
-  Guard.CheckTrue(Assigned(TransactionFactory), 'TransactionFactory not assigned');
-  FHandler := Handler;
-  FTransactionFactory := TransactionFactory;
+  FHandler := Utilities.CheckNotNullAndSet(Handler, 'Handler');
+  FTransactionFactory := Utilities.CheckNotNullAndSet<TFunc<ITransactionHandler, ITransaction>>(TransactionFactory, 'TransactionFactory');
 end;
 
 function TTransactional.StartTransaction: ITransaction;

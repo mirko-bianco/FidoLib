@@ -30,13 +30,13 @@ uses
   System.Threading,
   System.NetEncoding,
 
-  Spring,
   Spring.Collections,
 
   Redis.Commons,
   Redis.Command,
   Redis.Client,
 
+  Fido.Utilities,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Consumer.PubSub.Intf,
@@ -73,8 +73,7 @@ constructor TRedisPubSubEventsDrivenConsumer.Create(const RedisClientFactoryFunc
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClientFactoryFunc, 'RedisClientFactoryFunc');
-  FRedisClientFactoryFunc := RedisClientFactoryFunc;
+  FRedisClientFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<IFidoRedisClient>>(RedisClientFactoryFunc, 'RedisClientFactoryFunc');
 
   FTasks := TCollections.CreateDictionary<string, ITask>;
   FClosing := False;

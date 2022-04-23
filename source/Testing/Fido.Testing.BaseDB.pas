@@ -25,9 +25,9 @@ unit Fido.Testing.BaseDB;
 interface
 
 uses
-  Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Resource.StreamReader,
   Fido.Resource.StreamReader.Intf,
   Fido.Resource.StringReader,
@@ -101,10 +101,8 @@ constructor TBaseDBTest.Create(
   const TransactionHandler: ITransactionHandler;
   const StringResourceReader: IStringResourceReader);
 begin
-  Guard.CheckNotNull(TransactionHandler, 'TransactionHandler');
-  Guard.CheckNotNull(StringResourceReader, 'StringResourceReader');
-  FStringResReader := StringResourceReader;
-  FTransaction := TTransaction.Create(TransactionHandler);
+  FStringResReader := Utilities.CheckNotNullAndSet(StringResourceReader, 'StringResourceReader');
+  FTransaction := TTransaction.Create(Utilities.CheckNotNullAndSet(TransactionHandler, 'TransactionHandler'));
 end;
 
 destructor TBaseDBTest.Destroy;

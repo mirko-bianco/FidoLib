@@ -33,9 +33,9 @@ uses
   System.Threading,
   System.Generics.Collections,
 
-  Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Boxes,
   Fido.JSON.Marshalling,
 
@@ -64,8 +64,7 @@ constructor TPubSubEventsDrivenListener<PayloadType>.Create(const PubSubConsumer
 begin
   inherited Create;
 
-  Guard.CheckNotNull(PubSubConsumer, 'PubSubConsumer');
-  FPubSubConsumer := PubSubConsumer;
+  FPubSubConsumer := Utilities.CheckNotNullAndSet(PubSubConsumer, 'PubSubConsumer');
 end;
 
 procedure TPubSubEventsDrivenListener<PayloadType>.Stop;

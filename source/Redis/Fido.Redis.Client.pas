@@ -34,6 +34,7 @@ uses
   Redis.Commons,
   Redis.Client,
 
+  Fido.Utilities,
   Fido.Redis.Client.Intf;
 
 type
@@ -65,8 +66,7 @@ constructor TFidoRedisClient.Create(const RedisClient: IRedisClient);
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClient, 'RedisClient');
-  FRedisClient := RedisClient;
+  FRedisClient := Utilities.CheckNotNullAndSet(RedisClient, 'RedisClient');
 end;
 
 function TFidoRedisClient.DEL(const Key: string): Integer;

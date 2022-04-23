@@ -25,8 +25,7 @@ unit Fido.Win.Db.Transaction.Handler.ADO;
 interface
 
 uses
-  Spring,
-
+  Fido.Utilities,
   Fido.Win.Db.Connections.Ado,
   Fido.Db.Transaction.Handler.Intf,
   Fido.Db.Transaction.Handler.Base;
@@ -52,8 +51,7 @@ implementation
 
 constructor TADOTransactionHandler.Create(const Connections: TAdoConnections);
 begin
-  Guard.CheckNotNull(Connections, 'Connections');
-  FConnections := Connections;
+  FConnections := Utilities.CheckNotNullAndSet(Connections, 'Connections');
 end;
 
 procedure TADOTransactionHandler.DoCommit;
