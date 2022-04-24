@@ -36,6 +36,8 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Functional,
+  Fido.Functional.Tries,
   Fido.Boxes,
   Fido.JSON.Marshalling,
 
@@ -108,11 +110,14 @@ begin
     Exit;
 
   FLock.BeginRead;
-  try
-    Items := FSubscriptions.ToArray;
-  finally
-    FLock.EndRead;
-  end;
+
+  Items := &Try<Void>.New(Void.Get).Map<TArray<TPair<string, TConsumerData>>>(Void.MapFunc<TArray<TPair<string, TConsumerData>>>(function: TArray<TPair<string, TConsumerData>>
+    begin
+      Result := FSubscriptions.ToArray;
+    end)).Match(procedure
+    begin
+      FLock.EndRead;
+    end);
 
   if Length(Items) = 0 then
     Exit;
@@ -120,14 +125,21 @@ begin
   TCollections.CreateList<TPair<string, TConsumerData>>(Items).ForEach(
     procedure(const Item: TPair<string, TConsumerData>)
     var
-      Value: PayloadType;
+      Value: Nullable<PayloadType>;
       Ctx: TRttiContext;
       RttiType: TRttiType;
       LItem: TPair<string, TConsumerData>;
+      CanContinue: Boolean;
     begin
+      CanContinue := True;
       LItem := Item;
-      while Assigned(FActive) and FActive.Value and QueueConsumer.Pop(Item.Key, Value) do
+      while Assigned(FActive) and FActive.Value and CanContinue do
       begin
+        Value := QueueConsumer.Pop(Item.Key);
+        CanContinue := Value.HasValue;
+        if not CanContinue then
+          Break;
+
         Ctx := TRttiContext.Create;
         RttiType := Ctx.GetType(Item.Value.Consumer.ClassType);
 
@@ -140,11 +152,13 @@ begin
           ForEach(
             procedure(const Method: TRttiMethod)
             begin
-              try
-                Method.Invoke(LItem.Value.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Value, Method));
-              except
-                QueueConsumer.PushBack(LItem.Key, Value);
-              end;
+              TryOut<Void>.New(function: Void
+                begin
+                  Method.Invoke(LItem.Value.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Value, Method));
+                end).Match(function(const E: TObject): Void
+                begin
+                  QueueConsumer.PushBack(LItem.Key, Value).Value;
+                end);
             end);
       end;
     end);
@@ -168,11 +182,8 @@ procedure TQueueEventsDrivenListener<PayloadType>.SubscribeTo(
   const ConsumerData: TConsumerData);
 begin
   FLock.BeginWrite;
-  try
-    FSubscriptions.Items[TEventsDrivenUtilities.FormatKey(Channel, EventName)] := ConsumerData;
-  finally
-    FLock.EndWrite;
-  end;
+  FSubscriptions.Items[TEventsDrivenUtilities.FormatKey(Channel, EventName)] := ConsumerData;
+  FLock.EndWrite;
 end;
 
 procedure TQueueEventsDrivenListener<PayloadType>.UnsubscribeFrom(
@@ -180,11 +191,13 @@ procedure TQueueEventsDrivenListener<PayloadType>.UnsubscribeFrom(
   const EventName: string);
 begin
   FLock.BeginWrite;
-  try
-    FSubscriptions.Remove(TEventsDrivenUtilities.FormatKey(Channel, EventName));
-  finally
-    FLock.EndWrite;
-  end;
+  TryOut<Void>.New(function: Void
+    begin
+      FSubscriptions.Remove(TEventsDrivenUtilities.FormatKey(Channel, EventName));
+    end).Match(procedure
+    begin
+      FLock.EndWrite;
+    end);
 end;
 
 end.

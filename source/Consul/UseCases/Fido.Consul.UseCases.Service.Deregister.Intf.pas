@@ -24,11 +24,14 @@ unit Fido.Consul.UseCases.Service.Deregister.Intf;
 
 interface
 
+uses
+  Fido.Functional;
+
 type
   IConsulDeregisterServiceUseCase = interface(IInvokable)
     ['{7D81087C-8228-4081-AC56-FEA7B60660F6}']
 
-    procedure Run(const ServiceId: string);
+    function Run(const ServiceId: string; const Timeout: Cardinal = INFINITE): Context<Void>;
   end;
 
 implementation

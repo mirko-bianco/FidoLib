@@ -45,9 +45,10 @@ type
     FApiServer: IApiServer;
     FConsulService: IConsulService;
     FServiceName: string;
+    FTimeout: Cardinal;
     FHealthEndpoint: string;
   public
-    constructor Create(const ApiServer: IApiServer; const ConsulService: IConsulService; const ServiceName: string);
+    constructor Create(const ApiServer: IApiServer; const ConsulService: IConsulService; const ServiceName: string; const Timeout: Cardinal);
     destructor Destroy; override;
 
     Function Port: Word;
@@ -66,12 +67,14 @@ implementation
 constructor TConsulAwareApiServer.Create(
   const ApiServer: IApiServer;
   const ConsulService: IConsulService;
-  const ServiceName: string);
+  const ServiceName: string;
+  const Timeout: Cardinal);
 begin
   inherited Create;
   FApiServer := Utilities.CheckNotNullAndSet(ApiServer, 'ApiServer');
   FConsulService := Utilities.CheckNotNullAndSet(ConsulService, 'ConsulService');
   FServiceName := ServiceName;
+  FTimeout := Timeout;
   FHealthEndpoint := '';
 end;
 
@@ -154,8 +157,8 @@ procedure TConsulAwareApiServer.SetActive(const Value: Boolean);
 begin
   FApiServer.SetActive(Value);
   case Value of
-    True: FConsulService.Register(FServiceName, FApiServer.Port, FHealthEndpoint);
-    False: FConsulService.Deregister;
+    True: FConsulService.Register(FServiceName, FApiServer.Port, FHealthEndpoint, FTimeout);
+    False: FConsulService.Deregister(FTimeout);
   end;
 end;
 

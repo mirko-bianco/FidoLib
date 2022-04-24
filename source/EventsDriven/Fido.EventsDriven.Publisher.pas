@@ -32,6 +32,9 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
+  Fido.Functional,
+  Fido.Functional.Retries,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Publisher.Intf,
@@ -40,12 +43,14 @@ uses
 
 type
   TEventsDrivenPublisher<PayloadType> = class(TInterfacedObject, IEventsDrivenPublisher<PayloadType>)
-  private var
+  private
     FProducerFactoryFunc: TFunc<IEventsDrivenProducer<PayloadType>>;
+    function DoPush: Context<TArray<TValue>>.MonadFunc<Boolean>;
+
   public
     constructor Create(const ProducerFactoryFunc: TFunc<IEventsDrivenProducer<PayloadType>>);
 
-    function Trigger(const Channel: string; const EventName: string; const Payload: PayloadType): Boolean;
+    function Trigger(const Channel: string; const EventName: string; const Payload: PayloadType): Context<Boolean>;
   end;
 
 implementation
@@ -56,24 +61,27 @@ constructor TEventsDrivenPublisher<PayloadType>.Create(const ProducerFactoryFunc
 begin
   inherited Create;
 
-  Guard.CheckTrue(Assigned(ProducerFactoryFunc), 'ProducerFactoryFunc');
-  FProducerFactoryFunc := ProducerFactoryFunc;
+  FProducerFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<IEventsDrivenProducer<PayloadType>>>(ProducerFactoryFunc, 'ProducerFactoryFunc');
+end;
+
+function TEventsDrivenPublisher<PayloadType>.DoPush: Context<TArray<TValue>>.MonadFunc<Boolean>;
+var
+  FactoryFunc: TFunc<IEventsDrivenProducer<PayloadType>>;
+begin
+  FactoryFunc := FProducerFactoryFunc;
+
+  Result := function(const PushData: TArray<TValue>): Context<Boolean>
+    begin
+      Result := FactoryFunc().Push(PushData[0].AsType<string>, PushData[1].AsType<PayloadType>);
+    end;
 end;
 
 function TEventsDrivenPublisher<PayloadType>.Trigger(
   const Channel: string;
   const EventName: string;
-  const Payload: PayloadType): Boolean;
-var
-  Producer: IEventsDrivenProducer<PayloadType>;
+  const Payload: PayloadType): Context<Boolean>;
 begin
-  Producer := FProducerFactoryFunc();
-
-  Result := Retries.Run<Boolean>(
-    function: Boolean
-    begin
-      Result := Producer.Push(TEventsDrivenUtilities.FormatKey(Channel, EventName), Payload);
-    end);
+  Result := Retry<TArray<TValue>>.New([TEventsDrivenUtilities.FormatKey(Channel, EventName), TValue.From<PayloadType>(Payload)]).Map<Boolean>(DoPush(), Retries.GetRetriesOnExceptionFunc());
 end;
 
 end.

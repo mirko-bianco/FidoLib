@@ -37,8 +37,8 @@ type
   public
     constructor Create(const ErrorCode: Integer; const ErrorMessage: string);
 
-    property ErrorCode: Integer read FErrorCode;
-    property ErrorMessage: string read FErrorMessage;
+    property ErrorCode: Integer read FErrorCode write FErrorCode;
+    property ErrorMessage: string read FErrorMessage write FErrorMessage;
   end;
 
 implementation

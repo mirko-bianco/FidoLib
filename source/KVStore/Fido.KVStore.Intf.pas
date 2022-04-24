@@ -24,13 +24,16 @@ unit Fido.KVStore.Intf;
 
 interface
 
+uses
+  Fido.Functional;
+
 type
   IKVStore = interface(IInvokable)
   ['{A52C2B4B-D8A0-483C-9834-2CD2504CBCF1}']
 
-    function Get(const Key: string): string;
-    function Put(const Key: string; const Value: string): Boolean;
-    function Delete(const Key: string): Boolean;
+    function Get(const Key: string; const Timeout: Cardinal = INFINITE): Context<string>;
+    function Put(const Key: string; const Value: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
+    function Delete(const Key: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
 implementation

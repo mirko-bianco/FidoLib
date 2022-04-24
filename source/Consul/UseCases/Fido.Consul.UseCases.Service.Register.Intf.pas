@@ -25,13 +25,14 @@ unit Fido.Consul.UseCases.Service.Register.Intf;
 interface
 
 uses
-  Fido.Consul.Types;
+  Fido.Consul.Types,
+  Fido.Functional;
 
 type
   IConsulRegisterServiceUseCase = interface(IInvokable)
     ['{CDB349FC-0018-4EDF-9ACE-FD0BE6A5C3BC}']
 
-    function Run(const ServiceName: string; const Address: string; const Port: Integer; const HealthCheck: TConsulHealthCheck; const ServiceId: string = ''): string;
+    function Run(const ServiceName: string; const Address: string; const Port: Integer; const HealthCheck: TConsulHealthCheck; const ServiceId: string = ''; const Timeout: Cardinal = INFINITE): Context<string>;
   end;
 
 implementation

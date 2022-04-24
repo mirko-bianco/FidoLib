@@ -12,6 +12,7 @@ uses
   Spring,
   Spring.Mocking,
 
+  Fido.Functional,
   Fido.Testing.Mock.Utils,
   Fido.EventsDriven.Consumer.Queue.Intf,
 
@@ -40,29 +41,28 @@ var
   Consumer: IQueueEventsDrivenConsumer<string>;
   Key: string;
   Payload: string;
-  Result: Boolean;
+  Result: Nullable<string>;
   ExpectedResult: Boolean;
-  ResultPayload: string;
 begin
   Key := MockUtils.SomeString;
   Payload := MockUtils.SomeString;
   ExpectedResult := True;
 
   Client := Mock<IFidoRedisClient>.Create;
-  Client.Setup.Returns<Nullable<string>>(TNetEncoding.Base64.Encode(Payload)).When.RPOP(Key);
+  Client.Setup.Returns<Context<Nullable<string>>>(Context<Nullable<string>>.New(TNetEncoding.Base64.Encode(Payload))).When.RPOP(Key);
 
   Consumer := TRedisQueueEventsDrivenConsumer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure
     begin
-      Result := Consumer.Pop(Key, ResultPayload);
+      Result := Consumer.Pop(Key);
     end);
 
-  Assert.AreEqual(ExpectedResult, Result);
-  Assert.AreEqual(Payload, ResultPayload);
-  Client.Received(Times.Once).RPOP(Key);
-  Client.Received(Times.Never).RPOP(Arg.IsNotIn<string>(Key));
+  Assert.AreEqual(ExpectedResult, Result.HasValue);
+  Assert.AreEqual(Payload, Result.Value);
+  Client.Received(Times.Once).RPOP(Key, INFINITE);
+  Client.Received(Times.Never).RPOP(Arg.IsNotIn<string>(Key), Arg.IsNotIn<Cardinal>([INFINITE]));
 end;
 
 procedure TRedisEventsDrivenConsumerQueueTests.PopReturnsFalseWhenNotFound;
@@ -71,8 +71,7 @@ var
   Consumer: IQueueEventsDrivenConsumer<string>;
   Key: string;
   Payload: string;
-  ResultPayload: string;
-  Result: Boolean;
+  Result: Nullable<string>;
   ExpectedResult: Boolean;
   NullableString: Nullable<string>;
 begin
@@ -81,19 +80,19 @@ begin
   ExpectedResult := False;
 
   Client := Mock<IFidoRedisClient>.Create;
-  Client.Setup.Returns<Nullable<string>>(NullableString).When.RPOP(Key);
+  Client.Setup.Returns<Context<Nullable<string>>>(Context<Nullable<string>>.New(NullableString)).When.RPOP(Key);
 
   Consumer := TRedisQueueEventsDrivenConsumer.Create(Client);
 
   Assert.WillNotRaiseAny(
     procedure
     begin
-      Result := Consumer.Pop(Key, ResultPayload);
+      Result := Consumer.Pop(Key);
     end);
 
-  Assert.AreEqual(ExpectedResult, Result);
-  Client.Received(Times.Once).RPOP(Key);
-  Client.Received(Times.Never).RPOP(Arg.IsNotIn<string>(Key));
+  Assert.AreEqual(ExpectedResult, Result.HasValue);
+  Client.Received(Times.Once).RPOP(Key, INFINITE);
+  Client.Received(Times.Never).RPOP(Arg.IsNotIn<string>(Key), Arg.IsNotIn<Cardinal>([INFINITE]));
 end;
 
 procedure TRedisEventsDrivenConsumerQueueTests.PushBackPushesEndodedData;
@@ -109,7 +108,7 @@ begin
   EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
-  Client.Setup.Executes.When.LPUSH(Key, EncodedPayload);
+  Client.Setup.Returns<Context<Integer>>(Context<Integer>.New(1)).When.LPUSH(Key, EncodedPayload, INFINITE);
 
   Consumer := TRedisQueueEventsDrivenConsumer.Create(Client);
 
@@ -119,8 +118,8 @@ begin
       Consumer.PushBack(Key, Payload);
     end);
 
-  Client.Received(Times.Once).LPUSH(Key, EncodedPayload);
-  Client.Received(Times.Never).LPUSH(Arg.IsNotIn<string>(Key), Arg.IsNotIn<string>([EncodedPayload]));
+  Client.Received(Times.Once).LPUSH(Key, EncodedPayload, INFINITE);
+  Client.Received(Times.Never).LPUSH(Arg.IsNotIn<string>(Key), Arg.IsNotIn<string>([EncodedPayload]), Arg.IsNotIn<Cardinal>([INFINITE]));
 end;
 
 initialization

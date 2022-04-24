@@ -227,10 +227,16 @@ begin
         Path: string;
         ParameterIndex: Integer;
         ParameterValue: string;
+        TextBeforeTheParams: string;
+        SanitizedEndpointPath: string;
+        SanitizedURI: string;
       begin
-        RegExpPath := StringReplace(LEndPoint.Path, '/', '\/', [rfReplaceAll]);
+        TextBeforeTheParams := Copy(LEndPoint.Path, 1, Pos('{', LEndPoint.Path) - 2);
+        SanitizedEndpointPath := StringReplace(LEndPoint.Path, TextBeforeTheParams, '', []);
+        SanitizedURI := Copy(URI, Pos(TextBeforeTheParams, URI) + Length(TextBeforeTheParams));
+        RegExpPath := StringReplace(SanitizedEndpointPath, '/', '\/', [rfReplaceAll]);
 
-        Path := LEndPoint.Path;
+        Path := SanitizedEndpointPath;
         ParameterIndex := -1;
         with TRegEx.Matches(RegExpPath, '{[\s\S][^{]+}').GetEnumerator do
         begin
@@ -243,7 +249,7 @@ begin
                 begin
                   Path := StringReplace(Path, '{' + Current.Key + '}', Current.Value, [rfIgnoreCase]);
                 end;
-              ParameterValue := StringReplace(URI, Copy(Path, 1, Pos('{' + EndPointParameter.Name.ToUpper + '}', Path.ToUpper) - 1), '', [rfIgnoreCase]);
+              ParameterValue := StringReplace(SanitizedURI, Copy(Path, 1, Pos('{' + EndPointParameter.Name.ToUpper + '}', Path.ToUpper) - 1), '', [rfIgnoreCase]);
               if Pos('/', ParameterValue) > 0 then
                 ParameterValue := Copy(ParameterValue, 1, Pos('/', ParameterValue) - 1);
             end;

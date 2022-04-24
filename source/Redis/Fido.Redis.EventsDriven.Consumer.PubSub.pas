@@ -37,6 +37,7 @@ uses
   Redis.Client,
 
   Fido.Utilities,
+  Fido.Functional,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Consumer.PubSub.Intf,
@@ -86,8 +87,10 @@ procedure TRedisPubSubEventsDrivenConsumer.Subscribe(
 begin
   FTasks.Items[TEventsDrivenUtilities.FormatKey(Channel, EventName)] := TTask.Run(
     procedure
+    var
+      LValue: Context<Void>;
     begin
-      FRedisClientFactoryFunc().SUBSCRIBE(
+      LValue := FRedisClientFactoryFunc().SUBSCRIBE(
         TEventsDrivenUtilities.FormatKey(Channel, EventName),
         procedure(key: string; EncodedPayload: string)
         var
@@ -100,6 +103,7 @@ begin
         begin
           Result := Assigned(Self) and (not FClosing);
         end);
+      LValue.Value;
     end);
 end;
 

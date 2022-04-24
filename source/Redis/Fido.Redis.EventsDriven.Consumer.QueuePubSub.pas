@@ -38,6 +38,7 @@ uses
   Redis.Client,
 
   Fido.Utilities,
+  Fido.Functional,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Consumer.PubSub.Intf,
@@ -83,8 +84,11 @@ begin
 
   EncodedValue := Retries.Run<Nullable<string>>(
     function: Nullable<string>
+    var
+      LValue: Context<Nullable<string>>;
     begin
-      Result := RedisClient.RPOP(Key);
+      LValue := RedisClient.RPOP(Key);
+      Result := LValue;
     end);
 
   if not EncodedValue.HasValue then
@@ -120,8 +124,10 @@ begin
   Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
   FTasks.Items[Key] := TTask.Run(
     procedure
+    var
+      LValue: Context<Void>;
     begin
-      FRedisClientFactoryFunc().SUBSCRIBE(
+      LValue := FRedisClientFactoryFunc().SUBSCRIBE(
         Key,
         procedure(key: string; QueueKey: string)
         begin
@@ -131,6 +137,7 @@ begin
         begin
           Result := Assigned(Self) and (not FClosing);
         end);
+      LValue.Value;
     end);
 end;
 

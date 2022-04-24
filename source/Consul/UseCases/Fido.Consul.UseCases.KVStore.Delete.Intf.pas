@@ -24,11 +24,14 @@ unit Fido.Consul.UseCases.KVStore.Delete.Intf;
 
 interface
 
+uses
+  Fido.Functional;
+
 type
   IConsulKVStoreDeleteKeyUseCase = interface(IInvokable)
     ['{865A06DA-3A22-4854-828F-5F0978EA51B2}']
 
-    function Run(const Key: string): Boolean;
+    function Run(const Key: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
 implementation

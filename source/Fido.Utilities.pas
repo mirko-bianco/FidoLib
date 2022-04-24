@@ -45,7 +45,6 @@ type
       class function IsEmpty(const Value: string): TCheckPredicate; static;
       class function &Not(const Check: TCheckPredicate): TCheckPredicate; static;
       class function IsNotEmpty(const Value: string): TCheckPredicate; static;
-
     end;
   end;
 

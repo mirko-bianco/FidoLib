@@ -11,6 +11,7 @@ uses
   Spring,
   Spring.Mocking,
 
+  Fido.Functional,
   Fido.Testing.Mock.Utils,
   Fido.EventsDriven.Consumer.PubSub.Intf,
   Fido.EventsDriven.Broker.PubSub.Intf,
@@ -34,7 +35,7 @@ type
   end;
 
   TTestBroker = class(TInterfacedObject, IPubSubEventsDrivenBroker)
-    function Push(const Key: string; const Payload: string): Boolean;
+    function Push(const Key: string; const Payload: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
 
     procedure Subscribe(const Consumer: IPubSubEventsDrivenConsumer; const Key: string; const OnNotify: TProc<string, string>);
     procedure Unsubscribe(const Consumer: IPubSubEventsDrivenConsumer; const Key: string);
@@ -96,9 +97,9 @@ end;
 
 { TTestBroker }
 
-function TTestBroker.Push(const Key, Payload: string): Boolean;
+function TTestBroker.Push(const Key, Payload: string; const Timeout: Cardinal): Context<Boolean>;
 begin
-  Result := True;
+  Result := Context<Boolean>.New(True);
 end;
 
 procedure TTestBroker.Stop(const Consumer: IPubSubEventsDrivenConsumer);

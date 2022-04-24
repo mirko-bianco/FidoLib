@@ -45,7 +45,7 @@ The Fido library depends on the following open source libraries:
 1) clone the source to a location of your choice
 2) Create a system environment variable `FIDOLIB` pointing to the `fidolib\source` folder
 3) Go to Delphi menu -> Tools -> Options... -> Delphi Options  -> Library
-4) add `$(FIDOLIB);$(FIDOLIB)\Actions;$(FIDOLIB)\Adapter;$(FIDOLIB)\Binding;$(FIDOLIB)\Collections;$(FIDOLIB)\Db;$(FIDOLIB)\DesignPatterns;$(FIDOLIB)\Environment;$(FIDOLIB)\Events;$(FIDOLIB)\Http;$(FIDOLIB)\Interfaces;$(FIDOLIB)\Json;$(FIDOLIB)\JWT;$(FIDOLIB)\Logging;$(FIDOLIB)\Model;$(FIDOLIB)\Resources;$(FIDOLIB)\Api\Client;$(FIDOLIB)\Api\Client\ElasticSearch;$(FIDOLIB)\Api\Client\ElasticSearch\Dto;$(FIDOLIB)\Api\Client\VirtualApi;$(FIDOLIB)\Api\Server;$(FIDOLIB)\Api\Server\Resources;$(FIDOLIB)\Testing;$(FIDOLIB)\VirtualStatement;$(FIDOLIB)\Web\Server;$(FIDOLIB)\Web\Server\WebSocket;$(FIDOLIB)\Web\Client\WebSocket;$(FIDOLIB)\Async;$(FIDOLIB)\Slots;$(FIDOLIB)\Api\Client\Consul;$(FIDOLIB)\Consul;$(FIDOLIB)\Consul\UseCases;$(FIDOLIB)\KVStore;$(FIDOLIB)\EventsDriven;$(FIDOLIB)\Redis` to the Library path (for all the available platforms.
+4) add `$(FIDOLIB);$(FIDOLIB)\Actions;$(FIDOLIB)\Adapter;$(FIDOLIB)\Binding;$(FIDOLIB)\Collections;$(FIDOLIB)\Db;$(FIDOLIB)\DesignPatterns;$(FIDOLIB)\Environment;$(FIDOLIB)\Events;$(FIDOLIB)\Http;$(FIDOLIB)\Interfaces;$(FIDOLIB)\Json;$(FIDOLIB)\JWT;$(FIDOLIB)\Logging;$(FIDOLIB)\Model;$(FIDOLIB)\Resources;$(FIDOLIB)\Api\Client;$(FIDOLIB)\Api\Client\ElasticSearch;$(FIDOLIB)\Api\Client\ElasticSearch\Dto;$(FIDOLIB)\Api\Client\VirtualApi;$(FIDOLIB)\Api\Server;$(FIDOLIB)\Api\Server\Resources;$(FIDOLIB)\Testing;$(FIDOLIB)\VirtualStatement;$(FIDOLIB)\Web\Server;$(FIDOLIB)\Web\Server\WebSocket;$(FIDOLIB)\Web\Client\WebSocket;$(FIDOLIB)\Async;$(FIDOLIB)\Slots;$(FIDOLIB)\Api\Client\Consul;$(FIDOLIB)\Consul;$(FIDOLIB)\Consul\UseCases;$(FIDOLIB)\KVStore;$(FIDOLIB)\EventsDriven;$(FIDOLIB)\Redis;$(FIDOLIB)\Consul\Gateways` to the Library path (for all the available platforms.
 
 ## Building
 
@@ -54,7 +54,7 @@ The Fido library depends on the following open source libraries:
 
 ## The packages
 
-The Fido Library is made of 3 main packages
+The Fido Library is made of 4 main packages
 
 - **[FidoCore](./FidoCore.md)** - Contains the core functionalities that are not linked or dependent on any specific OS.
 

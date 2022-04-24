@@ -29,38 +29,49 @@ uses
 
   Spring,
 
+  Fido.Functional,
   Fido.KVStore.Intf,
   Fido.JSON.Marshalling;
 
 type
   JSONKVStore = record
   public
-    class function Get<T>(const KVStore: IKVStore; const Key: string): T; static;
-    class function Put<T>(const KVStore: IKVStore; const Key: string; const Value: T): Boolean; static;
+    class function Get<T>(const KVStore: IKVStore; const Key: string; const Timeout: Cardinal = INFINITE): T; static;
+    class function Put<T>(const KVStore: IKVStore; const Key: string; const Value: T; const Timeout: Cardinal = INFINITE): Boolean; static;
   end;
 
 implementation
 
 { JSONKVStore }
 
-class function JSONKVStore.Get<T>(const KVStore: IKVStore; const Key: string): T;
+class function JSONKVStore.Get<T>(
+  const KVStore: IKVStore;
+  const Key: string;
+  const Timeout: Cardinal): T;
 var
-  Value: string;
+  Value: Context<string>;
 begin
   Guard.CheckNotNull(KVStore, 'KVStore');
 
-  Value := KVStore.Get(Key);
-  if Value.IsEmpty then
+  Value := KVStore.Get(Key, Timeout);
+  if Value.Value.IsEmpty then
     Exit(Default(T));
 
   Result := JSONUnmarshaller.To<T>(Value);
 end;
 
-class function JSONKVStore.Put<T>(const KVStore: IKVStore; const Key: string; const Value: T): Boolean;
+class function JSONKVStore.Put<T>(
+  const KVStore: IKVStore;
+  const Key: string;
+  const Value: T;
+  const Timeout: Cardinal): Boolean;
+var
+  CallResult: Context<Boolean>;
 begin
   Guard.CheckNotNull(KVStore, 'KVStore');
 
-  Result := KVStore.Put(Key, JSONMarshaller.From<T>(Value))
+  CallResult := KVStore.Put(Key, JSONMarshaller.From<T>(Value), Timeout);
+  Result := CallResult;
 end;
 
 end.

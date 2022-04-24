@@ -37,7 +37,7 @@ type
     class function GetRetriesOnExceptionFunc: TPredicate<Exception>; static;
 
     class function Run<T>(const Func: TFunc<T>; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): T; overload; static;
-    class procedure Run(const Proc: TProc; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250); overload; static;
+    class function Run(const Proc: TProc; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Boolean; overload; static;
   end;
 
 implementation
@@ -53,11 +53,11 @@ begin
   end;
 end;
 
-class procedure Retries.Run(
+class function Retries.Run(
   const Proc: TProc;
   const RetryOnException: TPredicate<Exception>;
   const MaxRetries: Integer;
-  const RetryIntervalInMSec: Integer);
+  const RetryIntervalInMSec: Integer): Boolean;
 var
   OnException: TPredicate<Exception>;
   Index: Integer;
@@ -72,11 +72,13 @@ begin
   if Assigned(RetryOnException) then
     OnException := RetryOnException;
 
+  Result := False;
   FailCount := 0;
   for Index := 1 to MaxRetries do
   begin
     try
       Proc();
+      Result := True;
       Exit;
     except
       on E: Exception do
