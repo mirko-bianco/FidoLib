@@ -99,10 +99,13 @@ begin
 end;
 
 function TFidoRedisClient.HasRedisNullableValue(const Value: TRedisNullable<string>): Context<Boolean>;
+var
+  LValue: TRedisNullable<string>;
 begin
+  LValue := Value;
   Result := function: Boolean
     begin
-      Result := Value.HasValue;
+      Result := LValue.HasValue;
     end;
 end;
 

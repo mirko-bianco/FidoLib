@@ -167,10 +167,13 @@ begin
 end;
 
 constructor ThenElse.New(const Flag: Context<Boolean>);
+var
+  LFlag: Context<Boolean>;
 begin
+  LFlag := Flag;
   FFlagFunc := function: Context<Boolean>
     begin
-      Result := Flag;
+      Result := LFlag;
     end;
 end;
 
