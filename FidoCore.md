@@ -1902,27 +1902,27 @@ var
   Func3: TFunc<Integer>;
   Func4: Context<Void>.FunctorFunc<Integer>;
 begin
-  // Transaltes to procedure(const Value: Integer)
+  // Translates to procedure(const Value: Integer)
   Proc1 := Void.MapProc<Integer>(function(const Value: Integer): Void
     begin
     end);
     
-  // Transaltes to function(const Value: Integer): Void
+  // Translates to function(const Value: Integer): Void
   Func1 := Void.MapProc<Integer>(procedure(const Value: Integer)
     begin
     end);
     
-  // Transaltes to function(const Value:void): Void
+  // Translates to function(const Value:void): Void
   Func2 := Void.MapProc(procedure
     begin
     end);
     
-  // Transaltes to function: Integer
+  // Translates to function: Integer
   Func3 := Void.MapFunc<Integer>(function(const Value: Void): Integer
     begin
     end);
     
-  // Transaltes to function(const Value: Void): Integer
+  // Translates to function(const Value: Void): Integer
   Func4 := Void.MapFunc<Integer>(function: Integer
     begin
     end);
