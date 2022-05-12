@@ -39,7 +39,7 @@ type
   Retry = record
     class function Map<TOut>(const Func: Context<TOut>; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload; static;//Functor and Applicative
 
-    class function MapAsync<TOut>(const Func: Context<TOut>; const Timeout: Cardinal = INFINITE; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload; static;//Functor and Applicative
+    class function MapAsync<TOut>(const Func: Context<TOut>; const Timeout: Cardinal = INFINITE; const Paused: Boolean = False; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload; static;//Functor and Applicative
   end;
 
   Retry<T> = record
@@ -59,8 +59,8 @@ type
     function Map<TOut>(const Func: Context<T>.FunctorFunc<TOut>; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload;//Functor and Applicative
     function Map<TOut>(const Func: Context<T>.MonadFunc<TOut>; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload;//Monad
 
-    function MapAsync<TOut>(const Func: Context<T>.FunctorFunc<TOut>; const Timeout: Cardinal = INFINITE; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload;//Functor and Applicative
-    function MapAsync<TOut>(const Func: Context<T>.MonadFunc<TOut>; const Timeout: Cardinal = INFINITE; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload;//Monad
+    function MapAsync<TOut>(const Func: Context<T>.FunctorFunc<TOut>; const Timeout: Cardinal = INFINITE; const Paused: Boolean = False; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload;//Functor and Applicative
+    function MapAsync<TOut>(const Func: Context<T>.MonadFunc<TOut>; const Timeout: Cardinal = INFINITE; const Paused: Boolean = False; const RetryOnException: TPredicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload;//Monad
   end;
 
 implementation
@@ -88,6 +88,7 @@ end;
 function Retry<T>.MapAsync<TOut>(
   const Func: Context<T>.MonadFunc<TOut>;
   const Timeout: Cardinal;
+  const Paused: Boolean;
   const RetryOnException: TPredicate<Exception>;
   const MaxRetries: Integer;
   const RetryIntervalInMSec: Integer): Context<TOut>;
@@ -102,12 +103,14 @@ begin
     begin
       Result := Retries.Run<TOut>(LSelf.DoTry<TOut>(Func, Value), RetryOnException, MaxRetries, RetryIntervalInMSec);
     end,
-    Timeout);
+    Timeout,
+    Paused);
 end;
 
 function Retry<T>.MapAsync<TOut>(
   const Func: Context<T>.FunctorFunc<TOut>;
   const Timeout: Cardinal;
+  const Paused: Boolean;
   const RetryOnException: TPredicate<Exception>;
   const MaxRetries: Integer;
   const RetryIntervalInMSec: Integer): Context<TOut>;
@@ -122,7 +125,8 @@ begin
     begin
       Result := Retries.Run<TOut>(LSelf.DoTry<TOut>(Func, Value), RetryOnException, MaxRetries, RetryIntervalInMSec);
     end,
-    Timeout);
+    Timeout,
+    Paused);
 end;
 
 function Retry<T>.DoTry<TOut>(
@@ -174,7 +178,11 @@ end;
 {$ENDREGION}
 
 {$REGION ' Retry '}
-class function Retry.Map<TOut>(const Func: Context<TOut>; const RetryOnException: TPredicate<Exception>; const MaxRetries, RetryIntervalInMSec: Integer): Context<TOut>;
+class function Retry.Map<TOut>(
+  const Func: Context<TOut>;
+  const RetryOnException: TPredicate<Exception>;
+  const MaxRetries: Integer;
+  const RetryIntervalInMSec: Integer): Context<TOut>;
 begin
   Result := Context<TOut>.New(function: TOut
     begin
@@ -182,14 +190,21 @@ begin
     end);
 end;
 
-class function Retry.MapAsync<TOut>(const Func: Context<TOut>; const Timeout: Cardinal; const RetryOnException: TPredicate<Exception>; const MaxRetries, RetryIntervalInMSec: Integer): Context<TOut>;
+class function Retry.MapAsync<TOut>(
+  const Func: Context<TOut>;
+  const Timeout: Cardinal;
+  const Paused: Boolean;
+  const RetryOnException: TPredicate<Exception>;
+  const MaxRetries: Integer;
+  const RetryIntervalInMSec: Integer): Context<TOut>;
 begin
   Result := Context<TOut>.New(
     function: TOut
     begin
       Result := Retries.Run<TOut>(Func, RetryOnException, MaxRetries, RetryIntervalInMSec);
     end,
-    Timeout);
+    Timeout,
+    Paused);
 end;
 {$ENDREGION}
 

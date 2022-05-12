@@ -65,8 +65,8 @@ type
     function Map<TOut>(const Func: Context<T>.FunctorFunc<TOut>): TryOut<TOut>; overload; //Functor and Applicative
     function Map<TOut>(const Func: Context<T>.MonadFunc<TOut>): TryOut<TOut>; overload; //Monad
 
-    function MapAsync<TOut>(const Func: Context<T>.FunctorFunc<TOut>; const Timeout: Cardinal = INFINITE): TryOut<TOut>; overload; //Functor and Applicative
-    function MapAsync<TOut>(const Func: Context<T>.MonadFunc<TOut>; const Timeout: Cardinal = INFINITE): TryOut<TOut>; overload; //Monad
+    function MapAsync<TOut>(const Func: Context<T>.FunctorFunc<TOut>; const Timeout: Cardinal = INFINITE; const Paused: Boolean = False): TryOut<TOut>; overload; //Functor and Applicative
+    function MapAsync<TOut>(const Func: Context<T>.MonadFunc<TOut>; const Timeout: Cardinal = INFINITE; const Paused: Boolean = False): TryOut<TOut>; overload; //Monad
 
     function Match(const OnFailure: OnFailureEvent<T>; const OnFinally: TProc = nil): Context<T>; overload;
     function Match(const ExceptionClass: TExceptionClass; const ErrorMessage: string = ''; const OnFinally: TProc = nil): Context<T>; overload;
@@ -112,11 +112,12 @@ end;
 
 function &Try<T>.MapAsync<TOut>(
   const Func: Context<T>.MonadFunc<TOut>;
-  const Timeout: Cardinal): TryOut<TOut>;
+  const Timeout: Cardinal;
+  const Paused: Boolean): TryOut<TOut>;
 var
   LValue: Context<TOut>;
 begin
-  LValue := Context<T>.New(FValue).MapAsync<TOut>(Func, Timeout);
+  LValue := Context<T>.New(FValue).MapAsync<TOut>(Func, Timeout, Paused);
 
   Result := TryOut<TOut>.New(function: Context<TOut>
     begin
@@ -187,11 +188,12 @@ end;
 
 function &Try<T>.MapAsync<TOut>(
   const Func: Context<T>.FunctorFunc<TOut>;
-  const Timeout: Cardinal): TryOut<TOut>;
+  const Timeout: Cardinal;
+  const Paused: Boolean): TryOut<TOut>;
 var
   LValue: Context<TOut>;
 begin
-  LValue := Context<T>.New(FValue).MapAsync<TOut>(Func, Timeout);
+  LValue := Context<T>.New(FValue).MapAsync<TOut>(Func, Timeout, Paused);
   Result := TryOut<TOut>.New(function: Context<TOut>
     begin
       Result := LValue;

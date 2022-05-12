@@ -1805,6 +1805,9 @@ This implementation is inspired by this [article](https://adit.io/posts/2013-04-
 The context is a box that contains something. You can set up a new context using the following syntax:
 
 ```pascal
+const
+  TIMEOUT = 1000;
+  PAUSED = False;
 var
   ValueContext: Context<string>;
   ConContext: Context<string>;
@@ -1816,7 +1819,7 @@ begin
   FutureContext := Context<string>.New(function: string
     begin
       // Do something asyncronously
-    end, 1000);
+    end, TIMEOUT, PAUSED);
   FuncContext := Context<string>.New(function: string
     begin
       //Do something synchronously
@@ -1867,6 +1870,9 @@ begin
 Pretty boring stuff, but wait, now it gets interesting. If you can map the *contexed* value and a function and get another context out containing the new calculated value:
 
 ```pascal
+const
+  TIMEOUT = 1000;
+  PAUSED = False;
 var
   Value: Integer;
   MonadFunc: Context<string>.MonadFunc<Integer>;
@@ -1875,8 +1881,8 @@ begin
   // Maps the initial value with System.SysUtil.StrToInt function and returns 100 
   Value := Context<string>.New('100').Map<Integer>(StrToInt);  
   // Maps asyncronously the initial value with System.SysUtil.StrToInt function and returns 100.
-  // If StrToInt takes more than one second, it raises an exception. Hey... never said my examples would make sese...
-  Value := Context<string>.New('100').MapAsync<Integer>(StrToInt, 1000);
+  // If StrToInt takes more than one second, it raises an exception. Hey... never said my examples would make sense...
+  Value := Context<string>.New('100').MapAsync<Integer>(StrToInt, TIMEOUT, PAUSED);
   
   MonadFunc := function(const Value: string): Context<Integer>
     begin
@@ -2015,6 +2021,9 @@ The **Retry<T>**  construct allows you to try to execute a function for a certai
 Examples:  
 
 ```pascal
+const
+  TIMEOUT = 1000;
+  PAUSED = False;
 begin
   Retry<string>.New('100s').Map<Integer>(function(const Value: string): Integer
     begin
@@ -2024,7 +2033,7 @@ begin
   Retry<string>.New('100s').MapAsync<Integer>(function(const Value: string): Integer
     begin
       //Do something that could fail due to external circumstances
-    end, 100);
+    end, TIMEOUT, PAUSED);
     
   Retry<string>.New('100s').Map<Integer>(function(const Value: string): Context<Integer>
     begin
@@ -2034,7 +2043,7 @@ begin
   Retry<string>.New('100s').MapAsync<Integer>(function(const Value: string): Context<Integer>
     begin
       //Do something that could fail due to external circumstances
-    end, 100);
+    end, TIMEOUT, PAUSED);
     
   Retry.Map<Integer>(function: Context<Integer>
     begin
@@ -2044,7 +2053,7 @@ begin
   Retry.MapAsync<Integer>(function: Context<Integer>
     begin
       //Do something that could fail due to external circumstances
-    end, 100);
+    end, TIMEOUT, PAUSED);
   
   ...
 ```

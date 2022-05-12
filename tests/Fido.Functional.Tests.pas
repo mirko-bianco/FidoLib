@@ -685,6 +685,7 @@ begin
       Result := IntToStr(Value)
     end,
     100,
+    False,
     Retries.GetRetriesOnExceptionFunc());
 
   Assert.AreEqual('100', Result);
@@ -712,6 +713,7 @@ begin
       Result := IntToStr(Value)
     end,
     100,
+    False,
     Retries.GetRetriesOnExceptionFunc());
 
   Assert.AreEqual('100', Result);
@@ -727,6 +729,7 @@ begin
       Sleep(10);
     end,
     100,
+    False,
     Retries.GetRetriesOnExceptionFunc());
 
   Assert.AreEqual(True, Result);

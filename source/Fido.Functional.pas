@@ -52,14 +52,17 @@ type
     FunctorProc = reference to procedure(const Value: T);
   private
     FAssigned: string;
-    FFAsyncFunc: TFunc<T>;
-    FTimeout: Cardinal;
     FFunc: TFunc<T>;
 
+    FAsyncFunc: TFunc<T>;
+    FTimeout: Cardinal;
+    FFuture: IFuture<T>;
+
+    procedure StartFuture;
   public
     constructor New(const Value: T); overload;
     constructor New(const Value: Context<T>); overload;
-    constructor New(const Func: TFunc<T>; const Timeout: Cardinal); overload;
+    constructor New(const Func: TFunc<T>; const Timeout: Cardinal; const Paused: Boolean = False); overload;
     constructor New(const Func: TFunc<T>); overload;
 
     function IsAssigned: Boolean;
@@ -75,8 +78,8 @@ type
     function Map<TOut>(const Func: FunctorFunc<TOut>): Context<TOut>; overload; //Functor and Applicative
     function Map<TOut>(const Func: MonadFunc<TOut>): Context<TOut>; overload; //Monad
 
-    function MapAsync<TOut>(const Func: FunctorFunc<TOut>; const Timeout: Cardinal = INFINITE): Context<TOut>; overload; //Functor and Applicative
-    function MapAsync<TOut>(const Func: MonadFunc<TOut>; const Timeout: Cardinal = INFINITE): Context<TOut>; overload; //Monad
+    function MapAsync<TOut>(const Func: FunctorFunc<TOut>; const Timeout: Cardinal = INFINITE; const Paused: Boolean = False): Context<TOut>; overload; //Functor and Applicative
+    function MapAsync<TOut>(const Func: MonadFunc<TOut>; const Timeout: Cardinal = INFINITE; const Paused: Boolean = False): Context<TOut>; overload; //Monad
   end;
 
   Void = record
@@ -122,7 +125,8 @@ end;
 
 function Context<T>.MapAsync<TOut>(
   const Func: MonadFunc<TOut>;
-  const Timeout: Cardinal): Context<TOut>;
+  const Timeout: Cardinal;
+  const Paused: Boolean): Context<TOut>;
 var
   LSelf: Context<T>;
 begin
@@ -132,12 +136,14 @@ begin
     begin
       Result := Func(LSelf);
     end,
-    Timeout);
+    Timeout,
+    Paused);
 end;
 
 function Context<T>.MapAsync<TOut>(
   const Func: FunctorFunc<TOut>;
-  const Timeout: Cardinal): Context<TOut>;
+  const Timeout: Cardinal;
+  const Paused: Boolean): Context<TOut>;
 var
   LSelf: Context<T>;
 begin
@@ -147,7 +153,8 @@ begin
     begin
       Result := Func(LSelf);
     end,
-    Timeout);
+    Timeout,
+    Paused);
 end;
 
 class operator Context<T>.Implicit(const Func: TFunc<T>): Context<T>;
@@ -157,17 +164,17 @@ end;
 
 class operator Context<T>.Implicit(const Value: Context<T>): TFunc<T>;
 begin
-  if Assigned(Value.FFAsyncFunc) then
+  if Assigned(Value.FAsyncFunc) then
   begin
+    if not Assigned(Value.FFuture) then
+      Value.StartFuture;
     Result := function: T
       var
         InTime: Boolean;
-        Future: IFuture<T>;
       begin
         InTime := False;
-        Future := TTask.Future<T>(Value.FFAsyncFunc);
         try
-          InTime := Future.Wait(Value.FTimeout);
+          InTime := Value.FFuture.Wait(Value.FTimeout);
         except
           on E: EAggregateException do
             with E.GetEnumerator do
@@ -182,7 +189,7 @@ begin
         end;
 
         if InTime then
-          Result := Future.Value
+          Result := Value.FFuture.Value
         else
           raise EFunctionalContext.Create('Value could not be resolved within the timeout');
       end;
@@ -193,6 +200,14 @@ begin
     raise EFunctionalContext.Create('Could not extract Value');
 end;
 
+class operator Context<T>.Implicit(const Value: Context<T>): T;
+var
+  Func: TFunc<T>;
+begin
+  Func := Value;
+  Result := Func();
+end;
+
 function Context<T>.IsAssigned: Boolean;
 begin
   Result := not FAssigned.IsEmpty;
@@ -200,7 +215,7 @@ end;
 
 function Context<T>.IsAsync: Boolean;
 begin
-  Result := Assigned(FFAsyncFunc);
+  Result := Assigned(FAsyncFunc);
 end;
 
 class operator Context<T>.Implicit(const Value: T): Context<T>;
@@ -208,66 +223,46 @@ begin
   Result := Context<T>.New(Value);
 end;
 
-class operator Context<T>.Implicit(const Value: Context<T>): T;
-var
-  InTime: Boolean;
-  Future: IFuture<T>;
-begin
-  if Assigned(Value.FFAsyncFunc) then
-  begin
-    InTime := False;
-    Future := TTask.Future<T>(Value.FFAsyncFunc);
-    try
-      InTime := Future.Wait(Value.FTimeout);
-    except
-      on E: EAggregateException do
-        with E.GetEnumerator do
-        begin
-          try
-            while MoveNext do
-              raise CloneException(Current);
-          finally
-            Free;
-          end;
-        end;
-    end;
-
-    if InTime then
-      Result := Future.Value
-    else
-      raise EFunctionalContext.Create('Value could not be resolved within the timeout');
-  end
-  else if Assigned(Value.FFunc) then
-    Result := Value.FFunc()
-  else
-    raise EFunctionalContext.Create('Could not extract Value');
-end;
-
 constructor Context<T>.New(const Value: T);
 begin
   FAssigned := 'True';
-  FFAsyncFunc := nil;
+  FAsyncFunc := nil;
   FTimeout := 0;
+  FFuture := nil;
   FFunc := function: T
     begin
       Result := Value;
     end;
 end;
 
-constructor Context<T>.New(const Func: TFunc<T>; const Timeout: Cardinal);
+constructor Context<T>.New(const Func: TFunc<T>; const Timeout: Cardinal; const Paused: Boolean);
 begin
   FAssigned := 'True';
-  FFAsyncFunc := Func;
+  FAsyncFunc := Func;
   FTimeout := Timeout;
+  FFuture := nil;
+  if not Paused then
+    FFuture := TTask.Future<T>(FAsyncFunc);
   FFunc := nil;
 end;
 
 constructor Context<T>.New(const Func: TFunc<T>);
 begin
   FAssigned := 'True';
-  FFAsyncFunc := nil;
+  FAsyncFunc := nil;
   FTimeout := 0;
+  FFuture := nil;
   FFunc := Func;
+end;
+
+procedure Context<T>.StartFuture;
+begin
+  if Assigned(FFuture) then
+    raise EFunctionalContext.Create('Future already started.');
+  if not Assigned(FAsyncFunc) then
+    raise EFunctionalContext.Create('Context is not async.');
+
+  FFuture := TTask.Future<T>(FAsyncFunc);
 end;
 
 constructor Context<T>.New(const Value: Context<T>);
