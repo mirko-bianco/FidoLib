@@ -53,10 +53,6 @@ type
     FRedisClient: IFidoRedisClient;
 
     function GreatherThan0(const Value: Integer): Boolean;
-    function DoLPush(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
-    function DoPublish(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
-    function TryPush(const Timeout: Integer): Context<TArray<string>>.MonadFunc<Boolean>;
-    function TryPublish(const Timeout: Integer): Context<TArray<string>>.MonadFunc<Boolean>;
   public
     constructor Create(const RedisClient: IFidoRedisClient);
 
@@ -79,72 +75,50 @@ begin
   Result := Value > 0;
 end;
 
-function TRedisQueuePubSubEventsDrivenProducer.DoLPush(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
-var
-  Client: IFidoRedisClient;
-begin
-  Client := FRedisClient;
-
-  Result := function(const Params: TArray<string>): Context<Integer>
-    begin
-      Result := Client.LPUSH(Params[0], Params[1], Timeout);
-    end;
-end;
-
-function TRedisQueuePubSubEventsDrivenProducer.DoPublish(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
-var
-  Client: IFidoRedisClient;
-begin
-  Client := FRedisClient;
-
-  Result := function(const Params: TArray<string>): Context<Integer>
-    begin
-      Result := Client.PUBLISH(Params[0], Params[1], Timeout);
-    end;
-end;
-
-function TRedisQueuePubSubEventsDrivenProducer.TryPush(const Timeout: Integer): Context<TArray<string>>.MonadFunc<Boolean>;
-begin
-  Result := function(const Params: TArray<string>): Context<Boolean>
-    begin
-      Result := Retry<TArray<string>>.New(Params).Map<Integer>(DoLPush(Timeout), Retries.GetRetriesOnExceptionFunc()).Map<Boolean>(GreatherThan0);
-    end;
-end;
-
-function TRedisQueuePubSubEventsDrivenProducer.TryPublish(const Timeout: Integer): Context<TArray<string>>.MonadFunc<Boolean>;
-begin
-  Result := function(const Params: TArray<string>): Context<Boolean>
-    begin
-      Result := Retry<TArray<string>>.New(Params).Map<Integer>(DoPublish(Timeout), Retries.GetRetriesOnExceptionFunc()).Map<Boolean>(GreatherThan0);
-    end;
-end;
-
 function TRedisQueuePubSubEventsDrivenProducer.Push(
   const Key: string;
   const Payload: string;
   const Timeout: Cardinal): Context<Boolean>;
 var
   EventId: string;
+  Client: IFidoRedisClient;
+  PushParams: TArray<string>;
+  PublishParams: TArray<string>;
+  PushFunc: Context<TArray<string>>.MonadFunc<Boolean>;
+  PublishFunc: Context<TArray<string>>.MonadFunc<Boolean>;
 begin
+  Client := FRedisClient;
   EventId := TGuid.NewGuid.ToString;
+  PushParams := [EventId, TNetEncoding.Base64.Encode(Payload)];
+  PublishParams := [Key, EventId];
 
-//  Result := &If<Integer>.New(TryPush(EventId, TNetEncoding.Base64.Encode(Payload), Timeout)).Map(GreatherThan0).&Then<Boolean>(True, False);
-//  Result := ThenElse.New(Result).&Then<Boolean>(Context<Integer>.New(TryPublish(Key, EventId, Timeout)).Map<Boolean>(GreatherThan0));
+  PushFunc := function(const Params: TArray<string>): Context<Boolean>
+    var
+      DoLPushFunc: Context<TArray<string>>.MonadFunc<Integer>;
+    begin
+      DoLPushFunc := function(const Params: TArray<string>): Context<Integer>
+      begin
+        Result := Client.LPUSH(Params[0], Params[1], Timeout);
+      end;
 
-//  Result := &If<Integer>.New(TryPush(EventId, TNetEncoding.Base64.Encode(Payload), Timeout)).Map(GreatherThan0).&Then<Boolean>(True, False);
-//      &If<Integer>.New(TryPublish(Key, EventId, Timeout)).Map(GreatherThan0).&Then<Boolean>(True, False), False);
+      Result := Retry<TArray<string>>.New(Params).Map<Integer>(DoLPushFunc, Retries.GetRetriesOnExceptionFunc()).Map<Boolean>(GreatherThan0);
+    end;
 
-  Result := &If<TArray<string>>.New([EventId, TNetEncoding.Base64.Encode(Payload)]).Map(TryPush(Timeout)).&Then<Boolean>(
-    &If<TArray<string>>.New([Key, EventId]).Map(TryPublish(Timeout)).&Then<Boolean>(True, False),
+  PublishFunc := function(const Params: TArray<string>): Context<Boolean>
+    var
+      DoPublishFunc: Context<TArray<string>>.MonadFunc<Integer>;
+    begin
+      DoPublishFunc := function(const Params: TArray<string>): Context<Integer>
+        begin
+          Result := Client.PUBLISH(Params[0], Params[1], Timeout);
+        end;
+
+      Result := Retry<TArray<string>>.New(Params).Map<Integer>(DoPublishFunc, Retries.GetRetriesOnExceptionFunc()).Map<Boolean>(GreatherThan0);
+    end;
+
+  Result := &If<TArray<string>>.New(PushParams).Map(PushFunc).&Then<Boolean>(
+    &If<TArray<string>>.New(PublishParams).Map(PublishFunc).&Then<Boolean>(True, False),
     False);
-
-
-//  Result := &If<Integer>.New(
-//    Retry<TArray<string>>.New([EventId, TNetEncoding.Base64.Encode(Payload)]).Map<Integer>(DoLPush(Timeout), Retries.GetRetriesOnExceptionFunc())
-//    ).Map(GreatherThan0).&Then<Boolean>(
-//      &If<Integer>.New(
-//        Retry<TArray<string>>.New([Key, EventId]).Map<Integer>(DoPublish(Timeout), Retries.GetRetriesOnExceptionFunc())
-//    ).Map(GreatherThan0).&Then<Boolean>(True, False), False);
 end;
 
 end.
