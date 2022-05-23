@@ -72,7 +72,7 @@ begin
   inherited Create;
   FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<TThreadId, T>(Ownership);
-  FFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<T>>(FactoryFunc, 'FFactoryFunc');
+  FFactoryFunc := Utilities.CheckNotNullAndSet<Func<T>>(FactoryFunc, 'FFactoryFunc');
 end;
 
 destructor TPerThreadDictionary<T>.Destroy;

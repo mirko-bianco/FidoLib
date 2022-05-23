@@ -133,7 +133,7 @@ begin
     begin
       Result := FJsonArray.Count;
     end,
-    function(Index: Integer): T
+    function(const Index: Integer): T
     begin
       if not Assigned(FObjectsArray[Index]) then
         FObjectsArray[Index] := JSONUnmarshaller.To<T>((FJsonArray.Items[Index] as TJSONObject).ToJSON);
@@ -151,7 +151,7 @@ begin
     begin
       Result := FJsonArray.Count;
     end,
-    function(Index: Integer): T
+    function(const Index: Integer): T
     begin
       if not Assigned(FObjectsArray[Index]) then
         FObjectsArray[Index] := JSONUnmarshaller.To((FJsonArray.Items[Index] as TJSONObject).ToJSON, TypeInfo).AsType<T>;

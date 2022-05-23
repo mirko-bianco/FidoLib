@@ -61,10 +61,10 @@ constructor TUpdateablePerXDictionary<T, TUpdateable>.Create(
   const Predicate: Action<T, TUpdateable>);
 begin
   inherited Create;
-  FPredicate := Utilities.CheckNotNullAndSet<TProc<T, TUpdateable>>(Predicate, 'Predicate');
-  FDictionary := Utilities.CheckNotNullAndSet<TFunc<TDictionaryOwnerships, TFunc<T>, IPerXDictionary<T>>>(DictionaryFactoryFunc, 'DictionaryFactoryFunc')(
+  FPredicate := Utilities.CheckNotNullAndSet<Action<T, TUpdateable>>(Predicate, 'Predicate');
+  FDictionary := Utilities.CheckNotNullAndSet<Func<TDictionaryOwnerships, Func<T>, IPerXDictionary<T>>>(DictionaryFactoryFunc, 'DictionaryFactoryFunc')(
     Ownership,
-    Utilities.CheckNotNullAndSet<TFunc<T>>(ValueFactoryFunc, 'ValueFactoryFunc'));
+    Utilities.CheckNotNullAndSet<Func<T>>(ValueFactoryFunc, 'ValueFactoryFunc'));
 end;
 
 function TUpdateablePerXDictionary<T, TUpdateable>.GetCurrent: T;
