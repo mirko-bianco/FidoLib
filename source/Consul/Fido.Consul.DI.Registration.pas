@@ -72,7 +72,7 @@ var
 begin
   Url := IniFile.ReadString('Consul', 'URL', 'http://127.0.0.1:8500');
   Token := IniFile.ReadString('Consul', 'Token', '');
-  Container.RegisterType<IConsulClientVirtualApiConfiguration>.DelegateTo(
+  Container.RegisterType<IConsulClientVirtualApiConfiguration>(
     function: IConsulClientVirtualApiConfiguration
     begin
       Result := TConsulClientVirtualApiConfiguration.Create(Url, Token, True, True);

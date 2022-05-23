@@ -528,7 +528,7 @@ begin
   TestDatasetOpen('SetEnumeratorValue');
   LiveList := TDataSetAsReadonlyList<TRecord>.Create(FDataset);
 
-  FList := TCollections.CreateList<TRecord>(LiveList.ToArray).AsReadOnlyList;
+  FList := TCollections.CreateList<TRecord>(LiveList.ToArray).AsReadOnly();
   Result := TValue.From<IReadOnlyList<TRecord>>(FList.Target);
 end;
 
