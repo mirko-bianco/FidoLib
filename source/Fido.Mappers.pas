@@ -38,6 +38,8 @@ uses
 type
   EFidoMappingException = class(EFidoException);
 
+  TMapProc<TA, TB> = reference to procedure(const Source: TA; var Destination: TB);
+
   ///  This is a tool (hence the name without the T at the beginning)
   ///  The tool allows to register and use mappers
   Mappers = class
@@ -46,7 +48,7 @@ type
     ///  It is useless from the outside and it is managed by the Mappers<TA, TB> tool.
     TMappers = class
     strict private type
-      TValueMapProc = TProc<TValue, TValue>;
+      TValueMapProc = reference to procedure(const Source: TValue; var Destination: TValue);
     const
       GETTER_PREFIX = 'GET';
       SETTER_PREFIX = 'SET';
@@ -60,10 +62,10 @@ type
       function SetInstanceValues<TB>(const Instance: TB; const Values: IDictionary<string, TValue>): Boolean;
     private
       procedure Clear;
-      function ConvertMapProc<TA, TB>(const MapProc: TProc<TA, TB>): TValueMapProc;
-      procedure RegisterMapper<TA, TB>(const MapProc: TProc<TA, TB>);
-      procedure Map<TA, TB>(const Source: TA; const Dest: TB);
-      function TryAutoMap<TA, TB>(const Source: TA; const Dest: TB): Boolean;
+      function ConvertMapProc<TA, TB>(const MapProc: TMapProc<TA, TB>): TValueMapProc;
+      procedure RegisterMapper<TA, TB>(const MapProc: TMapProc<TA, TB>);
+      procedure Map<TA, TB>(const Source: TA; var Dest: TB);
+      function TryAutoMap<TA, TB>(const Source: TA; var Dest: TB): Boolean;
       constructor Create;
     end;
 
@@ -74,8 +76,8 @@ type
     class destructor Destroy; static;
 
     class procedure ClearMappers; static;
-    class procedure RegisterMapper<TA, TB>(const MapProc: TProc<TA, TB>); static;
-    class procedure Map<TA, TB>(const Source: TA; const Dest: TB); static;
+    class procedure RegisterMapper<TA, TB>(const MapProc: TMapProc<TA, TB>); static;
+    class procedure Map<TA, TB>(const Source: TA; var Dest: TB); static;
   end;
 
 implementation
@@ -91,21 +93,26 @@ end;
 
 procedure Mappers.TMappers.Map<TA, TB>(
   const Source: TA;
-  const Dest: TB);
+  var Dest: TB);
 var
   SourceTypeInfo: PTypeInfo;
   DestTypeInfo: PTypeInfo;
   Map: IDictionary<PTypeInfo, TValueMapProc>;
   ValueMapProc: TValueMapProc;
+  DestValue: TValue;
 begin
   SourceTypeInfo := TypeInfo(TA);
   DestTypeInfo := TypeInfo(TB);
 
   FLock.BeginRead;
   try
+    DestValue := TValue.From<TB>(Dest);
     if FMappersMap.TryGetValue(SourceTypeInfo, Map) and
        Map.TryGetValue(DestTypeInfo, ValueMapProc) then
-      ValueMapProc(TValue.From<TA>(Source), TValue.From<TB>(Dest))
+    begin
+      ValueMapProc(TValue.From<TA>(Source), DestValue);
+      Dest := DestValue.ToType<TB>;
+    end
     else if not TryAutoMap<TA, TB>(Source, Dest) then
       raise EFidoMappingException.CreateFmt('Types "%s" and/or "%s" are not registered as mapping types and cannot automap.', [SourceTypeInfo.Name, DestTypeInfo.Name]);
   finally
@@ -222,7 +229,7 @@ end;
 
 function Mappers.TMappers.TryAutoMap<TA, TB>(
   const Source: TA;
-  const Dest: TB): Boolean;
+  var Dest: TB): Boolean;
 begin
   Result := SetInstanceValues<TB>(Dest, GetInstanceValues<TA>(Source));
 end;
@@ -237,9 +244,9 @@ begin
   end;
 end;
 
-function Mappers.TMappers.ConvertMapProc<TA, TB>(const MapProc: TProc<TA, TB>): TValueMapProc;
+function Mappers.TMappers.ConvertMapProc<TA, TB>(const MapProc: TMapProc<TA, TB>): TValueMapProc;
 begin
-  Result := procedure(SourceValue: TValue; DestValue: TValue)
+  Result := procedure(const SourceValue: TValue; var DestValue: TValue)
     var
       GenericSource: TA;
       GenericDest: TB;
@@ -249,10 +256,13 @@ begin
        if not DestValue.TryAsType<TB>(GenericDest) then
          raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [DestValue.TypeInfo.Name]);
       MapProc(GenericSource, GenericDest);
+      if not DestValue.IsObject then
+        DestValue := TValue.From<TB>(GenericDest);
+
     end;
 end;
 
-procedure Mappers.TMappers.RegisterMapper<TA, TB>(const MapProc: TProc<TA, TB>);
+procedure Mappers.TMappers.RegisterMapper<TA, TB>(const MapProc: TMapProc<TA, TB>);
 var
   Map: IDictionary<PTypeInfo, TValueMapProc>;
   SourceTypeInfo: PTypeInfo;
@@ -299,12 +309,12 @@ end;
 
 class procedure Mappers.Map<TA, TB>(
   const Source: TA;
-  const Dest: TB);
+  var Dest: TB);
 begin
   GetMappers.Map<TA, TB>(Source, Dest);
 end;
 
-class procedure Mappers.RegisterMapper<TA, TB>(const MapProc: TProc<TA, TB>);
+class procedure Mappers.RegisterMapper<TA, TB>(const MapProc: TMapProc<TA, TB>);
 begin
   GetMappers.RegisterMapper<TA, TB>(MapProc);
 end;

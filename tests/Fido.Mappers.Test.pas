@@ -58,40 +58,46 @@ implementation
 procedure TMappersTests.AutoMapperWorksCorrectly;
 var
   From: Shared<TAutoFrom>;
-  &To: Shared<TAutoTo>;
+  &To: TAutoTo;
 begin
   From := TAutoFrom.Create;
   &To := TAutoTo.Create;
+  try
+    Mappers.ClearMappers;
 
-  Mappers.ClearMappers;
+    Mappers.Map<TAutoFrom, TAutoTo>(From.Value, &To);
 
-  Mappers.Map<TAutoFrom, TAutoTo>(From, &To);
-
-  Assert.AreEqual(From.Value.Id, &To.Value.Id);
-  Assert.AreEqual(From.Value.Name, &To.Value.Name);
+    Assert.AreEqual(From.Value.Id, &To.Id);
+    Assert.AreEqual(From.Value.Name, &To.Name);
+  finally
+    &To.Free;
+  end;
 end;
 
 procedure TMappersTests.MapperIsStoredAndWorksCorrectly;
 var
   From: Shared<TFrom>;
-  &To: Shared<TTo>;
+  &To: TTo;
   TestTo: string;
 begin
   From := TFrom.Create;
   From.Value.DateTime := Now;
   &To := TTo.Create;
+  try
+    Mappers.ClearMappers;
+    Mappers.RegisterMapper<TFrom, TTo>(
+      procedure(const From: TFrom; var &To: TTo)
+      begin
+        &To.DateTime := DateTimeToStr(From.DateTime);
+      end);
 
-  Mappers.ClearMappers;
-  Mappers.RegisterMapper<TFrom, TTo>(
-    procedure(From: TFrom; &To: TTo)
-    begin
-      &To.DateTime := DateTimeToStr(From.DateTime);
-    end);
+    TestTo := DateTimeToStr(From.Value.DateTime);
+    Mappers.Map<TFrom, TTo>(From, &To);
 
-  TestTo := DateTimeToStr(From.Value.DateTime);
-  Mappers.Map<TFrom, TTo>(From, &To);
-
-  Assert.AreEqual(TestTo, &To.Value.DateTime);
+    Assert.AreEqual(TestTo, &To.DateTime);
+  finally
+    &To.Free;
+  end;
 end;
 
 { TAutoFrom }
