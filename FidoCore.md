@@ -11,8 +11,8 @@ Below is a list of the most important features:
 - [Websockets](#websockets)
 - [Consul and Fabio support](#consul-and-fabio-support)
 - [Boxes](#boxes)
-- [Async procedures](#async-procedures)
-- [Async functions](#async-functions)
+- [Async procedures](#async-procedures) **[Deprecated]**
+- [Async functions](#async-functions) **[Deprecated]**
 - [Signals and slots](#signals-and-slots) **[Deprecated]**
 - [Events driven architecture](#events-driven-architecture)
 - [Functional programming](#functional-programming)
@@ -1352,6 +1352,8 @@ end;
 
 ### Async procedures
 
+ **[Deprecated]** Please use functional programming features
+
 Unit `Fido.Async.Procs`.
 
 Async procedures let you run a procedure or a sequence of procedures in a separate thread. You can use three different approaches:
@@ -1406,6 +1408,8 @@ end;
 
 
 ### Async functions
+
+**[Deprecated]** Please use functional programming features
 
 Unit `Fido.Async.Funcs`.
 
