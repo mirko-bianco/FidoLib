@@ -81,7 +81,7 @@ begin
     begin
       Utilities.CheckAndSet<string>('', Utilities.F.IsNotEmpty(''), 'there is an error');
     end,
-  EArgumentNilException);
+  EArgumentException);
 end;
 
 procedure TUtilitiesTests.GuardCheckNotNullAndSetReturnsIfAnonymousIsNotNil;
