@@ -33,7 +33,10 @@
         <Projects Include="examples\ResourceRestServerExample\ResourceRestServerExample.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="examples\WebSocketExample\WebSocketExample.dproj">
+        <Projects Include="examples\Websockets\WebSocketsServer\WebSocketsServer.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="examples\Websockets\WebSocketsClient\WebSocketsClient.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="examples\MVVMExample\MVVMExample.dproj">
@@ -137,14 +140,23 @@
     <Target Name="ResourceRestServerExample:Make">
         <MSBuild Projects="examples\ResourceRestServerExample\ResourceRestServerExample.dproj" Targets="Make"/>
     </Target>
-    <Target Name="WebSocketExample">
-        <MSBuild Projects="examples\WebSocketExample\WebSocketExample.dproj"/>
+    <Target Name="WebSocketsServer">
+        <MSBuild Projects="examples\Websockets\WebSocketsServer\WebSocketsServer.dproj"/>
     </Target>
-    <Target Name="WebSocketExample:Clean">
-        <MSBuild Projects="examples\WebSocketExample\WebSocketExample.dproj" Targets="Clean"/>
+    <Target Name="WebSocketsServer:Clean">
+        <MSBuild Projects="examples\Websockets\WebSocketsServer\WebSocketsServer.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="WebSocketExample:Make">
-        <MSBuild Projects="examples\WebSocketExample\WebSocketExample.dproj" Targets="Make"/>
+    <Target Name="WebSocketsServer:Make">
+        <MSBuild Projects="examples\Websockets\WebSocketsServer\WebSocketsServer.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="WebSocketsClient">
+        <MSBuild Projects="examples\Websockets\WebSocketsClient\WebSocketsClient.dproj"/>
+    </Target>
+    <Target Name="WebSocketsClient:Clean">
+        <MSBuild Projects="examples\Websockets\WebSocketsClient\WebSocketsClient.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WebSocketsClient:Make">
+        <MSBuild Projects="examples\Websockets\WebSocketsClient\WebSocketsClient.dproj" Targets="Make"/>
     </Target>
     <Target Name="MVVMExample">
         <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj"/>
@@ -156,13 +168,13 @@
         <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="FidoCore;FidoRedis;FidoGui;FidoVCL;FidoFMX;FidoWin;FidoLibTests;ElasticSearchLogExample;FileRestServerExample;ResourceRestServerExample;WebSocketExample;MVVMExample"/>
+        <CallTarget Targets="FidoCore;FidoRedis;FidoGui;FidoVCL;FidoFMX;FidoWin;FidoLibTests;ElasticSearchLogExample;FileRestServerExample;ResourceRestServerExample;WebSocketsServer;WebSocketsClient;MVVMExample"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="FidoCore:Clean;FidoRedis:Clean;FidoGui:Clean;FidoVCL:Clean;FidoFMX:Clean;FidoWin:Clean;FidoLibTests:Clean;ElasticSearchLogExample:Clean;FileRestServerExample:Clean;ResourceRestServerExample:Clean;WebSocketExample:Clean;MVVMExample:Clean"/>
+        <CallTarget Targets="FidoCore:Clean;FidoRedis:Clean;FidoGui:Clean;FidoVCL:Clean;FidoFMX:Clean;FidoWin:Clean;FidoLibTests:Clean;ElasticSearchLogExample:Clean;FileRestServerExample:Clean;ResourceRestServerExample:Clean;WebSocketsServer:Clean;WebSocketsClient:Clean;MVVMExample:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="FidoCore:Make;FidoRedis:Make;FidoGui:Make;FidoVCL:Make;FidoFMX:Make;FidoWin:Make;FidoLibTests:Make;ElasticSearchLogExample:Make;FileRestServerExample:Make;ResourceRestServerExample:Make;WebSocketExample:Make;MVVMExample:Make"/>
+        <CallTarget Targets="FidoCore:Make;FidoRedis:Make;FidoGui:Make;FidoVCL:Make;FidoFMX:Make;FidoWin:Make;FidoLibTests:Make;ElasticSearchLogExample:Make;FileRestServerExample:Make;ResourceRestServerExample:Make;WebSocketsServer:Make;WebSocketsClient:Make;MVVMExample:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

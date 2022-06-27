@@ -44,6 +44,7 @@ uses
   Fido.Http.Request.Intf,
   Fido.Http.Response.Intf,
   Fido.Http.Types,
+  Fido.Http.Utils,
   Fido.Web.Server.Websocket.Loop.Abstract,
   Fido.Web.Server.Intf,
   Fido.Web.Server.WebSocket.Loop.Intf,
@@ -68,7 +69,6 @@ type
     function TrySetPathParams(const EndPoint: TEndPoint; const URI: string; const PathParams: IDictionary<string, string>): Boolean;
     function TrySetMethodParams(const ApiRequest: IHttpRequest; const PathParams: IDictionary<string, string>; const EndPoint: TEndPoint; var Params: TArray<TValue>): Boolean;
     procedure UpdateResponse(const Method: TRttiMethod; const MethodResult: TValue; const ApiResponse: IHttpResponse; const EndPoint: TEndPoint; const Params: array of TValue);
-    function TranslatePathToRegEx(Path: string): string;
   protected const
     SSL_PORT = 443;
   protected var
@@ -94,7 +94,7 @@ type
     function IsActive: Boolean; virtual; abstract;
     procedure SetActive(const Value: Boolean); virtual; abstract;
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterWebSocket(const WebSocketClass: TClass);
+    procedure RegisterWebSocket(const WebSocketClass: TClass); deprecated 'Please use IServerWebSocket';
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
   end;
@@ -467,7 +467,7 @@ begin
   if ServerWebSocket.DetectLoop(FWebSockets, ApiRequest, ApiResponse, WebSocket) then
   begin
     //This will loop until the websocket is active. then it can exit.
-    WebSocket.ReadLoop();
+    WebSocket.Run;
     Exit;
   end
   else if FWebServer.Process(ApiRequest, ApiResponse) then
@@ -784,18 +784,6 @@ procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFac
   const Step: TResponseMiddlewareProc);
 begin
   FResponseMiddlewares.Add(Name, Step);
-end;
-
-function TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.TranslatePathToRegEx(Path: string): string;
-begin
-  Result := StringReplace(Path, '/', '\/', [rfReplaceAll]);
-  with TRegEx.Matches(Result, '{[\s\S][^{]+}').GetEnumerator do
-  begin
-    while MoveNext do
-      Result := StringReplace(Result, GetCurrent.Value, '[\s\S]+', []);
-    Free;
-  end;
-  Result := Result + '$';
 end;
 
 end.

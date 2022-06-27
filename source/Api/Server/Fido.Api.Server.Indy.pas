@@ -44,6 +44,7 @@ uses
   Fido.Http.Response,
   Fido.Http.Types,
   Fido.Web.Server.Intf,
+  Fido.Web.Server.Http.Indy,
 
   Fido.Api.Server.Abstract,
   Fido.DesignPatterns.Adapter.TIdHTTPRequestInfoAsIHTTPRequestInfo,
@@ -56,10 +57,14 @@ type
   TIndyApiServerResponseFactory = reference to function(const Context: TIdContext; const RequestInfo: TIdHTTPRequestInfo; const ResponseInfo: TIdHTTPResponseInfo): IHttpResponse;
   {$M-}
 
+  EIndyApiServer = class(EFidoApiException);
+
   TIndyApiServer = class(TAbstractApiServer<TIndyApiServerRequestFactory, TIndyApiServerResponseFactory>, IApiServer)
   private
-    FHttpServer: TIdHTTPServer;
+    FHttpServer: TFidoIndyHTTPServer;
     FSSLIOHandler: TIdServerIOHandlerSSLOpenSSL;
+
+    function ConvertSSLVersion(const SSLVersion: TSSLVersion): TIdSSLVersion;
   protected
     function GetDefaultApiRequestFactory: TIndyApiServerRequestFactory; override;
     function GetDefaultApiResponseFactory: TIndyApiServerResponseFactory; override;
@@ -79,6 +84,20 @@ type
 implementation
 
 { TIndyApiServer }
+
+function TIndyApiServer.ConvertSSLVersion(const SSLVersion: TSSLVersion): TIdSSLVersion;
+begin
+  case SSLVersion of
+    SSLv2: Result := sslvSSLv2;
+    SSLv23: Result := sslvSSLv23;
+    SSLv3: Result := sslvSSLv3;
+    TLSv1: Result := sslvTLSv1;
+    TLSv1_1: Result := sslvTLSv1_1;
+    TLSv1_2: Result := sslvTLSv1_2;
+  else
+    raise EIndyApiServer.Create('SSL version not supported');
+  end;
+end;
 
 constructor TIndyApiServer.Create(
   const Port: Word;
@@ -100,13 +119,13 @@ begin
     FSSLIOHandler.SSLOptions.RootCertFile := SSLCertData.SSLRootCertFilePath;
     FSSLIOHandler.SSLOptions.CertFile := SSLCertData.SSLCertFilePath;
     FSSLIOHandler.SSLOptions.KeyFile := SSLCertData.SSLKeyFilePath;
-    FSSLIOHandler.SSLOptions.Method := sslvTLSv1;
+    FSSLIOHandler.SSLOptions.Method := ConvertSSLVersion(SSLCertData.SSLVersion);
     FSSLIOHandler.SSLOptions.Mode := sslmUnassigned;
     FSSLIOHandler.OnGetPassword := nil;
     FSSLIOHandler.OnVerifyPeer := OnVerifyPeer;
   end;
 
-  FHttpServer := TIdHTTPServer.Create(nil);
+  FHttpServer := TFidoIndyHTTPServer.Create(nil);
   FHttpServer.OnCommandGet := OnHTTPCommandEvent;
   FHttpServer.OnCommandOther := OnHTTPCommandEvent;
   FHttpServer.OnParseAuthentication := OnParseAuthentication;

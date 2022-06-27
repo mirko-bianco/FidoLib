@@ -1,5 +1,5 @@
 (*
- * Copyright 2021 Mirko Bianco (email: writetomirko@gmail.com)
+ * Copyright 2022 Mirko Bianco (email: writetomirko@gmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,34 +20,42 @@
  * SOFTWARE.
  *)
 
- unit Fido.Slots.Intf;
+unit Fido.Web.Server.WebSocket.Intf;
 
 interface
 
 uses
   System.SysUtils,
-  System.Rtti,
 
   Spring,
+  Spring.Collections,
 
-  Fido.Exceptions,
-  Fido.DesignPatterns.Observer.Intf,
-  Fido.DesignPatterns.Observable.Intf;
+  Fido.Web.Server.WebSocket.Client,
+  Fido.Web.Server.WebSocket.Clients;
 
 type
-  TSlotType = (stSynched, stNotSynched);
+  TWebSocketOnReceivedData = reference to procedure(const Client: TWebSocketClient; const Params: array of TNamedValue);
 
-  ESlots = class(EFidoException);
+  IWebSocketServer = interface(IInvokable)
+    ['{4D92550D-945B-4CA3-A39C-C67BA98FFF0C}']
 
-  ISlots = interface(IObserver)
-    ['{72785413-37E9-41EE-B3BA-FCBFDFE8BFFF}']
+    function Clients: TClients;
 
-    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const SlotActor: TObject; const TypInfo: pTypeInfo; const MethodName: string;
-      const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload;
-    procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
+    procedure Send(const Topic: string; const Message: string); overload;
+    procedure Send(const Topic: string; const Data: TArray<Byte>); overload;
 
-    procedure UnregisterSignalActor(const SignalActor: IObservable);
-  end deprecated 'Please use In Memory Event Driven Architecture interfaces';
+    procedure RegisterTopic(const Topic: string; const OnReceivedData: TWebSocketOnReceivedData = nil);
+
+    function Started: Boolean;
+    procedure Start;
+    procedure Stop;
+  end;
+
+  IWebSocketServer<T> = interface(IInvokable)
+    ['{3A1ECA22-042A-4532-AC0B-D582BFB1482B}']
+
+    procedure Send(const Topic: string; const Item: T); overload;
+  end;
 
 implementation
 

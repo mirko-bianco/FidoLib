@@ -211,7 +211,15 @@ contains
   Fido.EventsDriven.Broker.PubSub.Intf in 'EventsDriven\Fido.EventsDriven.Broker.PubSub.Intf.pas',
   Fido.Memory.EventsDriven.Producer.PubSub in 'EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.pas',
   Fido.Memory.EventsDriven.Consumer.PubSub in 'EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.pas',
-  Fido.Memory.EventsDriven.Broker.PubSub in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.pas';
+  Fido.Memory.EventsDriven.Broker.PubSub in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.pas',
+  Fido.Web.Server.WebSocket.Intf in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.Intf.pas',
+  Fido.Web.Server.WebSocket in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.pas',
+  Fido.Web.Server.WebSocket.Client in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.Client.pas',
+  Fido.Web.Server.Http.Indy in 'Web\Server\Fido.Web.Server.Http.Indy.pas',
+  Fido.Web.Client.WebSocket.Intf in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.Intf.pas',
+  Fido.Web.Client.WebSocket in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.pas',
+  Fido.Http.Utils in 'Http\Fido.Http.Utils.pas',
+  Fido.Web.Server.WebSocket.Clients in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.Clients.pas';
 
 end.
 

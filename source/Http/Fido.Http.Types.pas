@@ -99,19 +99,23 @@ type
     property PostProcessPipelineSteps: IList<TPair<string, string>> read FPostProcessPipelineSteps;
   end;
 
+  TSSLVersion = (SSLv2, SSLv23, SSLv3, TLSv1, TLSv1_1, TLSv1_2);
+
   TSSLCertData = record
   strict private
     FSSLRootCertFilePath: string;
     FSSLCertFilePath: string;
     FSSLKeyFilePath: string;
+    FSSLVersion: TSSLVersion;
   public
-    constructor Create(const SSLRootCertFilePath: string; const SSLCertFilePath: string; const SSLKeyFilePath: string);
+    constructor Create(const SSLRootCertFilePath: string; const SSLCertFilePath: string; const SSLKeyFilePath: string; const SSLVersion: TSSLVersion);
     class function CreateEmpty: TSSLCertData; static;
 
     function IsValid: Boolean;
     function SSLRootCertFilePath: string;
     function SSLCertFilePath: string;
     function SSLKeyFilePath: string;
+    function SSLVersion: TSSLVersion;
   end;
 
 const
@@ -198,16 +202,18 @@ end;
 constructor TSSLCertData.Create(
   const SSLRootCertFilePath: string;
   const SSLCertFilePath: string;
-  const SSLKeyFilePath: string);
+  const SSLKeyFilePath: string;
+  const SSLVersion: TSSLVersion);
 begin
   FSSLRootCertFilePath := SSLRootCertFilePath;
   FSSLCertFilePath := SSLCertFilePath;
   FSSLKeyFilePath := SSLKeyFilePath;
+  FSSLVersion := SSLVersion;
 end;
 
 class function TSSLCertData.CreateEmpty: TSSLCertData;
 begin
-  Result.Create('', '', '');
+  Result.Create('', '', '', TLSv1_2);
 end;
 
 function TSSLCertData.IsValid: Boolean;
@@ -235,5 +241,10 @@ begin
 end;
 
 
+
+function TSSLCertData.SSLVersion: TSSLVersion;
+begin
+  Result := FSSLVersion;
+end;
 
 end.

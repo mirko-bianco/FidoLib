@@ -46,7 +46,7 @@ type
     property ObservableName: string read FObservableName;
     property Message: string read FMessage;
     property SlotType: TSlotType read FSlotType;
-  end;
+  end deprecated 'Please use In Memory Event Driven Architecture interfaces';
 
 implementation
 
