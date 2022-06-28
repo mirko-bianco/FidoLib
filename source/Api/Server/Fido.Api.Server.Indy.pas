@@ -44,7 +44,6 @@ uses
   Fido.Http.Response,
   Fido.Http.Types,
   Fido.Web.Server.Intf,
-  Fido.Web.Server.Http.Indy,
 
   Fido.Api.Server.Abstract,
   Fido.DesignPatterns.Adapter.TIdHTTPRequestInfoAsIHTTPRequestInfo,
@@ -61,7 +60,7 @@ type
 
   TIndyApiServer = class(TAbstractApiServer<TIndyApiServerRequestFactory, TIndyApiServerResponseFactory>, IApiServer)
   private
-    FHttpServer: TFidoIndyHTTPServer;
+    FHttpServer: TIdHTTPServer;
     FSSLIOHandler: TIdServerIOHandlerSSLOpenSSL;
 
     function ConvertSSLVersion(const SSLVersion: TSSLVersion): TIdSSLVersion;
@@ -125,7 +124,7 @@ begin
     FSSLIOHandler.OnVerifyPeer := OnVerifyPeer;
   end;
 
-  FHttpServer := TFidoIndyHTTPServer.Create(nil);
+  FHttpServer := TIdHTTPServer.Create(nil);
   FHttpServer.OnCommandGet := OnHTTPCommandEvent;
   FHttpServer.OnCommandOther := OnHTTPCommandEvent;
   FHttpServer.OnParseAuthentication := OnParseAuthentication;
