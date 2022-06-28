@@ -323,7 +323,12 @@ var
 begin
   Context.Connection.IOHandler.CheckForDataOnSource(10);
 
-  Buffer := ParseIOHandlerInputBuffer(Context.Connection.IOHandler);
+  try
+    Buffer := ParseIOHandlerInputBuffer(Context.Connection.IOHandler);
+  except
+    on E: Exception do
+      raise EWebSocketServer.CreateFmt('Error while performing handshake: %s', [E.Message]);
+  end;
   Headers := ParseIOHandlerHeaders(Buffer);
   Topic := ParseIOHandlerTopic(Buffer);
 
@@ -343,6 +348,8 @@ begin
           'Sec-WebSocket-Accept: %s'#13#10#13#10, [TIdEncoderMIME.EncodeBytes(Hash.Value.HashString(Headers['Sec-WebSocket-Key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'))]),
         IndyTextEncoding_UTF8);
     except
+      on E: Exception do
+        raise EWebSocketServer.CreateFmt('Error while Switching protocol: %s', [E.Message]);
     end;
   end;
 end;

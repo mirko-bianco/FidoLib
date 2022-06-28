@@ -60,14 +60,10 @@ var
   Bytes: TArray<Byte>;
 begin
   Result :=  '';
-  if not IOHandler.InputBufferIsEmpty then
-  begin
-    try
-      IOHandler.InputBuffer.ExtractToBytes(TIdBytes(Bytes));
-      Result := IndyTextEncoding_UTF8.GetString(TIdBytes(Bytes));
-    except
-    end;
-  end;
+  if IOHandler.InputBufferIsEmpty then
+    Exit;
+  IOHandler.InputBuffer.ExtractToBytes(TIdBytes(Bytes));
+  Result := IndyTextEncoding_UTF8.GetString(TIdBytes(Bytes));
 end;
 
 function ParseIOHandlerHeaders(const Buffer: string): IDictionary<string, string>;
