@@ -1120,7 +1120,7 @@ Example:
 
 ### Websockets
 
-FidoLib supports string based websockets, both server side and client side, with an implementation based on Indy.
+FidoLib supports websockets, both server side and client side, with an implementation based on Indy.
 
 ##### Websocket Servers
 
@@ -1198,7 +1198,7 @@ begin
 end;
 ```
 
-You can also set up a typed client, that add typed functionalities to `IWebSocketClient`. 
+You can also set up a typed client, that adds typed functionalities to `IWebSocketClient`. 
 
 ```pascal
 var
