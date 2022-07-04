@@ -1794,7 +1794,7 @@ Can you guess what this little piece of code does?
     Map<IReadOnlyList<TUser>>(MapToEntity);
 ```
 
-Well, it takes an input of type `TArray<TValue>`, uses it as input for the function `DoGetAll`, which returns an `IReadOnlyList<IUserRecord>` , which is used  as input for the function `MapToEntity` that returns an `IReadOnlyList<TUser>`. 
+Well, it takes an input of type `TArray<TValue>`, uses it as input for the function `DoGetAll`, which returns an `IReadOnlyList<IUserRecord>`, which is used as input for the function `MapToEntity` that returns an `IReadOnlyList<TUser>`. 
 
 Everybody is talking about functional programming nowadays.
 
