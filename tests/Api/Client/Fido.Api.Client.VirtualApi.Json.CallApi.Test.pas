@@ -7,7 +7,6 @@ uses
   System.SysUtils,
   System.DateUtils,
   DUnitX.TestFramework,
-  Rest.Types,
   Data.DBXPlatform,
 
   Spring,
@@ -18,6 +17,7 @@ uses
   Fido.OwningObject,
   Fido.Json.Marshalling,
   Fido.Testing.Mock.Utils,
+  Fido.Http.Types,
 
   Fido.Api.Client.Exception,
   Fido.Api.Client.VirtualApi.Intf,
@@ -69,14 +69,14 @@ type
   {$M+}
   TTestRequest = class(TOwningObject)
   strict private
-    FTheRequestMethod: TRESTRequestMethod;
+    FTheRequestMethod: THttpMethod;
     FTheApiKey: string;
     FTheApiVersion: string;
     FTheContentType: string;
     FTheAcceptHeader: string;
     FAString: string;
   published
-    property TheRequestMethod: TRESTRequestMethod read FTheRequestMethod write FTheRequestMethod;
+    property TheRequestMethod: THttpMethod read FTheRequestMethod write FTheRequestMethod;
     property TheApiKey: string read FTheApiKey write FTheApiKey;
     property TheApiVersion: string read FTheApiVersion write FTheApiVersion;
     property TheContentType: string read FTheContentType write FTheContentType;
@@ -88,7 +88,7 @@ type
   ITestResponse = interface(IInvokable)
     ['{A29767B5-EE3F-4CE0-B61A-72C07498800C}']
 
-    function TheRequestMethod: TRESTRequestMethod;
+    function TheRequestMethod: THttpMethod;
     function TheApiKey: string;
     function TheApiVersion: string;
     function TheContentType: string;

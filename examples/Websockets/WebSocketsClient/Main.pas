@@ -14,6 +14,10 @@ uses
   Vcl.Dialogs,
   Vcl.StdCtrls,
 
+  Spring,
+
+  Fido.Web.Client.WebSocket.TcpClient.Intf,
+  Fido.Web.Client.WebSocket.TcpClient,
   Fido.Web.Client.WebSocket.Intf,
   Fido.Web.Client.WebSocket;
 
@@ -46,7 +50,7 @@ implementation
 procedure TForm1.AfterConstruction;
 begin
   inherited;
-  FClient := TWebSocketClient.Create('ws://127.0.0.1:8080/atopic/100');
+  FClient := TWebSocketClient.Create(TWebSocketTCPClient.Create);
   BtnSend.Enabled := False;
   btnStop.Enabled := False;
 end;
@@ -63,8 +67,14 @@ begin
 end;
 
 procedure TForm1.btnStartClick(Sender: TObject);
+var
+  CustomHeaders: Shared<TStrings>;
 begin
-  FClient.Start(procedure(const Message: string)
+  CustomHeaders := TStringList.Create;
+
+  FClient.Start('ws://127.0.0.1:8080/atopic/100',
+    CustomHeaders,
+    procedure(const Message: string)
     begin
       TThread.Synchronize(nil, procedure
         begin

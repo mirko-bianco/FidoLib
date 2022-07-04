@@ -240,6 +240,7 @@
         <DCCReference Include="Fido.Utilities.Test.pas"/>
         <DCCReference Include="Http\Fido.Http.Utils.Test.pas"/>
         <DCCReference Include="Fido.Functional.Tests.pas"/>
+        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.Websocket.Test.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

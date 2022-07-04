@@ -1,9 +1,9 @@
 (*
- * Copyright 2021 Mirko Bianco (email: writetomirko@gmail.com)
+ * Copyright 2022 Mirko Bianco (email: writetomirko@gmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without Apiriction, including without limitation the rights
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
@@ -20,24 +20,33 @@
  * SOFTWARE.
  *)
 
-unit Fido.Api.Client.VirtualApi.Intf;
+unit Fido.Web.Client.WebSocket.TcpClient.Intf;
 
 interface
 
 uses
+  System.Classes,
+
   Fido.Exceptions,
-  Fido.Api.Client.VirtualApi.Configuration.Intf;
+  Fido.Web.Client.WebSocket.Intf;
 
 type
-  EClientVirtualApi = class(EFidoException);
+  EWebSocketTCPClient = class(EFidoException);
 
-  IClientVirtualApi = interface(IInvokable)
-    ['{45CC9535-0749-493D-81FB-14A31615D3FF}']
+  IWebSocketTCPClient = interface(IInvokable)
+    ['{C1D03C21-23C1-4A32-B715-CDED9FEDCC05}']
 
-    function IsActive: Boolean;
-    function GetLastStatusCode: integer;
+    procedure SetOnReceiveData(const OnReceivedData: TWebSocketOnReceivedData);
+    procedure SetOnError(const OnError: TWebSocketOnError);
 
-    function GetConfiguration: IClientVirtualApiConfiguration;
+    procedure Connect(const URL: string; const CustomHeaders: TStrings; const WebsocketProtocol: string);
+    function Connected: Boolean;
+    procedure Send(const Message: string); overload;
+    procedure Send(const Data: TArray<Byte>); overload;
+
+    function Get(const URL: string; const CustomHeaders: TStrings): string;
+
+    procedure Close;
   end;
 
 implementation

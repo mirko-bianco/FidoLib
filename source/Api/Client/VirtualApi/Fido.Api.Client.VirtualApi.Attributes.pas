@@ -26,7 +26,8 @@ interface
 
 uses
   System.SysUtils,
-  Rest.Types;
+
+  Fido.Http.Types;
 
 type
   // Base attribute for Virtual Apis
@@ -49,13 +50,13 @@ type
   // [Endpoint(rmPUT, '/account/{accountId}')]
   EndpointAttribute = class(ClientVirtualApiAttribute)
   private
-    FMethod: TRestRequestMethod;
+    FMethod: THttpMethod;
     FEndPoint: string;
   public
-    constructor Create(const Method: TRestRequestMethod; const EndPoint: string);
+    constructor Create(const Method: THttpMethod; const EndPoint: string);
 
     property EndPoint: string read FEndPoint;
-    property Method: TRestRequestMethod read FMethod;
+    property Method: THttpMethod read FMethod;
   end;
 
   // Base attribute for params
@@ -159,7 +160,7 @@ end;
 { EndpointAttribute }
 
 constructor EndpointAttribute.Create(
-  const Method: TRestRequestMethod;
+  const Method: THttpMethod;
   const EndPoint: string);
 begin
   inherited Create;

@@ -25,6 +25,7 @@ unit Fido.Web.Client.WebSocket.Intf;
 interface
 
 uses
+  System.Classes,
   System.SysUtils;
 
 type
@@ -36,12 +37,14 @@ type
   IWebSocketClient = interface(IInvokable)
     ['{1B2828E1-45E5-4D3F-A479-8EBC7A1E6B7B}']
 
+    function Get(const URL: string; const CustomHeaders: TStrings): string;
+
     procedure Send(const Message: string); overload;
     procedure Send(const Data: TArray<Byte>); overload;
 
     function Started: Boolean;
-    procedure Start(const OnReceivedData: TWebSocketOnReceivedData; const OnError: TWebSocketOnError = nil); overload;
-    procedure Start(const OnReceivedMessage: TWebSocketOnReceivedMessage; const OnError: TWebSocketOnError = nil); overload;
+    procedure Start(const URL: string; const CustomHeaders: TStrings; const OnReceivedData: TWebSocketOnReceivedData; const OnError: TWebSocketOnError = nil; const WebsocketProtocol: string = ''); overload;
+    procedure Start(const URL: string; const CustomHeaders: TStrings; const OnReceivedMessage: TWebSocketOnReceivedMessage; const OnError: TWebSocketOnError = nil; const WebsocketProtocol: string = ''); overload;
     procedure Stop;
   end;
 
@@ -49,7 +52,7 @@ type
     ['{EE91AAC8-D85F-40BA-87FE-8A6DC727EC4D}']
 
     procedure Send(const Item: T); overload;
-    procedure Start(const OnReceivedItem: TWebSocketOnReceivedItem<T>; const OnError: TWebSocketOnError = nil); overload;
+    procedure Start(const URL: string; const CustomHeaders: TStrings; const OnReceivedItem: TWebSocketOnReceivedItem<T>; const OnError: TWebSocketOnError = nil; const WebsocketProtocol: string = ''); overload;
   end;
 
 implementation

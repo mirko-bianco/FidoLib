@@ -1177,10 +1177,13 @@ Setting up a client is even more straight forward for bytes and strings.
 ```pascal
 var
   Client: IWebSocketClient;
+  CustomHeaders: Shared<TStringlist>;
 begin
-  Client := TWebSocketClient.Create('ws://127.0.0.1:8080/atopic/100');
+  CustomHeaders := TStringlist.Create;
+  Client := TWebSocketClient.Create;
   // Start and register the callback for the received messages
-  Client.Start(procedure(const Message: string)
+  Client.Start('ws://127.0.0.1:8080/atopic/100', CustomHeaders, 
+    procedure(const Message: string)
     begin
       TThread.Synchronize(nil, procedure
         begin
@@ -1189,7 +1192,8 @@ begin
     end);
     
   // Start and register the callback for the received data
-  Client.Start(procedure(const Data: TArray<Byte>)
+  Client.Start('ws://127.0.0.1:8080/atopic/100', CustomHeaders,
+    procedure(const Data: TArray<Byte>)
     begin
       // Do something with the data
     end);
@@ -1204,11 +1208,14 @@ You can also set up a typed client, that adds typed functionalities to `IWebSock
 ```pascal
 var
   Client: IWebSocketClient<ISong>;
+  CustomHeaders: Shared<TStringlist>;
   Song: ISong;
 begin
-  Client := TWebSocketClient<ISong>.Create('ws://127.0.0.1:8080/atopic/100');
+  CustomHeaders := TStringlist.Create;
+  Client := TWebSocketClient<ISong>.Create;
   // Start and register the callback for the received messages
-  Client.Start(procedure(const Item: ISong)
+  Client.Start('ws://127.0.0.1:8080/atopic/100', CustomHeaders,
+    procedure(const Item: ISong)
     begin
       // Do something with the received item
     end);
@@ -1219,7 +1226,39 @@ begin
 end;
 ```
 
+##### SignalR Clients
 
+Units: `Fido.Web.Client.WebSocket.SignalR`, `Fido.Web.Client.WebSocket.SignalR.Types`.
+
+FidoLib supports also SignalR. 
+
+```pascal
+var
+  SignalR: TSignalR;
+begin
+  SignalR := TSignalR.Create(
+    'socket.somedummysite.com',
+    True,
+    procedure(const Channel: string; const Message: string)
+    begin
+      Writeln(Channel + ': ' + Message);
+    end,
+    TWebSocketClient.Create);
+    
+  Result := SignalR.Send('c3', 'Channel', 'message', function(const Message: string): TSignalRMethodResult
+    var
+      Success: Boolean;
+      ErrorMessage: string;
+    begin
+      // Process result
+      
+      Result := TSignalRMethodResult.Create(Success, ErrorMessage);
+    end);
+    
+end;
+```
+
+You can also set up a typed client, that adds typed functionalities to `IWebSocketClient`. 
 
 ### Consul and Fabio support
 
