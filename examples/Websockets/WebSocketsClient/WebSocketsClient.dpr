@@ -1,12 +1,14 @@
-program WebSocketExample;
+program WebSocketsClient;
 
 uses
   Vcl.Forms,
-  WebSocketExample.Main in 'WebSocketExample.Main.pas' {Form1};
+  Main in 'Main.pas' {Form1};
 
 {$R *.res}
 
 begin
+  ReportMemoryLeaksOnShutdown := True;
+
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TForm1, Form1);

@@ -8,11 +8,12 @@ Below is a list of the most important features:
 - [Virtual database features](#virtual-database-features)
 - [Virtual Api clients](#virtual-api-clients)
 - [Virtual Api servers](#virtual-api-servers)
+- [Websockets](#websockets)
 - [Consul and Fabio support](#consul-and-fabio-support)
 - [Boxes](#boxes)
 - [Async procedures](#async-procedures)
 - [Async functions](#async-functions)
-- [Signals and slots](#signals-and-slots)
+- [Signals and slots](#signals-and-slots) **[Deprecated]**
 - [Events driven architecture](#events-driven-architecture)
 
 ## Mappers
@@ -1117,6 +1118,108 @@ Example:
 
 
 
+### Websockets
+
+FidoLib supports websockets, both server side and client side, with an implementation based on Indy.
+
+##### Websocket Servers
+
+Units: `Fido.Web.Server.WebSocket.Intf`, `Fido.Web.Server.WebSocket`.
+
+Setting up a server is pretty straight forward. 
+
+You can send bytes, strings, or an item (that will be translated into a  JSON by means of the JSON marshalling).
+
+```pascal
+var
+  Server: IWebSocketServer;
+  TypedServer: IWebSocketServer<ISong>;
+  Song: ISong;
+begin
+  Server := TWebSocketServer.Create(8080, TSSLCertData.CreateEmpty);
+  Server.RegisterTopicCallback(
+    'atopic/{id}',
+    // Optional: Register a callback when a client connected to a topic sends a message.
+    procedure(const Client: TWebSocketClient; const Params: array of TNamedValue)
+    var
+      Message: string;
+      LParams: string;
+    begin
+      LParams := Params[0].Name + '=' + Params[0].Value.ToString;
+      Message := Client.WaitForMessage;
+      if Message.IsEmpty then
+        Exit;
+      TThread.Synchronize(nil, procedure
+        begin
+          mmMessages.Lines.Add(Client.Topic + ' ' + LParams + ' ' + Client.Host + ': ' + Message);
+        end);
+    end);
+  Server.Start;
+  Server.Send('atopic/100', [1, 2, 3, 4]);
+  Server.Send('atopic/100', 'This is a test message');
+  
+  Song := // Instantiate the type here
+  
+  // Go Typed to send "objects" across the wire
+  TypedServer := WebSocketServer.GetFor<ISong>(Server);
+  TypedServer.Send('atopic/100', Song);
+  
+end;
+```
+
+##### Websocket Clients
+
+Units: `Fido.Web.Client.WebSocket.Intf`, `Fido.Web.Client.WebSocket`.
+
+Setting up a client is even more straight forward for bytes and strings. 
+
+```pascal
+var
+  Client: IWebSocketClient;
+begin
+  Client := TWebSocketClient.Create('ws://127.0.0.1:8080/atopic/100');
+  // Start and register the callback for the received messages
+  Client.Start(procedure(const Message: string)
+    begin
+      TThread.Synchronize(nil, procedure
+        begin
+          ShowMessage(Message);
+        end);
+    end);
+    
+  // Start and register the callback for the received data
+  Client.Start(procedure(const Data: TArray<Byte>)
+    begin
+      // Do something with the data
+    end);
+    
+  Client.Send('This is a test message');
+  Client.Send([1, 2, 3, 4]);
+end;
+```
+
+You can also set up a typed client, that adds typed functionalities to `IWebSocketClient`. 
+
+```pascal
+var
+  Client: IWebSocketClient<ISong>;
+  Song: ISong;
+begin
+  Client := TWebSocketClient<ISong>.Create('ws://127.0.0.1:8080/atopic/100');
+  // Start and register the callback for the received messages
+  Client.Start(procedure(const Item: ISong)
+    begin
+      // Do something with the received item
+    end);
+    
+  Song := // Instantiate the type here. 
+   
+  Client.Send(Song);
+end;
+```
+
+
+
 ### Consul and Fabio support
 
 Unit: `Fido.Api.Server.Consul`.
@@ -1356,6 +1459,8 @@ end;
 ```
 
 ## Signals and slots
+
+**[Deprecated]** Please use the the Intra-Memory Events Driven Architecture implementation
 
 Unit: `Fido.Slots.Intf`.
 

@@ -35,11 +35,19 @@ uses
   Fido.Http.Response.Intf,
 
   Fido.Web.Server.WebSocket.Loop.Abstract,
-  Fido.Web.Server.WebSocket.Loop.Intf;
+  Fido.Web.Server.WebSocket.Loop.Intf,
+
+  Fido.Web.Server.WebSocket,
+  Fido.Web.Server.WebSocket.Intf;
 
 type
   ServerWebSocket = class
     class function DetectLoop(const WebSockets: IDictionary<string, TClass>; const HttpRequest: IHttpRequest; const HttpResponse: IHttpResponse; out WebSocket: ILoopServerWebSocket): Boolean;
+      deprecated 'Please use IServerWebSocket';
+  end;
+
+  WebSocketServer = class
+    class function GetFor<T>(const Server: IWebSocketServer): IWebSocketServer<T>;
   end;
 
 implementation
@@ -78,6 +86,13 @@ begin
   end else begin
     Result := False;
   end;
+end;
+
+{ WebSocketServer }
+
+class function WebSocketServer.GetFor<T>(const Server: IWebSocketServer): IWebSocketServer<T>;
+begin
+  Result := TWebSocketServer<T>.Create(Server);
 end;
 
 end.

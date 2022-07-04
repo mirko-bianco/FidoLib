@@ -265,6 +265,14 @@
         <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.pas"/>
         <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.pas"/>
         <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.pas"/>
+        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Intf.pas"/>
+        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.pas"/>
+        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Client.pas"/>
+        <DCCReference Include="Web\Server\Fido.Web.Server.Http.Indy.pas"/>
+        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.Intf.pas"/>
+        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.pas"/>
+        <DCCReference Include="Http\Fido.Http.Utils.pas"/>
+        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Clients.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
