@@ -42,7 +42,7 @@ type
 
   EFunctionalContext = class(EFidoException);
 
-  OnFailureEvent<T> = reference to function(const Value: TObject): T;
+  OnFailureEvent<T> = reference to function(const RaisedException: TObject): T;
   OnSuccessEvent<T> = reference to function(const Value: T): T;
 
   Context<T> = record
