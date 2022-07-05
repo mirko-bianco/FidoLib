@@ -11,6 +11,7 @@ uses
   Spring,
   Spring.Mocking,
 
+  Fido.Functional,
   Fido.Testing.Mock.Utils,
   Fido.EventsDriven.Utils,
   Fido.EventsDriven.Publisher.Intf,
@@ -43,7 +44,7 @@ begin
   Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
 
   Producer := Mock<IEventsDrivenProducer<string>>.Create;
-  Producer.Setup.Returns<Boolean>(True).When.Push(Key, Payload);
+  Producer.Setup.Returns<Context<Boolean>>(Context<Boolean>.New(True)).When.Push(Key, Payload);
 
   Publisher := TEventsDrivenPublisher<string>.Create(
     function: IEventsDrivenProducer<string>
@@ -60,8 +61,8 @@ begin
   Publisher := nil;
 
   Assert.AreEqual(True, Result);
-  Producer.Received(Times.Once).Push(Key, Payload);
-  Producer.Received(Times.Never).Push(Arg.IsNotIn<string>([Key]), Arg.IsNotIn<string>([Payload]));
+  Producer.Received(Times.Once).Push(Key, Payload, INFINITE);
+  Producer.Received(Times.Never).Push(Arg.IsNotIn<string>([Key]), Arg.IsNotIn<string>([Payload]), Arg.IsNotIn<Cardinal>([INFINITE]));
 end;
 
 initialization

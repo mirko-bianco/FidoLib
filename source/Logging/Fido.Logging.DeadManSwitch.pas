@@ -39,6 +39,7 @@ uses
   Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Request;
 
 type
+  {$M+}
   TDurationData = class(TLoggedData)
   private
     FTotalDurationMS: Int64;
@@ -49,12 +50,15 @@ type
   public
     constructor Create(const &Class: string; const Method: string; const DurationHours: Int64; const DurationMinutes: Int64; const DurationSeconds: Int64; const DurationMilliSeconds: Int64);
 
+    function ToString: string; override;
+  published
     function TotalDurationMS: Int64;
     function DurationHours: Int64;
     function DurationMinutes: Int64;
     function DurationSeconds: Int64;
     function DurationMilliSeconds: Int64;
   end;
+  {$M-}
 
   TDeadManSwitchDurationLogger = class
   private
@@ -117,8 +121,8 @@ begin
         Logger.Log(
           TLogEvent.Create(
             TLogLevel.Info,
-            TLogEventType.Text,
-            Format('"%s.%s" executed in %d hours, %d minutes, %d seconds, %d milliseconds.', [ClassName, MethodName, H, M, S, MS]),
+            TLogEventType.Value,
+            '',
             nil,
             Data.Value
           ));
@@ -164,6 +168,11 @@ end;
 function TDurationData.DurationSeconds: Int64;
 begin
   Result := FDurationSeconds;
+end;
+
+function TDurationData.ToString: string;
+begin
+  Result := Format('%s executed in %d hours, %d minutes, %d seconds, %d milliseconds.', [inherited, FDurationHours, FDurationMinutes, FDurationSeconds, FDurationMilliSeconds]);
 end;
 
 function TDurationData.TotalDurationMS: Int64;

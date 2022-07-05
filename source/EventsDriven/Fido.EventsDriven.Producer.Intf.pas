@@ -24,11 +24,14 @@ unit Fido.EventsDriven.Producer.Intf;
 
 interface
 
+uses
+  Fido.Functional;
+
 type
   IEventsDrivenProducer<PayloadType> = interface(IInvokable)
     ['{F2F2B5D5-CA70-4667-9F9B-A24B8E651C7C}']
 
-    function Push(const Key: string; const Payload: PayloadType): Boolean;
+    function Push(const Key: string; const Payload: PayloadType; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
   {$M+}

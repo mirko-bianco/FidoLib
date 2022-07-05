@@ -11,6 +11,7 @@ uses
   Spring,
   Spring.Mocking,
 
+  Fido.Functional,
   Fido.Testing.Mock.Utils,
   Fido.KVStore.Intf,
   Fido.Consul.UseCases.KVStore.Get.Intf,
@@ -42,13 +43,15 @@ var
   DeleteUseCase: Mock<IConsulKVStoreDeleteKeyUseCase>;
   DeleteKey: string;
   Result: Boolean;
+
+  LGetRun: Context<string>;
 begin
   DeleteKey := MockUtils.SomeString;
 
   GetUseCase := Mock<IConsulKVStoreGetKeyUseCase>.Create;
   PutUseCase := Mock<IConsulKVStorePutKeyUseCase>.Create;
   DeleteUseCase := Mock<IConsulKVStoreDeleteKeyUseCase>.Create;
-  DeleteUseCase.Setup.Returns<Boolean>(True).When.Run(DeleteKey);
+  DeleteUseCase.Setup.Returns<Context<Boolean>>(Context<Boolean>.New(True)).When.Run(DeleteKey);
 
   KVStore := TConsulKVStore.Create(
     GetUseCase,
@@ -62,10 +65,10 @@ begin
     end);
 
   Assert.AreEqual(True, Result);
-  GetUseCase.Received(Times.Never).Run(Arg.IsAny<string>);
-  PutUseCase.Received(Times.Never).Run(Arg.IsAny<string>, Arg.IsAny<string>);
-  DeleteUseCase.Received(Times.Once).Run(DeleteKey);
-  DeleteUseCase.Received(Times.Never).Run(Arg.IsNotIn<string>([DeleteKey]));
+  LGetRun := GetUseCase.Received(Times.Never).Run(Arg.IsAny<string>, Arg.IsAny<Cardinal>);
+  PutUseCase.Received(Times.Never).Run(Arg.IsAny<string>, Arg.IsAny<string>, Arg.IsAny<Cardinal>);
+  DeleteUseCase.Received(Times.Once).Run(DeleteKey, INFINITE);
+  DeleteUseCase.Received(Times.Never).Run(Arg.IsNotIn<string>([DeleteKey]), Arg.IsNotIn<Cardinal>([INFINITE]));
 end;
 
 procedure TConsulKVStoreTests.GetDoesNotRaiseAnyException;
@@ -82,7 +85,7 @@ begin
   GetValue := MockUtils.SomeString;
 
   GetUseCase := Mock<IConsulKVStoreGetKeyUseCase>.Create;
-  GetUseCase.Setup.Returns<string>(GetValue).When.Run(GetKey);
+  GetUseCase.Setup.Returns<Context<string>>(Context<string>.New(GetValue)).When.Run(GetKey);
   PutUseCase := Mock<IConsulKVStorePutKeyUseCase>.Create;
   DeleteUseCase := Mock<IConsulKVStoreDeleteKeyUseCase>.Create;
 
@@ -98,10 +101,10 @@ begin
     end);
 
   Assert.AreEqual(GetValue, Result);
-  GetUseCase.Received(Times.Once).Run(GetKey);
-  GetUseCase.Received(Times.Never).Run(Arg.IsNotIn<string>([GetKey]));
-  PutUseCase.Received(Times.Never).Run(Arg.IsAny<string>, Arg.IsAny<string>);
-  DeleteUseCase.Received(Times.Never).Run(Arg.IsAny<string>);
+  GetUseCase.Received(Times.Once).Run(GetKey, INFINITE);
+  GetUseCase.Received(Times.Never).Run(Arg.IsNotIn<string>([GetKey]), Arg.IsNotIn<Cardinal>([INFINITE]));
+  PutUseCase.Received(Times.Never).Run(Arg.IsAny<string>, Arg.IsAny<string>, Arg.IsAny<Cardinal>);
+  DeleteUseCase.Received(Times.Never).Run(Arg.IsAny<string>, Arg.IsAny<Cardinal>);
 end;
 
 procedure TConsulKVStoreTests.PutDoesNotRaiseAnyException;
@@ -119,7 +122,7 @@ begin
 
   GetUseCase := Mock<IConsulKVStoreGetKeyUseCase>.Create;
   PutUseCase := Mock<IConsulKVStorePutKeyUseCase>.Create;
-  PutUseCase.Setup.Returns<Boolean>(True).When.Run(PutKey, PutValue);
+  PutUseCase.Setup.Returns<Context<Boolean>>(Context<Boolean>.New(True)).When.Run(PutKey, PutValue);
   DeleteUseCase := Mock<IConsulKVStoreDeleteKeyUseCase>.Create;
 
   KVStore := TConsulKVStore.Create(
@@ -134,10 +137,10 @@ begin
     end);
 
   Assert.AreEqual(True, Result);
-  GetUseCase.Received(Times.Never).Run(Arg.IsAny<string>);
-  PutUseCase.Received(Times.Once).Run(PutKey, PutValue);
-  PutUseCase.Received(Times.Never).Run(Arg.IsNotIn<string>([PutKey]), Arg.IsNotIn<string>([PutValue]));
-  DeleteUseCase.Received(Times.Never).Run(Arg.IsAny<string>);
+  GetUseCase.Received(Times.Never).Run(Arg.IsAny<string>, Arg.IsAny<Cardinal>);
+  PutUseCase.Received(Times.Once).Run(PutKey, PutValue, INFINITE);
+  PutUseCase.Received(Times.Never).Run(Arg.IsNotIn<string>([PutKey]), Arg.IsNotIn<string>([PutValue]), Arg.IsNotIn<Cardinal>([INFINITE]));
+  DeleteUseCase.Received(Times.Never).Run(Arg.IsAny<string>, Arg.IsAny<Cardinal>);
 end;
 
 initialization

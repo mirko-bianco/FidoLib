@@ -24,7 +24,11 @@ unit Fido.Logging.Types;
 
 interface
 
+uses
+  System.SysUtils;
+
 type
+  {$M+}
   TLoggedData = class
   private
     FLogType: string;
@@ -34,10 +38,13 @@ type
   public
     constructor Create(const LogType: string; const &Class: string; const Method: string);
 
+    function ToString: string; override;
+  published
     function LogType: string;
     function &Class: string;
     function Method: string;
   end;
+  {$M-}
 
 implementation
 
@@ -67,6 +74,11 @@ end;
 function TLoggedData.Method: string;
 begin
   Result := FMethod
+end;
+
+function TLoggedData.ToString: string;
+begin
+  Result := Format('%s. %s.%s', [FLogType, FClass, FMethod]);
 end;
 
 end.

@@ -104,7 +104,7 @@ begin
   Container.RegisterType<ISong, TSong>;
 
   Mappers.RegisterMapper<ISongRecord, ISong>(
-    procedure(Source: ISongRecord; Destination: ISong)
+    procedure(const Source: ISongRecord; var Destination: ISong)
     begin
       Destination.SetId(Source.Id);
       Destination.SetTitle(Source.Title);

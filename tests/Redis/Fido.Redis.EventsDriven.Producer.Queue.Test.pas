@@ -12,6 +12,7 @@ uses
   Spring,
   Spring.Mocking,
 
+  Fido.Functional,
   Fido.Testing.Mock.Utils,
   Fido.EventsDriven.Producer.Intf,
 
@@ -41,7 +42,7 @@ begin
   EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
-  Client.Setup.Executes.When.LPUSH(Key, EncodedPayload);
+  Client.Setup.Returns<Context<Integer>>(Context<Integer>.New(1)).When.LPUSH(Key, EncodedPayload);
 
   Producer := TRedisQueueEventsDrivenProducer.Create(Client);
 
@@ -51,8 +52,8 @@ begin
       Producer.Push(Key, Payload);
     end);
 
-  Client.Received(Times.Once).LPUSH(Key, EncodedPayload);
-  Client.Received(Times.Never).LPUSH(Arg.IsNotIn<string>(Key), Arg.IsNotIn<string>([EncodedPayload]));
+  Client.Received(Times.Once).LPUSH(Key, EncodedPayload, INFINITE);
+  Client.Received(Times.Never).LPUSH(Arg.IsNotIn<string>(Key), Arg.IsNotIn<string>([EncodedPayload]), Arg.IsNotIn<Cardinal>([INFINITE]));
 end;
 
 initialization

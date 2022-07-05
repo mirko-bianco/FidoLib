@@ -123,6 +123,7 @@ type
     class function FromReadonlyListOfObjects(const Value: TValue; const TypInfo: PTypeInfo; const ElementTypeInfo: PTypeInfo; const ConfigurationName: string): string; static;
     class function FromReadonlyListOfPrimitives(const Value: TValue; const TypInfo: PTypeInfo; const ElementTypeInfo: PTypeInfo; const ConfigurationName: string): string; static;
     class function FromReadonlyListOfEnums(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string): string; static;
+    class function FromReadonlyListOfRecords(const Value: TValue; const TypInfo: PTypeInfo; const ElementTypeInfo: PTypeInfo; const ConfigurationName: string): string; static;
     class function InternalFrom(const Value: TValue; const TypInfo: PTypeInfo; const ConfigurationName: string = ''): TJsonValue; static;
   public
     class function From<T>(const Value: T; const ConfigurationName: string = ''): string; overload; static;
@@ -461,7 +462,14 @@ var
   Param: TValue;
   JSONObject: Shared<TJSONObject>;
   Value: TValue;
+  Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
+  if MappingsUtilities.TryGetType(TypeInfo, Mapping, ConfigurationName) then
+  begin
+    Result := Mapping.&To(JSONString, TypeInfo);
+    Exit;
+  end;
+
   JSONObject := TJSONObject.ParseJSONValue(JSONString) as TJSONObject;
   TValue.Make(nil, TypeInfo, Value);
 
@@ -538,7 +546,7 @@ class function JSONUnmarshaller.ToPrimitive(
 var
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
-  if MappingsUtilities.TryGetPrimitiveType(TypeInfo, Mapping, ConfigurationName) then
+  if MappingsUtilities.TryGetType(TypeInfo, Mapping, ConfigurationName) then
     Result := Mapping.&To(Value, TypeInfo);
 end;
 
@@ -588,7 +596,8 @@ begin
     tkInteger,
     tkInt64: Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName);
 
-    tkRecord: begin
+    tkRecord,
+    tkMRecord: begin
       if string(TypeInfo.Name).ToLower.StartsWith(NullableName) or
          string(TypeInfo.Name).ToLower.Equals(GuidName)then
         Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName)
@@ -674,10 +683,17 @@ var
   Method: TRttiMethod;
   Param: TValue;
   JSONObject: Shared<TJSONObject>;
+  Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
-  JSONObject := TJSONObject.ParseJSONValue(JSONString) as TJSONObject;
+  if MappingsUtilities.TryGetType(TypeInfo, Mapping, ConfigurationName) then
+  begin
+    Result := Mapping.&To(JSONString, TypeInfo);
+    Exit;
+  end;
+
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypeInfo);
+  JSONObject := TJSONObject.ParseJSONValue(JSONString) as TJSONObject;
   InstanceType := RttiType.AsInstance;
   Result := InstanceType.GetMethod('Create').Invoke(InstanceType.MetaclassType, []).Convert(TypeInfo);
   with JSONObject.Value.GetEnumerator do
@@ -803,9 +819,16 @@ var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
   JSONObject: Shared<TJSONObject>;
+  Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypInfo);
+
+  if MappingsUtilities.TryGetType(TypInfo, Mapping, ConfigurationName) then
+  begin
+    Result := Mapping.From(Value);
+    Exit;
+  end;
 
   JSONObject := TJSONObject.Create;
 
@@ -862,7 +885,7 @@ var
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
   Result := Nullable<string>.Create(Null);
-  if MappingsUtilities.TryGetPrimitiveType(TypInfo, Mapping, ConfigurationName) then
+  if MappingsUtilities.TryGetType(TypInfo, Mapping, ConfigurationName) then
     Result := Mapping.From(Value);
 end;
 
@@ -893,6 +916,9 @@ begin
     Result := JSONMarshaller.FromReadonlyListOfObjects(Value, TypInfo, ElementRttiType.Handle, ConfigurationName)
   else if ElementRttiType.TypeKind = tkEnumeration then
     Result := JSONMarshaller.FromReadonlyListOfEnums(Value, TypInfo, ConfigurationName)
+  else if (ElementRttiType.TypeKind = tkRecord) or
+          (ElementRttiType.TypeKind = tkMRecord) then
+    Result := JSONMarshaller.FromReadonlyListOfRecords(Value, TypInfo, ElementRttiType.Handle, ConfigurationName)
   else
     Result := JSONMarshaller.FromReadonlyListOfPrimitives(Value, TypInfo, ElementRttiType.Handle, ConfigurationName)
 end;
@@ -1014,6 +1040,25 @@ begin
   Result := JsonArray.Value.ToJSON;
 end;
 
+class function JSONMarshaller.FromReadonlyListOfRecords(
+  const Value: TValue;
+  const TypInfo: PTypeInfo;
+  const ElementTypeInfo: PTypeInfo;
+  const ConfigurationName: string): string;
+var
+  JsonArray: Shared<TJSONArray>;
+  Enum: IEnumerable;
+begin
+  JsonArray := TJSONArray.Create;
+
+  Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
+  with Enum.GetEnumerator do
+    while MoveNext do
+      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.From(Current, ElementTypeInfo, ConfigurationName)));
+
+  Result := JsonArray.Value.ToJSON;
+end;
+
 class function JSONMarshaller.FromRecord(
   const Value: TValue;
   const TypInfo: PTypeInfo;
@@ -1023,9 +1068,16 @@ var
   RttiType: TRttiType;
   JSONObject: Shared<TJSONObject>;
   LValue: TValue;
+  Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypInfo);
+
+  if MappingsUtilities.TryGetType(TypInfo, Mapping, ConfigurationName) then
+  begin
+    Result := Mapping.From(Value);
+    Exit;
+  end;
 
   JSONObject := TJSONObject.Create;
 
@@ -1162,7 +1214,8 @@ begin
         else
           Result := TJSONUnQuotedString.Create(MarshalledValue);
     end;
-    tkRecord: begin
+    tkRecord,
+    tkMRecord: begin
       if string(TypInfo.Name).ToLower.StartsWith(NullableName) then
       begin
         MarshalledValue := JSONMarshaller.FromPrimitive(Value, RttiType.Handle, ConfigurationName);

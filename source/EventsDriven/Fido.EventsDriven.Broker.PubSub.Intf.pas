@@ -27,13 +27,14 @@ interface
 uses
   System.SysUtils,
 
+  Fido.Functional,
   Fido.EventsDriven.Consumer.PubSub.Intf;
 
 type
   IPubSubEventsDrivenBroker<PayloadType> = interface(IInvokable)
     ['{00565E4F-EB6F-445E-A2C4-32B5152B0DCC}']
 
-    function Push(const Key: string; const Payload: PayloadType): Boolean;
+    function Push(const Key: string; const Payload: PayloadType; const Timeout: Cardinal = INFINITE): Context<Boolean>;
 
     procedure Subscribe(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>; const Key: string; const OnNotify: TProc<string, PayloadType>);
     procedure Unsubscribe(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>; const Key: string);

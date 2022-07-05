@@ -32,6 +32,8 @@ uses
   Spring.Collections,
 
   Fido.Utilities,
+  Fido.Functional,
+  Fido.Functional.Tries,
   Fido.Consul.Service.Intf,
   Fido.Consul.Types,
   Fido.Consul.UseCases.Service.Register.Intf,
@@ -46,13 +48,15 @@ type
     FServiceIds: IList<string>;
 
     function GetIps: TArray<string>;
+    function AddServiceId(const ServiceName, Address: string; const Port: Integer; const ConsulHealthCheck: TConsulHealthCheck; const Timeout: Cardinal): string;
+    function DoGetLocalAddresses: Context<Void>.FunctorFunc<TArray<string>>;
   public
     constructor Create(const ConsulRegisterServiceUseCase: IConsulRegisterServiceUseCase; const ConsulDeregisterServiceUseCase: IConsulDeregisterServiceUseCase;
       const GetIPsFunc: TFunc<TArray<string>> = nil);
     destructor Destroy; override;
 
-    procedure Register(const ServiceName: string; const Port: Integer; const HealthEndpoint: string);
-    procedure Deregister;
+    procedure Register(const ServiceName: string; const Port: Integer; const HealthEndpoint: string; const Timeout: Cardinal = INFINITE);
+    procedure Deregister(const Timeout: Cardinal = INFINITE);
   end;
 
 implementation
@@ -76,12 +80,15 @@ begin
   FServiceIds := TCollections.CreateList<string>;
 end;
 
-procedure TConsulService.Deregister;
+procedure TConsulService.Deregister(const Timeout: Cardinal);
 begin
   FServiceIds.ForEach(
     procedure(const ServiceId: string)
+    var
+      Value: Context<Void>;
     begin
-      FConsulDeregisterServiceUseCase.Run(ServiceId);
+      Value := FConsulDeregisterServiceUseCase.Run(ServiceId, Timeout);
+      Value.Value;
     end);
 
   FServiceIds.Clear;
@@ -93,40 +100,52 @@ begin
   inherited;
 end;
 
+function TConsulService.DoGetLocalAddresses: Context<Void>.FunctorFunc<TArray<string>>;
+begin
+  Result := Void.MapFunc<TArray<string>>(function: TArray<string>
+    begin
+      Result := GStack.LocalAddresses.ToStringArray;
+    end);
+end;
+
 function TConsulService.GetIps: TArray<string>;
 begin
   GStack.IncUsage;
-  try
-    Result := GStack.LocalAddresses.ToStringArray;
-  finally
-    GStack.DecUsage;
-  end;
+  Result := &Try<Void>.New(Void.Get).Map<TArray<string>>(DoGetLocalAddresses()).Match(
+    procedure
+    begin
+      GStack.DecUsage;
+    end);
+end;
+
+function TConsulService.AddServiceId(
+  const ServiceName: string;
+  const Address: string;
+  const Port: Integer;
+  const ConsulHealthCheck: TConsulHealthCheck;
+  const Timeout: Cardinal): string;
+begin
+  Result := &Try<string>.
+    New(FConsulRegisterServiceUseCase.Run(ServiceName, Address, Port, ConsulHealthCheck, '', Timeout)).
+    Match(EConsulService, 'Error while registering to Consul service. Message: %s');
 end;
 
 procedure TConsulService.Register(
   const ServiceName: string;
   const Port: Integer;
-  const HealthEndpoint: string);
+  const HealthEndpoint: string;
+  const Timeout: Cardinal);
 var
   Address: string;
   Prot: string;
 begin
+
   Prot := 'http://';
   if Port = 443 then
     Prot := 'https://';
 
   for Address in FGetIPsFunc do
-    try
-      FServiceIds.Add(
-        FConsulRegisterServiceUseCase.Run(
-          ServiceName,
-          Address,
-          Port,
-          TConsulHealthCheck.Create(Format('%s%s:%d%s', [Prot, Address, Port, HealthEndpoint]))));
-    except
-      on E: Exception do
-        raise EConsulService.Create(Format('Error while registering to Consul service. Message: %s', [E.Message]));
-    end;
+    FServiceIds.Add(AddServiceId(ServiceName, Address, Port, TConsulHealthCheck.Create(Format('%s%s:%d%s', [Prot, Address, Port, HealthEndpoint])), Timeout));
 end;
 
 end.

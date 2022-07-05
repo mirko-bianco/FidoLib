@@ -25,36 +25,38 @@ unit Fido.Consul.UseCases.Service.Deregister;
 interface
 
 uses
-  Spring,
   Spring.Collections,
 
-  Fido.Api.Client.Consul.AgentService.V1.Intf,
+  Fido.Functional,
+  Fido.Utilities,
+  Fido.Consul.Gateways.Service.Intf,
   Fido.Consul.UseCases.Service.Deregister.Intf;
 
 type
   TConsulDeregisterServiceUseCase = class(TInterfacedObject, IConsulDeregisterServiceUseCase)
   private
-    FRegisterServiceApi: IConsulAgentServiceApiV1;
+    FConsulServiceApiGateway: IConsulServiceApiGateway;
   public
-    constructor Create(const RegisterServiceApi: IConsulAgentServiceApiV1);
+    constructor Create(const ConsulServiceApiGateway: IConsulServiceApiGateway);
 
-    procedure Run(const ServiceId: string);
+    function Run(const ServiceId: string; const Timeout: Cardinal = INFINITE): Context<Void>;
   end;
 
 implementation
 
 { TConsulDeregisterServiceUseCase }
 
-constructor TConsulDeregisterServiceUseCase.Create(const RegisterServiceApi: IConsulAgentServiceApiV1);
+constructor TConsulDeregisterServiceUseCase.Create(const ConsulServiceApiGateway: IConsulServiceApiGateway);
 begin
   inherited Create;
-  Guard.CheckNotNull(RegisterServiceApi, 'RegisterServiceApi');
-  FRegisterServiceApi := RegisterServiceApi;
+  FConsulServiceApiGateway := Utilities.CheckNotNullAndSet(ConsulServiceApiGateway, 'ConsulServiceApiGateway');
 end;
 
-procedure TConsulDeregisterServiceUseCase.Run(const ServiceId: string);
+function TConsulDeregisterServiceUseCase.Run(
+  const ServiceId: string;
+  const Timeout: Cardinal): Context<Void>;
 begin
-  FRegisterServiceApi.Deregister(ServiceId);
+  Result := FConsulServiceApiGateway.Deregister(ServiceId, Timeout);
 end;
 
 end.

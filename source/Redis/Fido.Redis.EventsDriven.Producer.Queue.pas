@@ -36,6 +36,8 @@ uses
   Redis.Commons,
   Redis.Client,
 
+  Fido.Functional,
+  Fido.Functional.Retries,
   Fido.Utilities,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
@@ -48,10 +50,12 @@ type
   TRedisQueueEventsDrivenProducer = class(TInterfacedObject, IEventsDrivenProducer<string>)
   private var
     FRedisClient: IFidoRedisClient;
+    function IsGreaterThan0(const Value: Integer): Boolean;
+    function DoLPush(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
   public
     constructor Create(const RedisClient: IFidoRedisClient);
 
-    function Push(const Key: string; const Payload: string): Boolean;
+    function Push(const Key: string; const Payload: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
 implementation
@@ -65,18 +69,29 @@ begin
   FRedisClient := Utilities.CheckNotNullAndSet(RedisClient, 'RedisClient');
 end;
 
+function TRedisQueueEventsDrivenProducer.IsGreaterThan0(const Value: Integer): Boolean;
+begin
+  Result := Value > 0;
+end;
+
+function TRedisQueueEventsDrivenProducer.DoLPush(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
+var
+  Client: IFidoRedisClient;
+begin
+  Client := FRedisClient;
+
+  Result := function(const Params: TArray<string>): Context<Integer>
+    begin
+      Result := Client.LPUSH(Params[0], Params[1], Timeout);
+    end;
+end;
+
 function TRedisQueueEventsDrivenProducer.Push(
   const Key: string;
-  const Payload: string): Boolean;
-var
-  EncodedPayload: string;
+  const Payload: string;
+  const Timeout: Cardinal): Context<Boolean>;
 begin
-  EncodedPayload := TNetEncoding.Base64.Encode(Payload);
-  Result := Retries.Run<Boolean>(
-    function: Boolean
-    begin
-      Result := FRedisClient.LPUSH(Key, EncodedPayload) > 0;
-    end);
+  Result := Retry<TArray<string>>.New([Key, TNetEncoding.Base64.Encode(Payload)]).Map<Integer>(DoLPush(Timeout), Retries.GetRetriesOnExceptionFunc()).Map<Boolean>(IsGreaterThan0);
 end;
 
 end.

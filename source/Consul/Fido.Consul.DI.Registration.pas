@@ -39,6 +39,10 @@ uses
   Fido.Api.Client.Consul.Constants,
   Fido.Api.Client.Consul.AgentService.V1.Intf,
   Fido.Api.Client.Consul.KVStore.V1.Intf,
+  Fido.Consul.Gateways.KVStore.Intf,
+  Fido.Consul.Gateways.KVStore,
+  Fido.Consul.Gateways.Service.Intf,
+  Fido.Consul.Gateways.Service,
   Fido.Api.Client.Consul.Configuration,
   Fido.KVStore.Intf,
   Fido.Consul.UseCases.Service.Register.Intf,
@@ -76,6 +80,9 @@ begin
 
   Containers.RegisterJSONClientApi<IConsulAgentServiceApiV1, IConsulClientVirtualApiConfiguration>(Container);
   Containers.RegisterJSONClientApi<IConsulKVStoreApiV1, IConsulClientVirtualApiConfiguration>(Container);
+
+  Container.RegisterType<IConsulKVStoreApiGateway, TConsulKVStoreApiGateway>;
+  Container.RegisterType<IConsulServiceApiGateway, TConsulServiceApiGateway>;
 
   Container.RegisterType<IConsulRegisterServiceUseCase, TConsulRegisterServiceUseCase>;
   Container.RegisterType<IConsulDeregisterServiceUseCase, TConsulDeregisterServiceUseCase>;

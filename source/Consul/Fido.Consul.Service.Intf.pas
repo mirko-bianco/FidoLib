@@ -34,9 +34,9 @@ type
   IConsulService = interface(IInvokable)
     ['{4C8E3DED-C4CA-424D-B4A3-21461392B2A9}']
 
-    procedure Register(const ServiceName: string; const Port: Integer; const HealthEndpoint: string);
+    procedure Register(const ServiceName: string; const Port: Integer; const HealthEndpoint: string; const Timeout: Cardinal = INFINITE);
 
-    procedure Deregister;
+    procedure Deregister(const Timeout: Cardinal = INFINITE);
   end;
 
 implementation

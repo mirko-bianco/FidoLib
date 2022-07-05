@@ -83,6 +83,7 @@ begin
     on E: Exception do
     begin
       DurationLogger.Value.Cancel;
+      Logger.Log(TLogLevel.Error, E.Message, E);
       raise;
     end;
   end;
@@ -103,6 +104,7 @@ begin
     on E: Exception do
     begin
       DurationLogger.Value.Cancel;
+      Logger.Log(TLogLevel.Error, E.Message, E);
       raise;
     end;
   end;

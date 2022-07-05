@@ -30,24 +30,21 @@ uses
   Spring,
 
   Redis.Commons,
-  Redis.Values;
+  Redis.Values,
+
+  Fido.Functional;
 
 type
   IFidoRedisClient = interface(IInvokable)
     ['{D3638B13-B487-4CC5-B1C5-8B52474F4990}']
 
-    function DEL(const Keys: string): Integer;
-    function GET(const Key: string): Nullable<string>;
-    function &SET(const Key: string; const Value: string): Boolean;
-    function RPOP(const Key: string): Nullable<string>;
-    function LPUSH(const Key: string; const Value: string): Integer;
-    function PUBLISH(const Key: string; const Value: string): Integer;
-    procedure SUBSCRIBE(const Channel: string;
-      aCallback: TProc<string, string>;
-      aContinueOnTimeoutCallback: TRedisTimeoutCallback = nil;
-      aAfterSubscribe: TProc = nil);
-
-    function ExecuteWithStringResult(const RedisCommand: IRedisCommand): TRedisString;
+    function DEL(const Keys: string; const Timeout: Cardinal = INFINITE): Context<Integer>;
+    function GET(const Key: string; const Timeout: Cardinal = INFINITE): Context<Nullable<string>>;
+    function &SET(const Key: string; const Value: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
+    function RPOP(const Key: string; const Timeout: Cardinal = INFINITE): Context<Nullable<string>>;
+    function LPUSH(const Key: string; const Value: string; const Timeout: Cardinal = INFINITE): Context<Integer>;
+    function PUBLISH(const Key: string; const Value: string; const Timeout: Cardinal = INFINITE): Context<Integer>;
+    function SUBSCRIBE(const Channel: string; aCallback: TProc<string, string>; aContinueOnTimeoutCallback: TRedisTimeoutCallback = nil; aAfterSubscribe: TProc = nil): Context<Void>;
   end;
 
   {$M+}

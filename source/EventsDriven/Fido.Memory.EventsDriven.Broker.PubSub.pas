@@ -32,6 +32,9 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Functional,
+  Fido.Functional.Tries,
+  Fido.Functional.Ifs,
   Fido.EventsDriven.Consumer.PubSub.Intf,
   Fido.EventsDriven.Broker.PubSub.Intf;
 
@@ -45,7 +48,7 @@ type
   public
     constructor Create;
 
-    function Push(const Key: string; const Payload: PayloadType): Boolean;
+    function Push(const Key: string; const Payload: PayloadType; const Timeout: Cardinal = INFINITE): Context<Boolean>;
 
     procedure Subscribe(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>; const Key: string; const OnNotify: TProc<string, PayloadType>);
     procedure Unsubscribe(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>; const Key: string);
@@ -77,47 +80,58 @@ end;
 
 function TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Push(
   const Key: string;
-  const Payload: PayloadType): Boolean;
+  const Payload: PayloadType;
+  const Timeout: Cardinal): Context<Boolean>;
 var
   Events: IDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>;
-
   EventsArray: TArray<TProc<string, PayloadType>>;
+  SuccessFlag: Boolean;
+
+  ThenFunc: TFunc<Boolean>;
 begin
-  FLock.BeginRead;
-  try
-    if not FNotifications.TryGetValue(Key, Events) then
-      Exit(False);
+  Result := False;
 
-    EventsArray := Events.Values.ToArray;
-  finally
-    FLock.EndRead;
-  end;
-
-
-  TCollections.CreateList<TProc<string, PayloadType>>(EventsArray).ForEach(
-    procedure(const Event: TProc<string, PayloadType>)
+  ThenFunc := function: Boolean
     begin
-      Run(procedure
+      TCollections.CreateList<TProc<string, PayloadType>>(EventsArray).ForEach(
+        procedure(const Event: TProc<string, PayloadType>)
         begin
-          Event(Key, Payload);
+          Run(procedure
+            begin
+              Event(Key, Payload);
+            end);
         end);
-    end);
+      Result := True;
+    end;
 
-  Result := True;
+  FLock.BeginRead;
+  Result := ThenElse.New(TryOut<Boolean>.New(function: Boolean
+    begin
+      if not FNotifications.TryGetValue(Key, Events) then
+        Exit(False);
+
+      EventsArray := Events.Values.ToArray;
+      Result := True;
+    end).Match(procedure
+    begin
+      FLock.EndRead;
+    end)).&Then<Boolean>(ThenFunc());
 end;
 
 procedure TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Stop(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>);
 begin
   FLock.BeginWrite;
-  try
-    FNotifications.Keys.ForEach(
-      procedure(const Key: string)
-      begin
-        FNotifications.Items[Key].Remove(Consumer);
-      end);
-  finally
-    FLock.EndWrite;
-  end;
+  TryOut<Void>.New(function: Void
+    begin
+      FNotifications.Keys.ForEach(
+        procedure(const Key: string)
+        begin
+          FNotifications.Items[Key].Remove(Consumer);
+        end);
+    end).Match(procedure
+    begin
+      FLock.EndWrite;
+    end);
 end;
 
 procedure TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Subscribe(
@@ -128,17 +142,19 @@ var
   Events: IDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>;
 begin
   FLock.BeginWrite;
-  try
-    if not FNotifications.TryGetValue(Key, Events) then
+  TryOut<Void>.New(function: Void
     begin
-      Events := TCollections.CreateDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>;
-      FNotifications.Items[Key] := Events;
-    end;
+      if not FNotifications.TryGetValue(Key, Events) then
+      begin
+        Events := TCollections.CreateDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>;
+        FNotifications.Items[Key] := Events;
+      end;
 
-    Events.Items[Consumer] := OnNotify;
-  finally
-    FLock.EndWrite;
-  end;
+      Events.Items[Consumer] := OnNotify;
+    end).Match(procedure
+    begin
+      FLock.EndWrite;
+    end);
 end;
 
 procedure TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Unsubscribe(
@@ -148,14 +164,16 @@ var
   Events: IDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>;
 begin
   FLock.BeginWrite;
-  try
-    if not FNotifications.TryGetValue(Key, Events) then
-      Exit;
+  TryOut<Void>.New(function: Void
+    begin
+      if not FNotifications.TryGetValue(Key, Events) then
+        Exit;
 
-    Events.Remove(Consumer);
-  finally
-    FLock.EndWrite;
-  end;
+      Events.Remove(Consumer);
+    end).Match(procedure
+    begin
+      FLock.EndWrite;
+    end);
 end;
 
 { TMemoryPubSubEventsDrivenBroker<PayloadType> }

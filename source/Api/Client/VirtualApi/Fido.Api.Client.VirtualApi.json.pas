@@ -74,6 +74,7 @@ begin
 
   ApiClient := TRestClient.Create(nil);
   ApiRequest := TApiClientVirtualApiRequest.Create(nil);
+  ApiRequest.Value.SynchronizedEvents := False;
   ApiResponse := TRestResponse.Create(nil);
 
   ApiClient.Value.Accept := GetAcceptHeaderWithApiVersion(Call.ContentType);

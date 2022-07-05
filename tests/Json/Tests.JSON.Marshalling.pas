@@ -217,6 +217,9 @@ type
     procedure JSONMarshallingFromObjectReadonlyList;
 
     [Test]
+    procedure JSONMarshallingFromRecordReadonlyList;
+
+    [Test]
     procedure JSONUnmarshallingToEnumReadonlyList;
 
     [Test]
@@ -232,11 +235,15 @@ type
     procedure TestCustomConfigurations;
 
     [Test]
+    procedure TestCustomMapping;
+
+    [Test]
     procedure WithNoCustomConfigurationItRevertsToDefault;
   end;
 
 type
   IReadOnlyListSystemstring = IReadOnlyList<System.string>;
+  IReadonlyListTMyRecord = IReadonlyList<TMyRecord>;
 
 implementation
 
@@ -594,6 +601,24 @@ begin
   Assert.AreEqual('{"ErrorMessage":"There was an error","Success":false,"Value":100}', JSONMarshaller.&From<TResult<Integer>>(Result));
 end;
 
+procedure TJSONMarshallingTests.JSONMarshallingFromRecordReadonlyList;
+var
+  List: IList<TMyRecord>;
+  Object1: TMyRecord;
+  Object2: TMyRecord;
+  Object3: TMyRecord;
+begin
+  Object1.Id := 1;
+  Object1.Name := 'Name 1';
+  Object2.Id := 2;
+  Object2.Name := 'Name 2';
+  Object3.Id := 3;
+
+  List := TCollections.CreateList<TMyRecord>([Object1, Object2, Object3]);
+
+  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"},{"Id":3,"Name":null}]', JSONMarshaller.From<IReadOnlyList<TMyRecord>>(List.AsReadOnlyList));
+end;
+
 procedure TJSONMarshallingTests.JSONUnmarshallingToObject;
 var
   Obj: Shared<TMyObject>;
@@ -665,6 +690,26 @@ begin
   Assert.AreEqual('"THISISUPPER"', JSONMarshaller.From<string>('ThisIsUpper', 'MyConfiguration'), False);
   Assert.AreEqual('thisislower', JSONUnmarshaller.&To<string>('ThisIsLower', 'MyConfiguration'), False);
   Assert.AreEqual('ThisIsDefault', JSONUnmarshaller.&To<string>('ThisIsDefault'), False);
+end;
+
+procedure TJSONMarshallingTests.TestCustomMapping;
+var
+  Data: TMyRecord;
+begin
+  MappingsUtilities.RegisterType<TMyRecord>(
+    function(const Value: TMyRecord): string
+    begin
+      Result := Format('{"name": "%s"}', [Value.Name.Value]);
+    end,
+    function(const Value: string): TMyRecord
+    begin
+      Result.Id := 1;
+      Result.Name := Value;
+    end);
+
+  Data.Name := 'This is my record';
+
+  Assert.AreEqual('{"name":"This is my record"}', JSONMarshaller.From<TMyRecord>(Data), False);
 end;
 
 procedure TJSONMarshallingTests.WithNoCustomConfigurationItRevertsToDefault;

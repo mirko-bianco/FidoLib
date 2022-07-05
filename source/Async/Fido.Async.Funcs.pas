@@ -71,7 +71,7 @@ type
     function Resolve: TAsyncFuncResult<TTo>;
 
     function Task: ITask;
-  end;
+  end deprecated 'Please use Context<T>';
 
   AsyncFuncs<TFrom, TTo> = record
   private type
@@ -103,7 +103,7 @@ type
     end;
   public
     class function Queue(const Action: TAsyncFuncAction): IAsyncFunc<TFrom, TTo>; static;
-  end;
+  end deprecated 'Please use Context<T>';
 
   AsyncFuncMapping = record
     class function Action<TFrom, TTo>(const MappedAction: TAsyncFuncTypedAction<TFrom, TTo>): TAsyncFuncAction; static;
