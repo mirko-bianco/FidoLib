@@ -487,7 +487,7 @@ begin
         Method := RttiType.GetMethod(Format('Set%s', [GetCurrent.JsonString.Value]));
         if Assigned(Method) and (Method.MethodKind = mkProcedure) and (Length(Method.GetParameters) = 1) then
         begin
-          Param := JSONUnmarshaller.To(GetCurrent.JsonValue.Value, Method.GetParameters[0].ParamType.Handle, ConfigurationName);
+          Param := JSONUnmarshaller.To(GetCurrent.JsonValue.ToJSON, Method.GetParameters[0].ParamType.Handle, ConfigurationName);
           Method.Invoke(Value, [Param]);
         end
         else
