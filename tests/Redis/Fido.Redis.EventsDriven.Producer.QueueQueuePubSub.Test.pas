@@ -12,6 +12,7 @@ uses
   Spring,
   Spring.Mocking,
 
+  Fido.Functional,
   Fido.Testing.Mock.Utils,
   Fido.EventsDriven.Producer.Intf,
 
@@ -48,8 +49,8 @@ begin
   EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
-  Client.Setup.Returns<Integer>(1).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
-  Client.Setup.Returns<Integer>(1).When.PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>);
+  Client.Setup.Returns<Context<Integer>>(Context<Integer>.New(1)).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]), Arg.IsIn<Cardinal>([INFINITE]));
+  Client.Setup.Returns<Context<Integer>>(Context<Integer>.New(1)).When.PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>, Arg.IsAny<Cardinal>);
 
   Producer := TRedisQueuePubSubEventsDrivenProducer.Create(Client);
 
@@ -60,10 +61,10 @@ begin
     end);
 
   Assert.AreEqual(True, Result);
-  Client.Received(Times.Once).LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
-  Client.Received(Times.Never).LPUSH(Arg.IsAny<string>, Arg.IsNotIn<string>([EncodedPayload]));
-  Client.Received(Times.Once).PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>);
-  Client.Received(Times.Never).PUBLISH(Arg.IsNotIn<string>([Key]), Arg.IsAny<string>);
+  Client.Received(Times.Once).LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]), Arg.IsIn<Cardinal>([INFINITE]));
+  Client.Received(Times.Never).LPUSH(Arg.IsAny<string>, Arg.IsNotIn<string>([EncodedPayload]), Arg.IsNotIn<Cardinal>([INFINITE]));
+  Client.Received(Times.Once).PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>, Arg.IsAny<Cardinal>);
+  Client.Received(Times.Never).PUBLISH(Arg.IsNotIn<string>([Key]), Arg.IsAny<string>, Arg.IsAny<Cardinal>);
 end;
 
 procedure TRedisEventsDrivenProducerQueuePubSubTests.PushReturnsFalseWhenLPUSHFails;
@@ -80,8 +81,8 @@ begin
   EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
-  Client.Setup.Returns<Integer>(0).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
-  Client.Setup.Returns<Integer>(1).When.PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>);
+  Client.Setup.Returns<Context<Integer>>(Context<Integer>.New(0)).When.LPUSH(Arg.IsAny<string>, Arg.IsAny<string>, Arg.IsAny<Cardinal>);
+  Client.Setup.Returns<Context<Integer>>(Context<Integer>.New(1)).When.PUBLISH(Arg.IsAny<string>, Arg.IsAny<string>, Arg.IsAny<Cardinal>);
 
   Producer := TRedisQueuePubSubEventsDrivenProducer.Create(Client);
 
@@ -92,9 +93,9 @@ begin
     end);
 
   Assert.AreEqual(False, Result);
-  Client.Received(Times.Exactly(1)).LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
-  Client.Received(Times.Never).LPUSH(Arg.IsAny<string>, Arg.IsNotIn<string>([EncodedPayload]));
-  Client.Received(Times.Never).PUBLISH(Arg.IsAny<string>, Arg.IsAny<string>);
+  Client.Received(Times.Once).LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]), Arg.IsIn<Cardinal>([INFINITE]));
+  Client.Received(Times.Never).LPUSH(Arg.IsAny<string>, Arg.IsNotIn<string>([EncodedPayload]), Arg.IsIn<Cardinal>([INFINITE]));
+  Client.Received(Times.Never).PUBLISH(Arg.IsAny<string>, Arg.IsAny<string>, Arg.IsAny<Cardinal>);
 end;
 
 procedure TRedisEventsDrivenProducerQueuePubSubTests.PushReturnsFalseWhenPUBLISHFails;
@@ -111,8 +112,8 @@ begin
   EncodedPayload := TNetEncoding.Base64.Encode(Payload);
 
   Client := Mock<IFidoRedisClient>.Create;
-  Client.Setup.Returns<Integer>(1).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
-  Client.Setup.Returns<Integer>(0).When.PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>);
+  Client.Setup.Returns<Context<Integer>>(Context<Integer>.New(1)).When.LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]), Arg.IsIn<Cardinal>([INFINITE]));
+  Client.Setup.Returns<Context<Integer>>(Context<Integer>.New(0)).When.PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>, Arg.IsAny<Cardinal>);
 
   Producer := TRedisQueuePubSubEventsDrivenProducer.Create(Client);
 
@@ -123,10 +124,10 @@ begin
     end);
 
   Assert.AreEqual(False, Result);
-  Client.Received(Times.Once).LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]));
-  Client.Received(Times.Never).LPUSH(Arg.IsAny<string>, Arg.IsNotIn<string>([EncodedPayload]));
-  Client.Received(Times.Once).PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>);
-  Client.Received(Times.Never).PUBLISH(Arg.IsNotIn<string>([Key]), Arg.IsAny<string>);
+  Client.Received(Times.Once).LPUSH(Arg.IsAny<string>, Arg.IsIn<string>([EncodedPayload]), Arg.IsIn<Cardinal>([INFINITE]));
+  Client.Received(Times.Never).LPUSH(Arg.IsAny<string>, Arg.IsNotIn<string>([EncodedPayload]), Arg.IsNotIn<Cardinal>([INFINITE]));
+  Client.Received(Times.Once).PUBLISH(Arg.IsIn<string>([Key]), Arg.IsAny<string>, Arg.IsIn<Cardinal>([INFINITE]));
+  Client.Received(Times.Never).PUBLISH(Arg.IsNotIn<string>([Key]), Arg.IsAny<string>, Arg.IsIn<Cardinal>([INFINITE]));
 end;
 
 initialization

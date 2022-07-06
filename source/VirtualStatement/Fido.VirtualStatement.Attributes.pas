@@ -29,8 +29,9 @@ type
     stNone,        // unknown/unset
     stSequence,    // table sequence, see: IVirtualSequence
     stFunction,    // function (will use select .. from dual without a need for resource)
-    stQuery,       // SELECT statement (both scalar and sets), see: IVirtualQuery
-    stCommand,     // INSERT, UPDATE, DELETE or MERGE command, see: IVirtualCommand
+    stScalarQuery, // SELECT statement (scalar)
+    stQuery,       // SELECT statement (sets)
+    stCommand,     // INSERT, UPDATE, DELETE or MERGE command
     stStoredProc) ;// stored procedure (incl. returning values)
 
 const
@@ -39,15 +40,15 @@ const
   // types that require fully qualified name in statement data string
   stQualified = [stSequence, stFunction, stStoredProc];
   // types that will be treated as openable queries
-  stOpenable = [stSequence, stQuery, stFunction];
+  stOpenable = [stSequence, stQuery, stFunction, stScalarQuery];
   // types that MUST have a scalar Execute method (i.e. function returning only one value)
-  stScalar = [stSequence, stFunction];
+  stScalar = [stScalarQuery, stSequence, stFunction];
   // types that will be executed (as opposed to opened)
   stExecutable = [stCommand, stStoredProc];
   // types that can have parameters (all valid except for stSequence)
   stParametrised = [stFunction, stQuery, stCommand, stStoredProc];
   // types that require SQL resource name in statment data
-  stResourced = [stQuery, stCommand];
+  stResourced = [stQuery, stCommand, stScalarQuery];
 
 type
 { Statement attribute is REQUIRED (and sufficient). It defines what to do with a statement
@@ -123,6 +124,25 @@ type
 
   PagingOffsetAttribute = class(TCustomAttribute);
 
+{ SqlInject parameters allow to change SQL scripts in a way that is not allowed by normal parameters
+
+  Example:
+
+  [Statement(stQuery, 'Q_AN_EXAMPLE_QUERY')]
+  function Open(const [SqlInject('ORDERBY')] OrderBy: string);
+
+  Will replace the tag %ORDERBY% of the sql resource called Q_AN_EXAMPLE_QUERY with the content of the OrderBy parameter:
+  'select * from somequery order by %ORDERBY%' }
+
+  SqlInjectAttribute = class(TCustomAttribute)
+  private
+    FTag: string;
+  public
+    constructor Create(const Tag: string);
+
+    property Tag: string read FTag;
+  end;
+
 implementation
 
 Uses
@@ -143,6 +163,15 @@ constructor StatementAttribute.Create(
 begin
   FType := &Type;
   FData := Data.ToUpper;
+end;
+
+{ SqlInjectAttribute }
+
+constructor SqlInjectAttribute.Create(const Tag: string);
+begin
+  inherited Create;
+
+  FTag := Tag;
 end;
 
 end.

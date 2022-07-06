@@ -47,7 +47,7 @@ type
     procedure Register(const SignalActor: IObservable; const Message: string; const SlotType: TSlotType; const Slot: Spring.TAction<TArray<TValue>>); overload;
 
     procedure UnregisterSignalActor(const SignalActor: IObservable);
-  end;
+  end deprecated 'Please use In Memory Event Driven Architecture interfaces';
 
 implementation
 

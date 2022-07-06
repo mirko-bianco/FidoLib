@@ -30,40 +30,53 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
+  Fido.Functional,
+  Fido.Functional.Retries,
   Fido.DesignPatterns.Retries,
-  Fido.Api.Client.Consul.KVStore.V1.Intf,
+  Fido.Consul.Gateways.KVStore.Intf,
   Fido.Consul.UseCases.KVStore.Delete.Intf;
 
 type
   TConsulKVStoreDeleteKeyUseCase = class(TInterfacedObject, IConsulKVStoreDeleteKeyUseCase)
   private
-    FApi: IConsulKVStoreApiV1;
-  public
-    constructor Create(const Api: IConsulKVStoreApiV1);
+    FGateway: IConsulKVStoreApiGateway;
 
-    function Run(const Key: string): Boolean;
+    function DoDelete(const Timeout: Cardinal): Context<string>.MonadFunc<Boolean>;
+  public
+    constructor Create(const Gateway: IConsulKVStoreApiGateway);
+
+    function Run(const Key: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
 implementation
 
 { TConsulKVStoreDeleteKeyUseCase }
 
-constructor TConsulKVStoreDeleteKeyUseCase.Create(const Api: IConsulKVStoreApiV1);
+constructor TConsulKVStoreDeleteKeyUseCase.Create(const Gateway: IConsulKVStoreApiGateway);
 begin
   inherited Create;
 
-  Guard.CheckNotNull(Api, 'Api');
-  FApi := Api;
+  FGateway := Utilities.CheckNotNullAndSet(Gateway, 'Gateway');
 end;
 
-function TConsulKVStoreDeleteKeyUseCase.Run(const Key: string): Boolean;
+function TConsulKVStoreDeleteKeyUseCase.DoDelete(const Timeout: Cardinal): Context<string>.MonadFunc<Boolean>;
+var
+  Gateway: IConsulKVStoreApiGateway;
 begin
-  Result := Retries.Run<Boolean>(
-    function: Boolean
+  Gateway := FGateway;
+
+  Result := function(const Key: string): Context<Boolean>
     begin
-      Result := FApi.Delete(Key);
-    end,
-    Retries.GetRetriesOnExceptionFunc());
+      Result := Gateway.Delete(Key, Timeout);
+    end;
+end;
+
+function TConsulKVStoreDeleteKeyUseCase.Run(
+  const Key: string;
+  const Timeout: Cardinal): Context<Boolean>;
+begin
+  Result := Retry<string>.New(Key).Map<Boolean>(DoDelete(Timeout), Retries.GetRetriesOnExceptionFunc());
 end;
 
 end.

@@ -35,6 +35,8 @@ type
 
     function GetOldDBMigrations: ISet<string>;
     procedure SaveDBMigration(const FileName: string);
+
+    procedure ExecSql(const Sql: string);
   end;
 
 implementation

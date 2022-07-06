@@ -3,9 +3,10 @@ unit Fido.JWT.Manager.Test;
 interface
 
 uses
-  DUnitX.TestFramework,
-  SysUtils,
+  System.SysUtils,
   System.JSON,
+
+  DUnitX.TestFramework,
 
   Spring,
 
@@ -21,6 +22,9 @@ type
   TJWTManagerTests = class
     [Test]
     procedure JWTManagerGeneratesACorrectToken;
+
+    [Test]
+    procedure JWTManagerGeneratesACorrectTokenWithoutExpiration;
 
     [Test]
     procedure JWTManagerSingsTokenAndReturnsCorrectly;
@@ -65,6 +69,23 @@ begin
   Sleep(100);
 
   Assert.AreEqual<Real>(Trunc(Duration/60/60/24*10000), Trunc((Token.Value.Claims.Expiration - Token.Value.Claims.IssuedAt)*10000));
+  Assert.AreEqual(Issuer, Token.Value.Claims.Issuer);
+end;
+
+procedure TJWTManagerTests.JWTManagerGeneratesACorrectTokenWithoutExpiration;
+var
+  Manager: Shared<TJWTManager>;
+  Token: Shared<TJWT>;
+  Issuer: string;
+begin
+  Issuer := MockUtils.SomeString;
+  Manager := TJWTManager.Create;
+
+  Token := Manager.Value.GenerateToken(Issuer);
+
+  Sleep(100);
+
+  Assert.AreEqual<TDateTime>(0, Token.Value.Claims.Expiration);
   Assert.AreEqual(Issuer, Token.Value.Claims.Issuer);
 end;
 

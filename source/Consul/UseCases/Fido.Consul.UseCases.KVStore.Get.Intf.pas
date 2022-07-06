@@ -24,11 +24,14 @@ unit Fido.Consul.UseCases.KVStore.Get.Intf;
 
 interface
 
+uses
+  Fido.Functional;
+
 type
   IConsulKVStoreGetKeyUseCase = interface(IInvokable)
     ['{B59B47D0-AFF1-4D98-9876-174A7905BFBB}']
 
-    function Run(const Key: string): string;
+    function Run(const Key: string; const Timeout: Cardinal = INFINITE): Context<string>;
   end;
 
 implementation

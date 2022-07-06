@@ -31,8 +31,7 @@ uses
   FireDac.Stan.Param,
   FireDAC.Comp.Client,
 
-  Spring,
-
+  Fido.Utilities,
   Fido.Types.TGuid.Variant,
   Fido.Db.Connections.FireDac,
   Fido.VirtualStatement.Intf,
@@ -94,7 +93,7 @@ begin
   Result := nil;
   try
     case StatementType of
-      stSequence, stQuery, stFunction: // = stOpenable
+      stSequence, stQuery, stFunction, stScalarQuery: // = stOpenable
         begin
           Result := TFDQuery.Create(nil);
           with TFDQuery(Result) do begin
@@ -126,8 +125,7 @@ end;
 constructor TFireDacStatementExecutor.Create(FireDacConnections: TFireDacConnections);
 begin
   inherited Create;
-  Guard.CheckNotNull(FireDacConnections, 'FireDacConnections');
-  FFireDacConnections := FireDacConnections;
+  FFireDacConnections := Utilities.CheckNotNullAndSet(FireDacConnections, 'FireDacConnections');
 end;
 
 procedure TFireDacStatementExecutor.Execute;
@@ -151,7 +149,7 @@ begin
       Result := TFDStoredProc(Statement).Params;
     stCommand:
       Result := TFDQuery(Statement).Params;
-    stQuery, stFunction:
+    stQuery, stFunction, stScalarQuery:
       Result := TFDQuery(Statement).Params;
     else
       Result := nil;
@@ -170,7 +168,7 @@ begin
   case StatementType of
     stStoredProc:
       TFDStoredProc(Statement).Prepared := true;
-    stCommand, stQuery, stFunction, stSequence:
+    stCommand, stQuery, stFunction, stSequence, stScalarQuery:
     begin
       TFDQuery(Statement).FetchOptions.Unidirectional := True;
       if (FPagingOffset > -1) and (FPagingLimit > -1) then

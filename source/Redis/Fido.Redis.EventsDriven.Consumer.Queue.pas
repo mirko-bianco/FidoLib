@@ -28,12 +28,17 @@ uses
   System.SysUtils,
   System.NetEncoding,
   System.Variants,
+  Generics.Collections,
 
   Spring,
 
   Redis.Commons,
   Redis.Client,
 
+  Fido.Utilities,
+  Fido.Functional,
+  Fido.Functional.Retries,
+  Fido.Functional.Ifs,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Consumer.Queue.Intf,
@@ -45,13 +50,18 @@ type
   TRedisQueueEventsDrivenConsumer = class(TInterfacedObject, IQueueEventsDrivenConsumer<string>)
   private
     FRedisClient: IFidoRedisClient;
+    function DoRPop(const Timeout: Cardinal): Context<string>.MonadFunc<Nullable<string>>;
+    function HasValue(const Value: Nullable<string>): Boolean;
+    function DecodeValue(const Value: Nullable<string>): Nullable<string>;
+    function DoLPush(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
+    function CheckLPushResult(const Value: Integer): Context<Boolean>;
+
   public
     constructor Create(const RedisClient: IFidoRedisClient);
 
-    function Pop(const Key: string; var Payload: string): Boolean;
-    procedure PushBack(const Key: string; const Payload: string);
+    function Pop(const Key: string; const Timeout: Cardinal = INFINITE): Context<Nullable<string>>;
+    function PushBack(const Key: string; const Payload: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
-
 
 implementation
 
@@ -61,38 +71,64 @@ constructor TRedisQueueEventsDrivenConsumer.Create(const RedisClient: IFidoRedis
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClient, 'RedisClient');
-  FRedisClient := RedisClient;
+  FRedisClient := Utilities.CheckNotNullAndSet(RedisClient, 'RedisClient');
 end;
 
-function TRedisQueueEventsDrivenConsumer.Pop(const Key: string; var Payload: string): Boolean;
+function TRedisQueueEventsDrivenConsumer.DoRPop(const Timeout: Cardinal): Context<string>.MonadFunc<Nullable<string>>;
 var
-  EncodedValue: Nullable<string>;
+  Client: IFidoRedisClient;
 begin
-  EncodedValue := Retries.Run<Nullable<string>>(
-    function: Nullable<string>
-    begin
-      Result := FRedisClient.RPOP(Key);
-    end);
+  Client := FRedisClient;
 
-  Result := EncodedValue.HasValue;
-  if Result then
-    Payload := TNetEncoding.Base64.Decode(EncodedValue)
+  Result := function(const Key: string): Context<Nullable<string>>
+    begin
+      Result := FRedisClient.RPOP(Key, Timeout);
+    end;
 end;
 
-procedure TRedisQueueEventsDrivenConsumer.PushBack(
+function TRedisQueueEventsDrivenConsumer.HasValue(const Value: Nullable<string>): Boolean;
+begin
+  Result := Value.HasValue;
+end;
+
+function TRedisQueueEventsDrivenConsumer.DecodeValue(const Value: Nullable<string>): Nullable<string>;
+begin
+  if Value.HasValue then
+    Result := TNetEncoding.Base64.Decode(Value);
+end;
+
+function TRedisQueueEventsDrivenConsumer.Pop(
   const Key: string;
-  const Payload: string);
+  const Timeout: Cardinal): Context<Nullable<string>>;
 var
-  EncodedValue: string;
+  NullValue: Nullable<string>;
 begin
-  EncodedValue := TNetEncoding.Base64.Encode(Payload);
+  Result := &If<Nullable<string>>.New(Retry<string>.New(Key).Map<Nullable<string>>(DoRPop(Timeout), Retries.GetRetriesOnExceptionFunc())).Map(HasValue).&Then<Nullable<string>>(DecodeValue, NullValue);
+end;
 
-  Retries.Run(
-    procedure
+function TRedisQueueEventsDrivenConsumer.DoLPush(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
+var
+  Client: IFidoRedisClient;
+begin
+  Client := FRedisClient;
+
+  Result := function(const Params: TArray<string>): Context<Integer>
     begin
-      FRedisClient.LPUSH(Key, EncodedValue);
-    end);
+      Result := Client.LPUSH(Params[0], Params[1], Timeout);
+    end
+end;
+
+function TRedisQueueEventsDrivenConsumer.CheckLPushResult(const Value: Integer): Context<Boolean>;
+begin
+  Result := Value > 0;
+end;
+
+function TRedisQueueEventsDrivenConsumer.PushBack(
+  const Key: string;
+  const Payload: string;
+  const Timeout: Cardinal): Context<Boolean>;
+begin
+  Result := Retry<TArray<string>>.New([Key, TNetEncoding.Base64.Encode(Payload)]).Map<Integer>(DoLPush(Timeout), Retries.GetRetriesOnExceptionFunc()).Map<Boolean>(CheckLPushResult);
 end;
 
 end.

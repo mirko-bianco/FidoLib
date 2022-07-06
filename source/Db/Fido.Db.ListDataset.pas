@@ -135,11 +135,9 @@ constructor TListDataSet<T>.Create(
   const EntityFactoryFunc: TFunc<PTypeInfo, TValue>;
   const DatasetFieldAttributes: IDatasetFieldAttributes);
 begin
-  Guard.CheckTrue(Assigned(EntityFactoryFunc), 'EntityFactoryFunc');
-  Guard.CheckNotNull(DatasetFieldAttributes, 'FieldViewAttributes');
   inherited Create(Owner);
 
-  FDatasetFieldAttributes := DatasetFieldAttributes;
+  FDatasetFieldAttributes := Utilities.CheckNotNullAndSet(DatasetFieldAttributes, 'FieldViewAttributes');
 
   FListFactory :=
     function: IList<T>
@@ -159,7 +157,7 @@ begin
   OnLocate := _OnLocate;
   OnLookupValue := _OnLookupValue;
 
-  DoInitialize(EntityFactoryFunc);
+  DoInitialize(Utilities.CheckNotNullAndSet<TFunc<PTypeInfo, TValue>>(EntityFactoryFunc, 'EntityFactoryFunc'));
 end;
 
 constructor TListDataSet<T>.Create(

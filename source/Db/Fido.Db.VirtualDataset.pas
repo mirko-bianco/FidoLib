@@ -39,7 +39,8 @@ uses
   Spring,
   Spring.Data.ActiveX,
 
-  Fido.Exceptions;
+  Fido.Exceptions,
+  Fido.Utilities;
 
 const
   BFNA = TBookmarkFlag(Ord( High(TBookmarkFlag)) + 1);
@@ -276,8 +277,7 @@ constructor TADBlobStream.Create(
   const Field: TBlobField;
   const Mode: TBlobStreamMode);
 begin
-  Guard.CheckNotNull(Field, 'Field');
-  FField := Field;
+  FField := Utilities.CheckNotNullAndSet(Field, 'Field');
   FFieldNo := FField.FieldNo - 1;
   FDataSet := FField.Dataset as TCustomVirtualDataset;
   FFieldData := Null;
@@ -1344,7 +1344,11 @@ procedure TCustomVirtualDataset.InternalSetFieldData(
       ftLargeInt:
         begin
           TVarData(Data).VType := VT_DECIMAL;
+          {$IFDEF CPUX86}
           Decimal(Data).Lo64 := Int64(Buffer^);
+          {$ELSE}
+          Data := Integer(Buffer^);
+          {$ENDIF}
         end;
 
     else

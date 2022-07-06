@@ -227,7 +227,7 @@ begin
   end;
 
   Source.RegisterObserver(
-    TAnonSyncObserver<Component>.Create(
+    TAnonObserver<Component>.Create(
       Destination,
       procedure(Dest: Component; Notification: INotification)
       var

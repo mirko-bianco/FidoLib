@@ -29,6 +29,7 @@ type
     ['{2BF23AFF-4040-4AE7-B552-9E9BDB7B7E0E}']
 
     procedure Run;
+    procedure ExecSql(const Sql: string);
   end;
 
 implementation

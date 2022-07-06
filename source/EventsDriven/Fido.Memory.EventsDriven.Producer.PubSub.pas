@@ -27,8 +27,8 @@ interface
 uses
   System.SysUtils,
 
-  Spring,
-
+  Fido.Functional,
+  Fido.Utilities,
   Fido.EventsDriven.Producer.Intf,
   Fido.EventsDriven.Broker.PubSub.Intf;
 
@@ -39,7 +39,7 @@ type
   public
     constructor Create(const Broker: IPubSubEventsDrivenBroker<PayloadType>);
 
-    function Push(const Key: string; const Payload: PayloadType): Boolean;
+    function Push(const Key: string; const Payload: PayloadType; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
 implementation
@@ -50,15 +50,15 @@ constructor TMemoryPubSubEventsDrivenProducer<PayloadType>.Create(const Broker: 
 begin
   inherited Create;
 
-  Guard.CheckNotNull(Broker, 'Broker');
-  FBroker := Broker;
+  FBroker := Utilities.CheckNotNullAndSet(Broker, 'Broker');
 end;
 
 function TMemoryPubSubEventsDrivenProducer<PayloadType>.Push(
   const Key: string;
-  const Payload: PayloadType): Boolean;
+  const Payload: PayloadType;
+  const Timeout: Cardinal): Context<Boolean>;
 begin
-  Result := FBroker.Push(Key, Payload);
+  Result := FBroker.Push(Key, Payload, Timeout);
 end;
 
 end.

@@ -24,13 +24,18 @@ unit Fido.EventsDriven.Consumer.Queue.Intf;
 
 interface
 
+uses
+  Spring,
+
+  Fido.Functional;
+
 type
   IQueueEventsDrivenConsumer<PayloadType> = interface(IInvokable)
     ['{BEDFC14E-1B40-4EB6-B686-C935DDA32F40}']
 
-    function Pop(const Key: string; var Payload: PayloadType): Boolean;
+    function Pop(const Key: string; const Timeout: Cardinal = INFINITE): Context<Nullable<PayloadType>>;
 
-    procedure PushBack(const Key: string; const Payload: PayloadType);
+    function PushBack(const Key: string; const Payload: PayloadType; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
   {$M+}

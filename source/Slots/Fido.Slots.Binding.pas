@@ -48,7 +48,7 @@ type
       const MapParams: TFunc<TArray<TValue>, TArray<TValue>> = nil); overload; static;
 
     class procedure Register(const TheSlots: ISlots; const SignalActor: IObservable; const SlotActor: TObject); overload; static;
-  end;
+  end deprecated 'Please use In Memory Event Driven Architecture interfaces';
 
 implementation
 

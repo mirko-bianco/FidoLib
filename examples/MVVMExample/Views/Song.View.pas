@@ -19,8 +19,7 @@ uses
   Vcl.ActnList,
   Vcl.Mask,
 
-  Spring,
-
+  Fido.Utilities,
   Fido.Gui.Binding.Attributes,
   Fido.Gui.Vcl.Binding,
   Fido.Gui.Types,
@@ -66,9 +65,8 @@ end;
 
 constructor TSongView.Create(const SongViewModel: ISongViewModel);
 begin
-  Guard.CheckNotNull(SongViewModel, 'SongViewModel');
   inherited Create(nil);
-  FSongViewModel := SongViewModel;
+  FSongViewModel := Utilities.CheckNotNullAndSet(SongViewModel, 'SongViewModel');
   InitializeGui;
   FSongViewModel.Broadcast('Initialization');
 end;

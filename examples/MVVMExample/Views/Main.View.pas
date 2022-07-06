@@ -16,8 +16,7 @@ uses
   Vcl.Dialogs,
   Vcl.ActnList,
 
-  Spring,
-
+  Fido.Utilities,
   Fido.Gui.Binding.Attributes,
   Fido.Gui.Vcl.Binding,
   Fido.Gui.Types,
@@ -85,8 +84,7 @@ constructor TMainView.Create(
   const MainViewModel: IMainViewModel);
 begin
   inherited Create(Owner);
-  Guard.CheckNotNull(MainViewModel, 'MainViewModel');
-  FMainViewModel := MainViewModel;
+  FMainViewModel := Utilities.CheckNotNullAndSet(MainViewModel, 'MainViewModel');
   InitializeGui;
 end;
 

@@ -9,9 +9,12 @@ uses
   System.NetEncoding,
   DUnitX.TestFramework,
 
+  Redis.Commons,
+
   Spring,
   Spring.Mocking,
 
+  Fido.Functional,
   Fido.Testing.Mock.Utils,
   Fido.EventsDriven.Consumer.PubSub.Intf,
   Fido.EventsDriven.Utils,
@@ -45,7 +48,6 @@ begin
       RedisClient: Mock<IFidoRedisClient>;
       FactoryFunc: TFunc<IFidoRedisClient>;
     begin
-      RedisClient := Mock<IFidoRedisClient>.Create;
       Channel := MockUtils.SomeString;
       EventName := MockUtils.SomeString;
       Key := TEventsDrivenUtilities.FormatKey(Channel, EventName);
@@ -57,6 +59,8 @@ begin
         begin
           Result := RedisClient.Instance;
         end;
+
+      RedisClient := Mock<IFidoRedisClient>.Create;
 
       Consumer := TRedisPubSubEventsDrivenConsumer.Create(FactoryFunc);
       Consumer.Subscribe(Channel, EventName, Proc);

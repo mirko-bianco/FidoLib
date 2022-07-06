@@ -47,6 +47,8 @@ type
     function Singers: IReadOnlyList<ISinger>;
 
     function Media: TMediaType;
+
+    function EmptyArray: IReadOnlyList<string>;
   end;
 
   [TestFixture]
@@ -67,7 +69,7 @@ var
   Song: ISong;
 begin
   Json := '{"Id":1,"Guid":"F76CD4D4-35E1-4C66-A30A-37C050C0B324","Title":"My Title","IsGood":false,"ReleaseDate":"2021-09-29T22:15:30.579Z","Price":"15.95","Author":{"Id":2,"Name":"Author name"},' +
-    '"Years":[2001,2002],"Singers":[{"Id":3,"Name":"First singer"},{"Id":4,"Name":"Second singer"}],"Media":2}';
+    '"Years":[2001,2002],"Singers":[{"Id":3,"Name":"First singer"},{"Id":4,"Name":"Second singer"}],"Media":2, "EmptyArray": []}';
 
   Song := TJSONVirtualDto.Create(TypeInfo(ISong), Json) as ISong;
 
@@ -87,6 +89,7 @@ begin
   Assert.AreEqual(2001, song.Years[0]);
   Assert.AreEqual(2002, song.Years[1]);
   Assert.AreEqual(mtCD, song.Media);
+  Assert.AreEqual(0, Song.EmptyArray.Count);
 end;
 
 initialization

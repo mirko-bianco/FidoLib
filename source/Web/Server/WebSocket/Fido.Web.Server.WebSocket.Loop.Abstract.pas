@@ -59,6 +59,10 @@ type
   private var
     FHttpResponse: IHttpResponse;
     FThread: TThread;
+    FLoopThread: TThread;
+
+    procedure ReadLoop;
+    function IsAlive: Boolean;
   protected
     procedure OnReceivedData(const Data: TBytes); virtual; abstract;
     procedure OnReceivedMessage(const Str: string); virtual; abstract;
@@ -70,8 +74,9 @@ type
 
     procedure SendMessage(const Str: string);
     procedure SendData(const Data: TBytes; var IsText: Boolean);
-    procedure ReadLoop;
     procedure Close;
+
+    procedure Run;
   end;
 
   TServerWebSocketClass = class of TLoopServerWebSocket;
@@ -265,14 +270,26 @@ begin
         Sleep(GetLoopDuration);
       end
     end);
-
   FThread.Start;
+
+  FLoopThread := TThread.CreateAnonymousThread(ReadLoop);
+  FLoopThread.Start;
+
+  Sleep(10);
 end;
 
 destructor TLoopServerWebSocket.Destroy;
 begin
-  FThread.Terminate;
+  if not FThread.CheckTerminated then
+    FThread.Terminate;
+  if not FLoopThread.CheckTerminated then
+    FLoopThread.Terminate;
   inherited;
+end;
+
+function TLoopServerWebSocket.IsAlive: Boolean;
+begin
+  Result := not FLoopThread.CheckTerminated;
 end;
 
 procedure TLoopServerWebSocket.SendData(
@@ -323,6 +340,17 @@ begin
       end;
     end;
   until M.Close; // FIN + CLOSE
+  if not FThread.CheckTerminated then
+    FThread.Terminate;
+  FHttpResponse.DisconnectWebSocket;
+end;
+
+procedure TLoopServerWebSocket.Run;
+begin
+  repeat
+    Sleep(100);
+  until not Self.IsAlive;
+  Close;
 end;
 
 end.

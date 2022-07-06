@@ -30,52 +30,67 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
+  Fido.Functional,
+  Fido.Functional.Retries,
   Fido.DesignPatterns.Retries,
   Fido.Api.Client.Consul.KVStore.V1.Intf,
+  Fido.Consul.Gateways.KVStore.Intf,
   Fido.Consul.UseCases.KVStore.Get.Intf;
 
 type
   TConsulKVStoreGetKeyUseCase = class(TInterfacedObject, IConsulKVStoreGetKeyUseCase)
   private
-    FApi: IConsulKVStoreApiV1;
-  public
-    constructor Create(const Api: IConsulKVStoreApiV1);
+    FGateway: IConsulKVStoreApiGateway;
 
-    function Run(const Key: string): string;
+    function GetFirstValue(const List: IReadonlyList<IKVStoreGetResponseItem>): string;
+    function Decode(const Value: string): string;
+    function DoGet(const Timeout: Cardinal): Context<string>.MonadFunc<IReadonlyList<IKVStoreGetResponseItem>>;
+  public
+    constructor Create(const Gateway: IConsulKVStoreApiGateway);
+
+    function Run(const Key: string; const Timeout: Cardinal = INFINITE): Context<string>;
   end;
 
 implementation
 
 { TConsulKVStoreGetKeyUseCase }
 
-constructor TConsulKVStoreGetKeyUseCase.Create(const Api: IConsulKVStoreApiV1);
+constructor TConsulKVStoreGetKeyUseCase.Create(const Gateway: IConsulKVStoreApiGateway);
 begin
   inherited Create;
 
-  Guard.CheckNotNull(Api, 'Api');
-  FApi := Api;
+  FGateway := Utilities.CheckNotNullAndSet(Gateway, 'Api');
 end;
 
-function TConsulKVStoreGetKeyUseCase.Run(const Key: string): string;
-var
-  ApiResponse: IReadonlyList<IKVStoreGetResponseItem>;
+function TConsulKVStoreGetKeyUseCase.Decode(const Value: string): string;
+begin
+  Result := TNetEncoding.Base64.Decode(Value);
+end;
+
+function TConsulKVStoreGetKeyUseCase.GetFirstValue(const List: IReadonlyList<IKVStoreGetResponseItem>): string;
 begin
   Result := '';
+  if (Assigned(List) and (List.Count = 1)) then
+    Result := List[0].Value;
+end;
 
-  ApiResponse := Retries.Run<IReadonlyList<IKVStoreGetResponseItem>>(
-    function: IReadonlyList<IKVStoreGetResponseItem>
+function TConsulKVStoreGetKeyUseCase.DoGet(const Timeout: Cardinal): Context<string>.MonadFunc<IReadonlyList<IKVStoreGetResponseItem>>;
+var
+  Gateway: IConsulKVStoreApiGateway;
+begin
+  Gateway := FGateway;
+  Result := function(const Key: string): Context<IReadonlyList<IKVStoreGetResponseItem>>
     begin
-      Result := FApi.Get(Key);
-    end,
-    Retries.GetRetriesOnExceptionFunc());
+      Result := Gateway.Get(Key, Timeout);
+    end;
+end;
 
-  if not Assigned(ApiResponse) then
-    Exit;
-
-  if ApiResponse.Count <> 1 then
-    Exit;
-
-   result := TNetEncoding.Base64.Decode(ApiResponse[0].Value);
+function TConsulKVStoreGetKeyUseCase.Run(
+  const Key: string;
+  const Timeout: Cardinal): Context<string>;
+begin
+  Result := Retry<string>.New(Key).Map<IReadonlyList<IKVStoreGetResponseItem>>(DoGet(Timeout)).Map<string>(GetFirstValue).Map<string>(Decode);
 end;
 
 end.

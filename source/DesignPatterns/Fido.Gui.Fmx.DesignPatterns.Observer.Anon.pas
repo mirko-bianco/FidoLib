@@ -33,6 +33,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.DesignPatterns.Observer.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
   Fido.Gui.Types,
@@ -68,10 +69,8 @@ constructor TAnonObserver<T>.Create(
 var
   LForm: TForm;
 begin
-  Guard.CheckNotNull(Target, 'Target');
-  Guard.CheckTrue(Assigned(NotifyProc), 'NotifyProc is not assigned.');
-  FTarget := Target;
-  FNotifyProc := NotifyProc;
+  FTarget := Utilities.CheckNotNullAndSet<T>(Target, 'Target');
+  FNotifyProc := Utilities.CheckNotNullAndSet<TProc<T, INotification>>(NotifyProc, 'NotifyProc');
 
   FObservers.Add(Self);
 

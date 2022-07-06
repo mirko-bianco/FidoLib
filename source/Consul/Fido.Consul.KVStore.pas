@@ -27,6 +27,8 @@ interface
 uses
   Spring,
 
+  Fido.Utilities,
+  Fido.Functional,
   Fido.KVStore.Intf,
   Fido.Consul.UseCases.KVStore.Get.Intf,
   Fido.Consul.UseCases.KVStore.Put.Intf,
@@ -41,9 +43,9 @@ type
   public
     constructor Create(const GetUseCase: IConsulKVStoreGetKeyUseCase; const PutUseCase: IConsulKVStorePutKeyUseCase; const DeleteUseCase: IConsulKVStoreDeleteKeyUseCase);
 
-    function Get(const Key: string): string;
-    function Put(const Key: string; const Value: string): Boolean;
-    function Delete(const Key: string): Boolean;
+    function Get(const Key: string; const Timeout: Cardinal = INFINITE): Context<string>;
+    function Put(const Key: string; const Value: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
+    function Delete(const Key: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
 implementation
@@ -57,30 +59,31 @@ constructor TConsulKVStore.Create(
 begin
   inherited Create;
 
-  Guard.CheckNotNull(GetUseCase, 'GetUseCase');
-  Guard.CheckNotNull(PutUseCase, 'PutUseCase');
-  Guard.CheckNotNull(DeleteUseCase, 'DeleteUseCase');
-
-  FGetUseCase := GetUseCase;
-  FPutUseCase := PutUseCase;
-  FDeleteUseCase := DeleteUseCase;
+  FGetUseCase := Utilities.CheckNotNullAndSet(GetUseCase, 'GetUseCase');
+  FPutUseCase := Utilities.CheckNotNullAndSet(PutUseCase, 'PutUseCase');
+  FDeleteUseCase := Utilities.CheckNotNullAndSet(DeleteUseCase, 'DeleteUseCase');
 end;
 
-function TConsulKVStore.Delete(const Key: string): Boolean;
+function TConsulKVStore.Delete(
+  const Key: string;
+  const Timeout: Cardinal): Context<Boolean>;
 begin
-  REsult := FDeleteUseCase.Run(Key);
+  Result := FDeleteUseCase.Run(Key, Timeout);
 end;
 
-function TConsulKVStore.Get(const Key: string): string;
+function TConsulKVStore.Get(
+  const Key: string;
+  const Timeout: Cardinal): Context<string>;
 begin
-  Result := FGetUseCase.Run(Key);
+  Result := FGetUseCase.Run(Key, Timeout);
 end;
 
 function TConsulKVStore.Put(
   const Key: string;
-  const Value: string): Boolean;
+  const Value: string;
+  const Timeout: Cardinal): Context<Boolean>;
 begin
-  REsult := FPutUseCase.Run(Key, Value);
+  Result := FPutUseCase.Run(Key, Value, Timeout);
 end;
 
 end.

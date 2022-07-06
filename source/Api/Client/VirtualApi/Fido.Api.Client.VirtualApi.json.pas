@@ -51,6 +51,7 @@ type
     function ConvertTValueToString(const Value: TValue): string; override;
     function ConvertResponseToDto(const Response: string; const TypeInfo: PTypeInfo): TValue; override;
     function ConvertRequestDtoToString(const Value: TValue): string; override;
+    function ConvertRawRequestDtoToString(const Value: TValue): string; override;
     procedure CallApi(const Call: TClientVirtualApiCall); override;
   end;
   {$M-}
@@ -73,6 +74,7 @@ begin
 
   ApiClient := TRestClient.Create(nil);
   ApiRequest := TApiClientVirtualApiRequest.Create(nil);
+  ApiRequest.Value.SynchronizedEvents := False;
   ApiResponse := TRestResponse.Create(nil);
 
   ApiClient.Value.Accept := GetAcceptHeaderWithApiVersion(Call.ContentType);
@@ -113,6 +115,11 @@ begin
     on E: Exception do
       Call.Finish(-1, E.Message, ApiResponse.Value.Headers);
   end;
+end;
+
+function TJSONClientVirtualApi<T, IConfiguration>.ConvertRawRequestDtoToString(const Value: TValue): string;
+begin
+  Result := Value.AsString;
 end;
 
 function TJSONClientVirtualApi<T, IConfiguration>.ConvertRequestDtoToString(const Value: TValue): string;

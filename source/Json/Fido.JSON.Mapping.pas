@@ -42,7 +42,7 @@ uses
 
   Spring,
   Spring.Collections,
-
+  
   Fido.Exceptions,
   Fido.Json.Utilities;
 
@@ -93,13 +93,13 @@ type
     DefaultConfigurationName: string = 'Default';
   strict private
     class procedure RegisterJSONMapping(const TypInfo: pTypeInfo; const From: TJSONMarhallingFromFunc; const &To: TJSONUnmarhallingToFunc; const ConfigurationName: string); static;
-    class procedure RegisterType<T>(const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>; const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>; const ConfigurationName: string); static;
     class procedure RegisterNullableType<T>(const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>; const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>; const ConfigurationName: string); static;
     class function SanitizeConfigurationName(const ConfigurationName: string): string; static;
   public
+    class procedure RegisterType<T>(const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>; const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>; const ConfigurationName: string = ''); static;
     class procedure RegisterPrimitive<T>(const JSONMarhallingFromFunc: TJSONConvertingFromFunc<T>; const JSONUnmarhallingToFunc: TJSONConvertingToFunc<T>; const ConfigurationName: string = ''); static;
     class procedure RegisterEnumeratives(const JSONMarhallingFromFunc: TJSONMarhallingFromFunc; const JSONUnmarhallingToFunc: TJSONUnmarhallingToFunc; const ConfigurationName: string = ''); static;
-    class function TryGetPrimitiveType(const TypInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): boolean; static;
+    class function TryGetType(const TypInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): boolean; static;
     class function TryGetEnumeratives(out Mapping: TJSONMarshallingMapping; const ConfigurationName: string): Boolean; static;
   end;
 
@@ -309,7 +309,7 @@ begin
     begin
       Result := TValue.From<T>(JSONUnmarhallingToFunc(Value));
     end,
-    ConfigurationName);
+    Config);
 end;
 
 class function MappingsUtilities.SanitizeConfigurationName(const ConfigurationName: string): string;
@@ -319,7 +319,7 @@ begin
     Result := DefaultConfigurationName;
 end;
 
-class function MappingsUtilities.TryGetPrimitiveType(
+class function MappingsUtilities.TryGetType(
   const TypInfo: pTypeInfo;
   out Mapping: TJSONMarshallingMapping;
   const ConfigurationName: string): boolean;

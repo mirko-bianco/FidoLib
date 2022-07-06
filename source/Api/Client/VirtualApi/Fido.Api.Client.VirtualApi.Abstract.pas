@@ -40,6 +40,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.VirtualInterface,
   Fido.Api.Client.VirtualApi.Intf,
   Fido.Api.Client.VirtualApi.Attributes,
@@ -87,13 +88,14 @@ type
       FFormParams: IDictionary<string, string>;
       FFileParams: IDictionary<string, string>;
       FRequestParam: string;
+      FRawRequestParam: string;
       FContent: string;
       FResponseHeaderParamInfo: Nullable<TResponseHeaderParamInfo>;
       FConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>;
       FHandleRedirects: boolean;
     public
       constructor Create(const ApiName: string; const Method: TRESTRequestMethod; const EndPoint: string; const QueryParams: IDictionary<string, string>; const HeaderParams: IDictionary<string, string>;
-        const FormParams: IDictionary<string, string>; const FileParams: IDictionary<string, string>; const RequestParam: string; const Content: string;
+        const FormParams: IDictionary<string, string>; const FileParams: IDictionary<string, string>; const RequestParam: string; const RawRequestParam: string; const Content: string;
         const ResponseHeaderParamInfo: Nullable<TClientVirtualApiEndPointInfo.TResponseHeaderParamInfo>; const ConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>; const HandleRedirects: boolean);
 
       property ApiName: string read FApiName;
@@ -104,6 +106,7 @@ type
       property FormParams: IDictionary<string, string> read FFormParams;
       property FileParams: IDictionary<string, string> read FFileParams;
       property RequestParam: string read FRequestParam;
+      property RawRequestParam: string read FRawRequestParam;
       property Content: string read FContent;
       property ResponseHeaderParamInfo: Nullable<TClientVirtualApiEndPointInfo.TResponseHeaderParamInfo> read FResponseHeaderParamInfo;
       property ConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo> read FConvertResponseForErrorCodeInfo;
@@ -158,6 +161,7 @@ type
     function ConvertTValueToString(const Value: TValue): string; virtual; abstract;
     function ConvertResponseToDto(const Response: string; const TypeInfo: PTypeInfo): TValue; virtual; abstract;
     function ConvertRequestDtoToString(const Value: TValue): string; virtual; abstract;
+    function ConvertRawRequestDtoToString(const Value: TValue): string; virtual; abstract;
     procedure CallApi(const Call: TClientVirtualApiCall); virtual; abstract;
 
     class property ApiVersion: string read FApiVersion;
@@ -167,6 +171,7 @@ type
     constructor Create(const Configuration: IConfiguration); overload;
 
     function IsActive: Boolean;
+    function GetConfiguration: IConfiguration;
   end;
   {$M-}
 
@@ -249,6 +254,11 @@ begin
   Result := AcceptHeader;
   if not ApiVersion.IsEmpty then
     Result := Result + ';version=' + ApiVersion;
+end;
+
+function TAbstractClientVirtualApi<T, IConfiguration>.GetConfiguration: IConfiguration;
+begin
+  Result := FConfiguration;
 end;
 
 class procedure TAbstractClientVirtualApi<T, IConfiguration>.FindApiParamAttribute(
@@ -375,8 +385,7 @@ end;
 constructor TAbstractClientVirtualApi<T, IConfiguration>.Create(const Configuration: IConfiguration);
 begin
   inherited Create(DoInvoke);
-  Guard.CheckNotNull(Configuration, 'Configuration');
-  FConfiguration := Configuration;
+  FConfiguration := Utilities.CheckNotNullAndSet<IConfiguration>(Configuration, 'Configuration');
 end;
 
 procedure TAbstractClientVirtualApi<T, IConfiguration>.ParamNamesToParamNameValues(
@@ -551,6 +560,11 @@ begin
      Arguments.TryGetValue(EndPointinfo.RequestParam, ArgumentValue) then
     Call.Value.PostBody := ConvertRequestDtoToString(ArgumentValue.Value);
 
+  // Post raw body
+  if (not EndPointinfo.RawRequestParam.IsEmpty) and
+     Arguments.TryGetValue(EndPointinfo.RawRequestParam, ArgumentValue) then
+    Call.Value.PostBody := ConvertRawRequestDtoToString(ArgumentValue.Value);
+
   // parameters
   ParamNamesToParamNameValues(Arguments, EndPointInfo.QueryParams, pkQuery, Call);
   ParamNamesToParamNameValues(Arguments, EndPointInfo.HeaderParams, pkHeader, Call);
@@ -681,6 +695,7 @@ var
   FormParams: IDictionary<string, string>;
   FileParams: IDictionary<string, string>;
   RequestParam: string;
+  RawRequestParam: string;
   Content: string;
   HandleRedirects: boolean;
   ResponseHeaderParamInfo: Nullable<TClientVirtualApiEndPointInfo.TResponseHeaderParamInfo>;
@@ -721,6 +736,8 @@ begin
           FileParams[FileParamAttribute(Attribute).MethodParam] := FileParamAttribute(Attribute).ApiParam
         else if Attribute is RequestParamAttribute then
           RequestParam := RequestParamAttribute(Attribute).MethodParam
+        else if Attribute is RawRequestParamAttribute then
+          RawRequestParam := RawRequestParamAttribute(Attribute).MethodParam
         else if Attribute is ContentAttribute then
           Content := ContentAttribute(Attribute).Content
         else if Attribute is ResponseHeaderParamAttribute then
@@ -744,6 +761,7 @@ begin
     FormParams,
     FileParams,
     RequestParam,
+    RawRequestParam,
     Content,
     ResponseHeaderParamInfo,
     ConvertResponseForErrorCodeInfo,
@@ -767,6 +785,7 @@ constructor TAbstractClientVirtualApi<T, IConfiguration>.TClientVirtualApiEndPoi
   const FormParams: IDictionary<string, string>;
   const FileParams: IDictionary<string, string>;
   const RequestParam: string;
+  const RawRequestParam: string;
   const Content: string;
   const ResponseHeaderParamInfo: Nullable<TClientVirtualApiEndPointInfo.TResponseHeaderParamInfo>;
   const ConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>;
@@ -780,6 +799,7 @@ begin
   FFormParams := FormParams;
   FFileParams := FileParams;
   FRequestParam := RequestParam;
+  FRawRequestParam := RawRequestParam;
   FContent := Content;
   FResponseHeaderParamInfo := ResponseHeaderParamInfo;
   FConvertResponseForErrorCodeInfo := ConvertResponseForErrorCodeInfo;

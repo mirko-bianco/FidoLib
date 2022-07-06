@@ -125,7 +125,8 @@ type
     Direction: TParamType;
     Index: integer;
     IsPagingLimit: Boolean;
-    IsPagingOffset: Boolean
+    IsPagingOffset: Boolean;
+    SqlInjectTag: string;
   end;
 
   TMethodCategory = (

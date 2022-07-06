@@ -2,6 +2,8 @@ unit Fido.Db.Transaction.Test;
 
 interface
 uses
+  System.SysUtils,
+
   DUnitX.TestFramework,
 
   Fido.Exceptions,
@@ -11,6 +13,7 @@ uses
   Fido.Db.TransactionHandler.Test;
 
 type
+  ETransactionTests = class(EFidoException);
 
   [TestFixture]
   TTransactionTests = class(TObject)
@@ -25,6 +28,10 @@ type
     procedure RaisesAnExceptionWhenCommitAfterIsClosed;
     [Test]
     procedure RaisesAnExceptionWhenRollBackAfterIsClosed;
+    [Test]
+    procedure RunAndCommitDoesNotRaiseAnyExceptionWhenSucceds;
+    [Test]
+    procedure RunAndCommitRaisesAnExceptionWhenFails;
   end;
 
 implementation
@@ -110,6 +117,47 @@ begin
         Sut.Free;
       end;
     end);
+end;
+
+procedure TTransactionTests.RunAndCommitDoesNotRaiseAnyExceptionWhenSucceds;
+var
+  Sut: TTransaction;
+begin
+  Assert.WillNotRaiseAny(
+    procedure
+    begin
+      Sut := TTransaction.Create(TTestTransactionHandler.Create);
+      try
+        Sut.RunAndCommit(
+          procedure
+          begin
+            Sleep(1);
+          end);
+      finally
+        Sut.Free;
+      end;
+    end);
+end;
+
+procedure TTransactionTests.RunAndCommitRaisesAnExceptionWhenFails;
+var
+  Sut: TTransaction;
+begin
+  Assert.WillRaise(
+    procedure
+    begin
+      Sut := TTransaction.Create(TTestTransactionHandler.Create);
+      try
+        Sut.RunAndCommit(
+          procedure
+          begin
+            raise ETransactionTests.Create('Error Message');
+          end);
+      finally
+        Sut.Free;
+      end;
+    end,
+    ETransactionTests);
 end;
 
 initialization

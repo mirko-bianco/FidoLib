@@ -35,9 +35,14 @@ uses
   Fido.Api.Client.VirtualApi.json,
   Fido.Jwt.Manager.Intf,
 
+  Fido.Containers,
   Fido.Api.Client.Consul.Constants,
   Fido.Api.Client.Consul.AgentService.V1.Intf,
   Fido.Api.Client.Consul.KVStore.V1.Intf,
+  Fido.Consul.Gateways.KVStore.Intf,
+  Fido.Consul.Gateways.KVStore,
+  Fido.Consul.Gateways.Service.Intf,
+  Fido.Consul.Gateways.Service,
   Fido.Api.Client.Consul.Configuration,
   Fido.KVStore.Intf,
   Fido.Consul.UseCases.Service.Register.Intf,
@@ -61,19 +66,23 @@ implementation
 procedure Register(
   const Container: TContainer;
   const IniFile: TMemIniFile);
+var
+  Url: string;
+  Token: string;
 begin
+  Url := IniFile.ReadString('Consul', 'URL', 'http://127.0.0.1:8500');
+  Token := IniFile.ReadString('Consul', 'Token', '');
   Container.RegisterType<IConsulClientVirtualApiConfiguration>.DelegateTo(
     function: IConsulClientVirtualApiConfiguration
     begin
-      Result := TConsulClientVirtualApiConfiguration.Create(
-        IniFile.ReadString('Consul', 'URL', 'http://127.0.0.1:8500'),
-        IniFile.ReadString('Consul', 'Token', ''),
-        True,
-        True);
+      Result := TConsulClientVirtualApiConfiguration.Create(Url, Token, True, True);
     end).AsSingleton;
 
-  Container.RegisterType<IConsulAgentServiceApiV1, TJSONClientVirtualApi<IConsulAgentServiceApiV1, IConsulClientVirtualApiConfiguration>>;
-  Container.RegisterType<IConsulKVStoreApiV1, TJSONClientVirtualApi<IConsulKVStoreApiV1, IConsulClientVirtualApiConfiguration>>;
+  Containers.RegisterJSONClientApi<IConsulAgentServiceApiV1, IConsulClientVirtualApiConfiguration>(Container);
+  Containers.RegisterJSONClientApi<IConsulKVStoreApiV1, IConsulClientVirtualApiConfiguration>(Container);
+
+  Container.RegisterType<IConsulKVStoreApiGateway, TConsulKVStoreApiGateway>;
+  Container.RegisterType<IConsulServiceApiGateway, TConsulServiceApiGateway>;
 
   Container.RegisterType<IConsulRegisterServiceUseCase, TConsulRegisterServiceUseCase>;
   Container.RegisterType<IConsulDeregisterServiceUseCase, TConsulDeregisterServiceUseCase>;

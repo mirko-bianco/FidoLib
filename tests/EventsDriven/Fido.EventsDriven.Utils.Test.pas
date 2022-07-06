@@ -119,7 +119,7 @@ begin
       Values := TEventsDrivenUtilities.PayloadToMethodParams(Payload, Method);
     end);
 
-  Assert.AreEqual(1, Length(Values));
+  Assert.AreEqual<NativeInt>(1, Length(Values));
   Assert.AreEqual(StringValue, Values[0].AsType<string>)
 end;
 
@@ -151,7 +151,7 @@ begin
       Result := TEventsDrivenUtilities.PayloadToMethodParams<TArray<TValue>>([StringValue, BooleanValue, TestDataValue.Value], Method);
     end);
 
-  Assert.AreEqual(3, Length(Result));
+  Assert.AreEqual<NativeInt>(3, Length(Result));
   Assert.AreEqual(StringValue, Result[0].AsType<string>);
   Assert.AreEqual(BooleanValue, Result[1].AsType<Boolean>);
   Assert.AreEqual<TTestData>(TestDataValue, Result[2].AsType<TTestData>);
@@ -179,7 +179,7 @@ begin
       Result := TEventsDrivenUtilities.PayloadToMethodParams<TArray<TValue>>([Message], Method);
     end);
 
-  Assert.AreEqual(1, Length(Result));
+  Assert.AreEqual<NativeInt>(1, Length(Result));
   Assert.AreEqual(Message, Result[0].AsType<string>);
 end;
 
@@ -216,7 +216,7 @@ begin
       Values := TEventsDrivenUtilities.PayloadToMethodParams(Payload, Method);
     end);
 
-  Assert.AreEqual(3, Length(Values));
+  Assert.AreEqual<NativeInt>(3, Length(Values));
   Assert.AreEqual(StringValue, Values[0].AsType<string>);
   Assert.AreEqual(BooleanValue, Values[1].AsType<Boolean>);
   Assert.AreEqual(TestDataValue.Value.Value, Values[2].AsType<TTestData>.Value);
@@ -244,7 +244,7 @@ begin
       Values := TEventsDrivenUtilities.PayloadToMethodParams(Payload, Method);
     end);
 
-  Assert.AreEqual(1, Length(Values));
+  Assert.AreEqual<NativeInt>(1, Length(Values));
   Assert.AreEqual(StringValue, Values[0].AsType<string>)
 end;
 

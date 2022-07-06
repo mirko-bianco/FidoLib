@@ -30,13 +30,14 @@ uses
   System.Threading,
   System.NetEncoding,
 
-  Spring,
   Spring.Collections,
 
   Redis.Commons,
   Redis.Command,
   Redis.Client,
 
+  Fido.Utilities,
+  Fido.Functional,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Consumer.PubSub.Intf,
@@ -73,8 +74,7 @@ constructor TRedisPubSubEventsDrivenConsumer.Create(const RedisClientFactoryFunc
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClientFactoryFunc, 'RedisClientFactoryFunc');
-  FRedisClientFactoryFunc := RedisClientFactoryFunc;
+  FRedisClientFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<IFidoRedisClient>>(RedisClientFactoryFunc, 'RedisClientFactoryFunc');
 
   FTasks := TCollections.CreateDictionary<string, ITask>;
   FClosing := False;
@@ -87,8 +87,10 @@ procedure TRedisPubSubEventsDrivenConsumer.Subscribe(
 begin
   FTasks.Items[TEventsDrivenUtilities.FormatKey(Channel, EventName)] := TTask.Run(
     procedure
+    var
+      LValue: Context<Void>;
     begin
-      FRedisClientFactoryFunc().SUBSCRIBE(
+      LValue := FRedisClientFactoryFunc().SUBSCRIBE(
         TEventsDrivenUtilities.FormatKey(Channel, EventName),
         procedure(key: string; EncodedPayload: string)
         var
@@ -101,6 +103,7 @@ begin
         begin
           Result := Assigned(Self) and (not FClosing);
         end);
+      LValue.Value;
     end);
 end;
 

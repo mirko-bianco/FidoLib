@@ -33,9 +33,9 @@ type
 
     procedure SendMessage(const Str: string);
     procedure SendData(const Data: TBytes; var IsText: Boolean);
-    procedure ReadLoop();
-    procedure Close;
-  end;
+
+    procedure Run;
+  end deprecated 'Please use IServerWebSocket';
 
 implementation
 

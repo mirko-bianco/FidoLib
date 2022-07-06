@@ -59,7 +59,7 @@ type
     function Resolve: TAsyncProcStatus;
 
     function Task: ITask;
-  end;
+  end deprecated 'Please use Context<T>';
 
   AsyncProcs = record
   private type
@@ -91,7 +91,7 @@ type
     end;
   public
     class function Queue(const Action: TAsyncProcAction): IAsyncProc; static;
-  end;
+  end deprecated 'Please use Context<T>';
 
 implementation
 
@@ -122,10 +122,6 @@ begin
     procedure(const E: Exception)
     begin
       raise EAsyncProcs.Create(E.Message);
-    end;
-  FWhenExpired :=
-    procedure
-    begin
     end;
   FFinally :=
     procedure

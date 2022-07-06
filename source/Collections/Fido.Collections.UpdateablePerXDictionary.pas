@@ -30,6 +30,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.Collections.PerXDictionary.Intf;
 
 type
@@ -59,11 +60,11 @@ constructor TUpdateablePerXDictionary<T, TUpdateable>.Create(
   const ValueFactoryFunc: TFunc<T>;
   const Predicate: TProc<T, TUpdateable>);
 begin
-  Guard.CheckTrue(Assigned(DictionaryFactoryFunc), 'DictionaryFactoryFunc');
-  Guard.CheckTrue(Assigned(Predicate), 'Predicate');
   inherited Create;
-  FPredicate := Predicate;
-  FDictionary := DictionaryFactoryFunc(Ownership, ValueFactoryFunc);
+  FPredicate := Utilities.CheckNotNullAndSet<TProc<T, TUpdateable>>(Predicate, 'Predicate');
+  FDictionary := Utilities.CheckNotNullAndSet<TFunc<TDictionaryOwnerships, TFunc<T>, IPerXDictionary<T>>>(DictionaryFactoryFunc, 'DictionaryFactoryFunc')(
+    Ownership,
+    Utilities.CheckNotNullAndSet<TFunc<T>>(ValueFactoryFunc, 'ValueFactoryFunc'));
 end;
 
 function TUpdateablePerXDictionary<T, TUpdateable>.GetCurrent: T;

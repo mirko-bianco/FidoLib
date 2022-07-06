@@ -63,9 +63,16 @@ constructor EApiServer500.Create(
 var
   LoggedData: Shared<TLoggedData>;
 begin
-  LoggedData := TLoggedData.Create('Error', &Class, Method);
-  Logger.LogValue(TLogLevel.Error, Msg, LoggedData.Value);
   inherited Create(Msg);
+
+  LoggedData := TLoggedData.Create('Error', &Class, Method);
+
+  Logger.Log(TLogEvent.Create(
+    TLogLevel.Error,
+    TLogEventType.Text,
+    Msg,
+    nil,
+    TValue.From<TLoggedData>(LoggedData.Value)));
 end;
 
 end.

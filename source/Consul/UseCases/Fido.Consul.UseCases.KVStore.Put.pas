@@ -26,46 +26,59 @@ interface
 
 uses
   System.NetEncoding,
+  Generics.Collections,
 
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
+  Fido.Functional,
+  Fido.Functional.Retries,
   Fido.DesignPatterns.Retries,
-  Fido.Api.Client.Consul.KVStore.V1.Intf,
+  Fido.Consul.Gateways.KVStore.Intf,
   Fido.Consul.UseCases.KVStore.Put.Intf;
 
 type
   TConsulKVStorePutKeyUseCase = class(TInterfacedObject, IConsulKVStorePutKeyUseCase)
   private
-    FApi: IConsulKVStoreApiV1;
-  public
-    constructor Create(const Api: IConsulKVStoreApiV1);
+    FGateway: IConsulKVStoreApiGateway;
+    function DoPut(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Boolean>;
 
-    function Run(const Key: string; const Value: string): Boolean;
+  public
+    constructor Create(const Gateway: IConsulKVStoreApiGateway);
+
+    function Run(const Key: string; const Value: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
 implementation
 
 { TConsulKVStorePutKeyUseCase }
 
-constructor TConsulKVStorePutKeyUseCase.Create(const Api: IConsulKVStoreApiV1);
+constructor TConsulKVStorePutKeyUseCase.Create(const Gateway: IConsulKVStoreApiGateway);
 begin
   inherited Create;
 
-  Guard.CheckNotNull(Api, 'Api');
-  FApi := Api;
+  FGateway := Utilities.CheckNotNullAndSet(Gateway, 'Api');
+end;
+
+function TConsulKVStorePutKeyUseCase.DoPut(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Boolean>;
+var
+  Gateway: IConsulKVStoreApiGateway;
+begin
+  Gateway := FGateway;
+
+  Result := function(const Params: TArray<string>): Context<Boolean>
+    begin
+      Result := Gateway.Put(Params[0], Params[1], Timeout);
+    end;
 end;
 
 function TConsulKVStorePutKeyUseCase.Run(
   const Key: string;
-  const Value: string): Boolean;
+  const Value: string;
+  const Timeout: Cardinal): Context<Boolean>;
 begin
-  Result := Retries.Run<Boolean>(
-    function: Boolean
-    begin
-      Result := FApi.Put(Key, Value);
-    end,
-    Retries.GetRetriesOnExceptionFunc());
+  Result := Retry<TArray<string>>.New([Key, Value]).Map<Boolean>(DoPut(Timeout), Retries.GetRetriesOnExceptionFunc());
 end;
 
 end.

@@ -2,16 +2,16 @@ program FidoLibTests;
 
 {$IFNDEF TESTINSIGHT}
 {$APPTYPE CONSOLE}
-{$ENDIF}{$STRONGLINKTYPES ON}
-
-
+{$ENDIF}
+{$STRONGLINKTYPES ON}
 uses
   SysUtils,
   {$IFDEF TESTINSIGHT}
   TestInsight.DUnitX,
-  {$ENDIF }
+  {$ELSE}
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
+  {$ENDIF }
   DUnitX.TestFramework,
   Fido.Registration,
   Fido.JSON.Mapping,
@@ -41,7 +41,6 @@ uses
   Fido.Slots.Binding.Tests in 'Slots\Fido.Slots.Binding.Tests.pas',
   Fido.Consul.KVStore.Test in 'Consul\Fido.Consul.KVStore.Test.pas',
   Fido.Consul.Service.Test in 'Consul\Fido.Consul.Service.Test.pas',
-  Fido.Consul.UseCases.KVStore.Get.Test in 'Consul\Fido.Consul.UseCases.KVStore.Get.Test.pas',
   Fido.EventsDriven.Listener.Queue.Test in 'EventsDriven\Fido.EventsDriven.Listener.Queue.Test.pas',
   Fido.EventsDriven.Publisher.Test in 'EventsDriven\Fido.EventsDriven.Publisher.Test.pas',
   Fido.EventsDriven.Subscriber.Test in 'EventsDriven\Fido.EventsDriven.Subscriber.Test.pas',
@@ -56,19 +55,23 @@ uses
   Fido.EventsDriven.Utils.Test in 'EventsDriven\Fido.EventsDriven.Utils.Test.pas',
   Fido.Memory.EventsDriven.Producer.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.Test.pas',
   Fido.Memory.EventsDriven.Consumer.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.Test.pas',
-  Fido.Memory.EventsDriven.Broker.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.Test.pas';
+  Fido.Memory.EventsDriven.Broker.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.Test.pas',
+  Fido.Utilities.Test in 'Fido.Utilities.Test.pas',
+  Fido.Http.Utils.Test in 'Http\Fido.Http.Utils.Test.pas',
+  Fido.Functional.Tests in 'Fido.Functional.Tests.pas';
 
+{$IFNDEF TESTINSIGHT}
 var
-  runner : ITestRunner;
-  results : IRunResults;
-  logger : ITestLogger;
+  runner: ITestRunner;
+  results: IRunResults;
+  logger: ITestLogger;
   nunitLogger : ITestLogger;
+{$ENDIF}
 begin
   ReportMemoryLeaksOnShutdown := True;
 {$IFDEF TESTINSIGHT}
   TestInsight.DUnitX.RunRegisteredTests;
-  exit;
-{$ENDIF}
+{$ELSE}
   try
     //Check command line options, will exit if invalid
     TDUnitX.CheckCommandLine;
@@ -76,16 +79,19 @@ begin
     runner := TDUnitX.CreateRunner;
     //Tell the runner to use RTTI to find Fixtures
     runner.UseRTTI := True;
+    //When true, Assertions must be made during tests;
+    runner.FailsOnNoAsserts := False;
+
     //tell the runner how we will log things
-    //Log to the console window
-    logger := TDUnitXConsoleLogger.Create(true);
-    runner.AddLogger(logger);
+    //Log to the console window if desired
+    if TDUnitX.Options.ConsoleMode <> TDunitXConsoleMode.Off then
+    begin
+      logger := TDUnitXConsoleLogger.Create(TDUnitX.Options.ConsoleMode = TDunitXConsoleMode.Quiet);
+      runner.AddLogger(logger);
+    end;
     //Generate an NUnit compatible XML File
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
     runner.AddLogger(nunitLogger);
-    runner.FailsOnNoAsserts := False; //When true, Assertions must be made during tests;
-
-    TDUnitX.Options.ExitBehavior := TDUnitXExitBehavior.Pause;
 
     //Run tests
     results := runner.Execute;
@@ -109,4 +115,5 @@ begin
       {$ENDIF}
     end;
   end;
+{$ENDIF}
 end.

@@ -27,32 +27,51 @@ interface
 uses
   System.SysUtils,
 
-  Spring,
   Spring.Collections,
 
+  Fido.Utilities,
+  Fido.DesignPatterns.Retries,
+  Fido.Functional,
+  Fido.Functional.Retries,
+  Fido.Functional.Ifs,
+  Fido.Functional.Tries,
   Fido.Consul.Types,
   Fido.Api.Client.Consul.AgentService.V1.Intf,
+  Fido.Consul.Gateways.Service.Intf,
   Fido.Consul.UseCases.Service.Register.Intf;
 
 type
   TConsulRegisterServiceUseCase = class(TInterfacedObject, IConsulRegisterServiceUseCase)
   private
-    FRegisterServiceApi: IConsulAgentServiceApiV1;
-  public
-    constructor Create(const RegisterServiceApi: IConsulAgentServiceApiV1);
+    FRegisterServiceApiGateway: IConsulServiceApiGateway;
 
-    function Run(const ServiceName: string; const Address: string; const Port: Integer; const HealthCheck: TConsulHealthCheck; const ServiceId: string = ''): string;
+    function DoRegister(const Timeout: Cardinal): Context<TConsulService>.MonadFunc<Void>;
+  public
+    constructor Create(const RegisterServiceApiGateway: IConsulServiceApiGateway);
+
+    function Run(const ServiceName: string; const Address: string; const Port: Integer; const HealthCheck: TConsulHealthCheck; const ServiceId: string = ''; const Timeout: Cardinal = INFINITE): Context<string>;
   end;
 
 implementation
 
 { TConsulRegisterServiceUseCase }
 
-constructor TConsulRegisterServiceUseCase.Create(const RegisterServiceApi: IConsulAgentServiceApiV1);
+constructor TConsulRegisterServiceUseCase.Create(const RegisterServiceApiGateway: IConsulServiceApiGateway);
 begin
   inherited Create;
-  Guard.CheckNotNull(RegisterServiceApi, 'RegisterServiceApi');
-  FRegisterServiceApi := RegisterServiceApi;
+  FRegisterServiceApiGateway := Utilities.CheckNotNullAndSet(RegisterServiceApiGateway, 'RegisterServiceApiGateway');
+end;
+
+function TConsulRegisterServiceUseCase.DoRegister(const Timeout: Cardinal): Context<TConsulService>.MonadFunc<Void>;
+var
+  Gateway: IConsulServiceApiGateway;
+begin
+  Gateway := FRegisterServiceApiGateway;
+
+  Result := function(const Service: TConsulService): Context<Void>
+    begin
+      Result := Gateway.Register(Service, Timeout);
+    end;
 end;
 
 function TConsulRegisterServiceUseCase.Run(
@@ -60,10 +79,14 @@ function TConsulRegisterServiceUseCase.Run(
   const Address: string;
   const Port: Integer;
   const HealthCheck: TConsulHealthCheck;
-  const ServiceId: string): string;
+  const ServiceId: string;
+  const Timeout: Cardinal): Context<string>;
 var
   LServiceId: string;
   LTags: TArray<string>;
+
+  ConsulService: TConsulService;
+  BoolContext: Context<Boolean>;
 begin
   SetLength(LTags, 1);
   LTags[0] := Format('urlprefix-/%s', [ServiceName.ToLower]);
@@ -72,16 +95,11 @@ begin
   if LServiceId.IsEmpty then
     LServiceId := Format('%s-%s-%d', [ServiceName, Address, Port]);
 
-  FRegisterServiceApi.Register(
-    TConsulService.Create(
-      ServiceName,
-      Address,
-      Port,
-      HealthCheck,
-      LTags,
-      LServiceId));
+  ConsulService := TConsulService.Create(ServiceName, Address, Port, HealthCheck, LTags, LServiceId);
 
-  Result := LServiceId;
+  BoolContext := &Try<Void>.New(Retry<TConsulService>.New(ConsulService).Map<Void>(DoRegister(Timeout), Retries.GetRetriesOnExceptionFunc())).Match;
+
+  Result := ThenElse.New(BoolContext).&Then<string>('', LServiceId);
 end;
 
 end.

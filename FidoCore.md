@@ -8,12 +8,14 @@ Below is a list of the most important features:
 - [Virtual database features](#virtual-database-features)
 - [Virtual Api clients](#virtual-api-clients)
 - [Virtual Api servers](#virtual-api-servers)
+- [Websockets](#websockets)
 - [Consul and Fabio support](#consul-and-fabio-support)
 - [Boxes](#boxes)
-- [Async procedures](#async-procedures)
-- [Async functions](#async-functions)
-- [Signals and slots](#signals-and-slots)
+- [Async procedures](#async-procedures) **[Deprecated]**
+- [Async functions](#async-functions) **[Deprecated]**
+- [Signals and slots](#signals-and-slots) **[Deprecated]**
 - [Events driven architecture](#events-driven-architecture)
+- [Functional programming](#functional-programming)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -451,6 +453,25 @@ It sets the paging limit of the query, the number of records to return.
 
 It sets the paging Offset of the query, the number of records to skip.
 
+###### [SqlInject]
+
+It tells Fido that the associated parameter (`string`) will replace the tag in the sql.
+
+Example:
+
+```pascal
+  [SQLResource('Q_AN_EXAMPLE_QUERY')]
+  function Open(const [SqlInject('ORDERBY')] OrderBy: string);
+```
+
+will replace the tag `%ORDERBY%` of the sql resource called `Q_AN_EXAMPLE_QUERY` with the content of the `OrderBy` parameter. 
+
+```sql
+select * from sometable order by %ORDERBY%
+```
+
+
+
 ##### Registrations
 
 ```pascal
@@ -521,6 +542,23 @@ It sets the paging limit of the query, the number of records to return.
 ###### [PagingOffset]
 
 It sets the paging Offset of the query, the number of records to skip.
+
+###### [SqlInject]
+
+It tells Fido that the associated parameter (`string`) will replace the tag in the sql.
+
+Example:
+
+```pascal
+  [Statement(stQuery, 'Q_AN_EXAMPLE_QUERY')]
+  function Open(const [SqlInject('ORDERBY')] OrderBy: string);
+```
+
+will replace the tag `%ORDERBY%` of the sql resource called `Q_AN_EXAMPLE_QUERY` with the content of the `OrderBy` parameter. 
+
+```sql
+select * from sometable order by %ORDERBY%
+```
 
 ##### Registrations
 
@@ -659,6 +697,15 @@ Example
 
 ```pascal
   [RequestParam(''Request')]
+```
+
+###### [RawRequest(MethodParam)]
+
+The **RawRequest** attribute is used when the call requires raw content to inform the Fido library which parameter is to be converted in string and become the body of the request. 
+Example
+
+```pascal
+  [RawRequestParam('Request')]
 ```
 
 ###### [RestParam(MethodParam, RestParam='')]
@@ -1072,6 +1119,108 @@ Example:
 
 
 
+### Websockets
+
+FidoLib supports websockets, both server side and client side, with an implementation based on Indy.
+
+##### Websocket Servers
+
+Units: `Fido.Web.Server.WebSocket.Intf`, `Fido.Web.Server.WebSocket`.
+
+Setting up a server is pretty straight forward. 
+
+You can send bytes, strings, or an item (that will be translated into a  JSON by means of the JSON marshalling).
+
+```pascal
+var
+  Server: IWebSocketServer;
+  TypedServer: IWebSocketServer<ISong>;
+  Song: ISong;
+begin
+  Server := TWebSocketServer.Create(8080, TSSLCertData.CreateEmpty);
+  Server.RegisterTopicCallback(
+    'atopic/{id}',
+    // Optional: Register a callback when a client connected to a topic sends a message.
+    procedure(const Client: TWebSocketClient; const Params: array of TNamedValue)
+    var
+      Message: string;
+      LParams: string;
+    begin
+      LParams := Params[0].Name + '=' + Params[0].Value.ToString;
+      Message := Client.WaitForMessage;
+      if Message.IsEmpty then
+        Exit;
+      TThread.Synchronize(nil, procedure
+        begin
+          mmMessages.Lines.Add(Client.Topic + ' ' + LParams + ' ' + Client.Host + ': ' + Message);
+        end);
+    end);
+  Server.Start;
+  Server.Send('atopic/100', [1, 2, 3, 4]);
+  Server.Send('atopic/100', 'This is a test message');
+  
+  Song := // Instantiate the type here
+  
+  // Go Typed to send "objects" across the wire
+  TypedServer := WebSocketServer.GetFor<ISong>(Server);
+  TypedServer.Send('atopic/100', Song);
+  
+end;
+```
+
+##### Websocket Clients
+
+Units: `Fido.Web.Client.WebSocket.Intf`, `Fido.Web.Client.WebSocket`.
+
+Setting up a client is even more straight forward for bytes and strings. 
+
+```pascal
+var
+  Client: IWebSocketClient;
+begin
+  Client := TWebSocketClient.Create('ws://127.0.0.1:8080/atopic/100');
+  // Start and register the callback for the received messages
+  Client.Start(procedure(const Message: string)
+    begin
+      TThread.Synchronize(nil, procedure
+        begin
+          ShowMessage(Message);
+        end);
+    end);
+    
+  // Start and register the callback for the received data
+  Client.Start(procedure(const Data: TArray<Byte>)
+    begin
+      // Do something with the data
+    end);
+    
+  Client.Send('This is a test message');
+  Client.Send([1, 2, 3, 4]);
+end;
+```
+
+You can also set up a typed client, that adds typed functionalities to `IWebSocketClient`. 
+
+```pascal
+var
+  Client: IWebSocketClient<ISong>;
+  Song: ISong;
+begin
+  Client := TWebSocketClient<ISong>.Create('ws://127.0.0.1:8080/atopic/100');
+  // Start and register the callback for the received messages
+  Client.Start(procedure(const Item: ISong)
+    begin
+      // Do something with the received item
+    end);
+    
+  Song := // Instantiate the type here. 
+   
+  Client.Send(Song);
+end;
+```
+
+
+
 ### Consul and Fabio support
 
 Unit: `Fido.Api.Server.Consul`.
@@ -1203,6 +1352,8 @@ end;
 
 ### Async procedures
 
+ **[Deprecated]** Please use functional programming features
+
 Unit `Fido.Async.Procs`.
 
 Async procedures let you run a procedure or a sequence of procedures in a separate thread. You can use three different approaches:
@@ -1258,6 +1409,8 @@ end;
 
 ### Async functions
 
+**[Deprecated]** Please use functional programming features
+
 Unit `Fido.Async.Funcs`.
 
 Async functions let you run a function or a sequence of functions in a separate thread. You can use three different approaches:
@@ -1311,6 +1464,8 @@ end;
 ```
 
 ## Signals and slots
+
+**[Deprecated]** Please use the the Intra-Memory Events Driven Architecture implementation
 
 Unit: `Fido.Slots.Intf`.
 
@@ -1485,7 +1640,7 @@ Slots can be of two types:
 
 Units folder: `EventsDriven`.
 
-![](diagrams\Events driven.svg)
+<img src="diagrams\Eventsdriven.svg">
 
 > An event-driven architecture uses events to trigger and communicate between decoupled services and is common in modern applications built with microservices. An event is a change in state, or an update, like an item being placed in a shopping cart on an e-commerce website. Events can either carry the state (the item purchased, its price, and a delivery address) or events can be identifiers (a notification that an order was shipped).
 >
@@ -1626,3 +1781,326 @@ The instance of `TAddUserConsumer` is registered in the `EventsDrivenSubscriber`
   EventsDrivenSubscriber := Container.Value.Resolve<IEventsDrivenSubscriber>;
   EventsDrivenSubscriber.RegisterConsumer(Container.Value.Resolve<TAddUserConsumer>);
 ```
+
+## Functional programming
+
+Units: `Fido.Functional`, `Fido.Functional.Tries`, `Fido.Functional.Retries`, `Fido.Functional.Ifs`.
+
+Can you guess what this little piece of code does? 
+
+```pascal
+  Result := Context<TArray<TValue>>.New([OrderBy, Limit, Offset]).
+    Map<IReadOnlyList<IUserRecord>>(DoGetAll).
+    Map<IReadOnlyList<TUser>>(MapToEntity);
+```
+
+Well, it takes an input of type `TArray<TValue>`, uses it as input for the function `DoGetAll`, which returns an `IReadOnlyList<IUserRecord>`, which is used as input for the function `MapToEntity` that returns an `IReadOnlyList<TUser>`. 
+
+Everybody is talking about functional programming nowadays.
+
+Probably just a small fraction of them understands its basic components (functors, applicatives and monads) and definitely I am NOT among them.
+
+Nonetheless, here I am with my take on facilitating functional programming with Delphi. 
+
+This implementation is inspired by this [article](https://adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html).
+
+**The context**
+
+The context is a box that contains something. You can set up a new context using the following syntax:
+
+```pascal
+const
+  TIMEOUT = 1000;
+  PAUSED = False;
+var
+  ValueContext: Context<string>;
+  ConContext: Context<string>;
+  FutureContext: Context<string>;
+  FuncContext: Context<string>;
+begin
+  ValueContext := Context<string>.New('A string');
+  ConContext := Context<string>.New(ValueContext);
+  FutureContext := Context<string>.New(function: string
+    begin
+      // Do something asyncronously
+    end, TIMEOUT, PAUSED);
+  FuncContext := Context<string>.New(function: string
+    begin
+      //Do something synchronously
+    end);
+  
+  ...
+```
+
+Once you have the context setup you can resolve it implicitly this way:
+
+```pascal
+var
+  Value: string;
+  Func: TFunc<string>;
+  ValueContext: Context<string>;
+begin
+  ValueContext := Context<string>.New('A string');
+  
+  Value := ValueContext; // the value from the context is resolved
+  
+  Func := ValueContext; // the value from the context is resolved as a function
+  
+  ...
+```
+
+Or, if you were lazy like me, you can setup the context by implicitly converting, as following:
+
+```pascal
+var
+  Value: string;
+  Func: TFunc<string>;
+  ValueContext: Context<string>;
+begin
+  Value := 'A string'; 
+  
+  Func := function: string
+    begin
+      //Do something synchronously
+    end; 
+  
+  ValueContext := Value; // the context is implicitly constructed from the value
+  
+  ValueContext := Func; // the context is implicitly constructed from the function
+  
+  ...
+```
+
+Pretty boring stuff, but wait, now it gets interesting. If you can map the *contexed* value and a function and get another context out containing the new calculated value:
+
+```pascal
+const
+  TIMEOUT = 1000;
+  PAUSED = False;
+var
+  Value: Integer;
+  MonadFunc: Context<string>.MonadFunc<Integer>;
+begin
+  // System.SysUtil.StrToInt is a Context<string>.FunctorFunc<Integer>; 
+  // Maps the initial value with System.SysUtil.StrToInt function and returns 100 
+  Value := Context<string>.New('100').Map<Integer>(StrToInt);  
+  // Maps asyncronously the initial value with System.SysUtil.StrToInt function and returns 100.
+  // If StrToInt takes more than one second, it raises an exception. Hey... never said my examples would make sense...
+  Value := Context<string>.New('100').MapAsync<Integer>(StrToInt, TIMEOUT, PAUSED);
+  
+  MonadFunc := function(const Value: string): Context<Integer>
+    begin
+      // Some functionality that returns a Context<Integer>
+    end;
+    
+  ...
+```
+
+And you can map it again, and again, concatenating function one after the other. The implementation enforce lazy evaluations and the actual value will be only resolved either when explicitly calling `Context.Value` or when implicitly assigning it to a variable.
+
+**The void**
+
+We love Pascal, but sometimes its peculiarities are a bit of a pain in the ass. In order to avoid duplicating most of the code I introduced the **void** type. The void type allows you to translate from procedures and functions and vice versa. 
+
+Examples:  
+
+```pascal
+var
+  Proc1: Context<Integer>.FunctorProc;
+  Func1: Context<T>.FunctorFunc<Void>;
+  Func2: Context<Void>.FunctorFunc<Void>;
+  Func3: TFunc<Integer>;
+  Func4: Context<Void>.FunctorFunc<Integer>;
+begin
+  // Translates to procedure(const Value: Integer)
+  Proc1 := Void.MapProc<Integer>(function(const Value: Integer): Void
+    begin
+    end);
+    
+  // Translates to function(const Value: Integer): Void
+  Func1 := Void.MapProc<Integer>(procedure(const Value: Integer)
+    begin
+    end);
+    
+  // Translates to function(const Value:void): Void
+  Func2 := Void.MapProc(procedure
+    begin
+    end);
+    
+  // Translates to function: Integer
+  Func3 := Void.MapFunc<Integer>(function(const Value: Void): Integer
+    begin
+    end);
+    
+  // Translates to function(const Value: Void): Integer
+  Func4 := Void.MapFunc<Integer>(function: Integer
+    begin
+    end);
+    
+  ...
+```
+
+**Tries**
+
+The **&Try<T>**  construct allows you to execute a function and manage the side effects in a functional way.
+
+Examples:  
+
+```pascal
+var
+  Result: Context<Boolean>;
+begin
+  //Try something and manage exceptions
+  &Try<string>.New('100s').Map<Integer>(StrToInt).Match(function(const E: TObject): Integer
+    begin
+      //Manage the exceptions
+    end);
+    
+  //Try something and if there exceptions raise an exception
+  &Try<string>.New('100s').Map<Integer>(StrToInt).Match(EMyException, 'My error message. Original message: %s');
+    
+  //Try something and finally do something
+  &Try<string>.New('100s').Map<Integer>(StrToInt).Match(procedure
+    begin
+      //Finally do something
+    end);
+  
+  //Try something, manage exceptions and finally do something
+  &Try<string>.New('100s').Map<Integer>(StrToInt).Match(function(const E: TObject): Integer
+    begin
+      //Manage the exception
+    end,
+    procedure
+    begin
+      //Finally do something
+    end);
+    
+  //Try something and returns if it succeded or not 
+  Result := &Try<string>.New('100s').Map<Integer>(StrToInt).Match;
+  
+  //Try something and manage exceptions
+  TryOut<Integer>.New(function: Integer
+    begin
+      // Get the value somehow
+    end).Match(function(const E: TObject): Integer
+    begin
+      //Manage the exceptions
+    end);
+    
+   //Try something and if there exceptions raise an exception
+  TryOut<Integer>(function: Integer
+    begin
+      // Get the value somehow
+    end).Match(EMyException, 'My error message. Original message: %s');
+    
+  //Try something and finally do something
+  TryOut<Integer>(function: Integer
+    begin
+      // Get the value somehow
+    end).Match(procedure
+    begin
+      //Finally do something
+    end);
+  
+  //Try something, manage exceptions and finally do something
+  TryOut<Integer>(function: Integer
+    begin
+      // Get the value somehow
+    end).Match(function(const E: TObject): Integer
+    begin
+      //Manage the exception
+    end,
+    procedure
+    begin
+      //Finally do something
+    end);
+    
+  ...
+```
+
+**Retries**
+
+The **Retry<T>**  construct allows you to try to execute a function for a certain amount of times, before giving up.
+
+Examples:  
+
+```pascal
+const
+  TIMEOUT = 1000;
+  PAUSED = False;
+begin
+  Retry<string>.New('100s').Map<Integer>(function(const Value: string): Integer
+    begin
+      //Do something that could fail due to external circumstances
+    end);
+    
+  Retry<string>.New('100s').MapAsync<Integer>(function(const Value: string): Integer
+    begin
+      //Do something that could fail due to external circumstances
+    end, TIMEOUT, PAUSED);
+    
+  Retry<string>.New('100s').Map<Integer>(function(const Value: string): Context<Integer>
+    begin
+      //Do something that could fail due to external circumstances
+    end);
+    
+  Retry<string>.New('100s').MapAsync<Integer>(function(const Value: string): Context<Integer>
+    begin
+      //Do something that could fail due to external circumstances
+    end, TIMEOUT, PAUSED);
+    
+  Retry.Map<Integer>(function: Context<Integer>
+    begin
+      //Do something that could fail due to external circumstances
+    end);
+    
+  Retry.MapAsync<Integer>(function: Context<Integer>
+    begin
+      //Do something that could fail due to external circumstances
+    end, TIMEOUT, PAUSED);
+  
+  ...
+```
+
+**Ifs**
+
+The **If<T>**  construct allows you to execute branching in a functional way.
+
+Examples:  
+
+```pascal
+var
+  BoolContext: Context<Boolean>;
+  ContextFalse: Context<Integer>;
+begin
+  &If<string>.New('100s').Map(function(const Value: string): Boolean
+    begin
+      //Test the value
+    end).&Then<Integer>(function(const Value: string): Integer
+    begin
+      //When true
+    end,
+    0 //When false
+    );
+    
+  &If<string>.New('100s').Map(function(const Value: string): Context<Boolean>
+    begin
+      //Test the value
+    end).&Then<Integer>(function(const Value: string): Integer
+    begin
+      //When true
+    end,
+    0 //When false
+    );
+    
+  BoolContext := //Some delayed calculation that returns a boolean
+  ContextFalse := //Some delayed calculation of the value when false;
+    
+  ThenElse.New(BoolContext).&Then<Integer>(
+    100,  //When true
+    ContextFalse
+    );
+  
+  ...
+```
+

@@ -30,6 +30,7 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
   Fido.DesignPatterns.Observer.Intf,
   Fido.DesignPatterns.Observable.Intf,
   Fido.DesignPatterns.Observer.Notification.Intf,
@@ -82,10 +83,8 @@ type
 
 constructor TSynchronizedNotificationThread.Create(Proc: TProc);
 begin
-  Guard.CheckTrue(Assigned(Proc), 'Proc');
-  Assert(Assigned(Proc));
   inherited Create;
-  FProc := Proc;
+  FProc := Utilities.CheckNotNullAndSet<TProc>(Proc, 'Proc');
   FreeOnTerminate := True;
 end;
 

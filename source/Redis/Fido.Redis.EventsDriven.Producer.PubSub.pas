@@ -30,13 +30,15 @@ uses
   System.Threading,
   System.Generics.Collections,
 
-  Spring,
   Spring.Collections,
 
   Redis.Values,
   Redis.Commons,
   Redis.Client,
 
+  Fido.Utilities,
+  Fido.Functional,
+  Fido.Functional.Retries,
   Fido.JSON.Marshalling,
   Fido.DesignPatterns.Retries,
   Fido.EventsDriven.Producer.Intf,
@@ -48,10 +50,12 @@ type
   TRedisPubSubEventsDrivenProducer = class(TInterfacedObject, IEventsDrivenProducer<string>)
   private var
     FRedisClient: IFidoRedisClient;
+    function DoPublish(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
+    function MoreThan0(const Value: Integer): Boolean;
   public
     constructor Create(const RedisClient: IFidoRedisClient);
 
-    function Push(const Key: string; const Payload: string): Boolean;
+    function Push(const Key: string; const Payload: string; const Timeout: Cardinal = INFINITE): Context<Boolean>;
   end;
 
 implementation
@@ -62,22 +66,32 @@ constructor TRedisPubSubEventsDrivenProducer.Create(const RedisClient: IFidoRedi
 begin
   inherited Create;
 
-  Guard.CheckNotNull(RedisClient, 'RedisClient');
-  FRedisClient := RedisClient;
+  FRedisClient := Utilities.CheckNotNullAndSet(RedisClient, 'RedisClient');
+end;
+
+function TRedisPubSubEventsDrivenProducer.DoPublish(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
+var
+  Client: IFidoRedisClient;
+begin
+  Client := FRedisClient;
+
+  Result := function(const Params: TArray<string>): Context<Integer>
+    begin
+      Result := Client.PUBLISH(Params[0], Params[1], Timeout);
+    end;
+end;
+
+function TRedisPubSubEventsDrivenProducer.MoreThan0(const Value: Integer): Boolean;
+begin
+  Result := Value > 0;
 end;
 
 function TRedisPubSubEventsDrivenProducer.Push(
   const Key: string;
-  const Payload: string): Boolean;
-var
-  EncodedPayload: string;
+  const Payload: string;
+  const Timeout: Cardinal): Context<Boolean>;
 begin
-  EncodedPayload := TNetEncoding.Base64.Encode(Payload);
-  Result := Retries.Run<Boolean>(
-    function: Boolean
-    begin
-      Result := FRedisClient.PUBLISH(Key, EncodedPayload) > 0;
-    end);
+  Result := Retry<TArray<string>>.New([Key, TNetEncoding.Base64.Encode(Payload)]).Map<Integer>(DoPublish(Timeout), Retries.GetRetriesOnExceptionFunc()).Map<Boolean>(MoreThan0);
 end;
 
 end.

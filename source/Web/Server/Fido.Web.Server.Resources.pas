@@ -29,8 +29,7 @@ uses
   System.SysUtils,
   System.StrUtils,
 
-  Spring,
-
+  Fido.Utilities,
   Fido.Resource.StreamReader.Intf,
   Fido.Web.Server.Interpreter.Intf,
   Fido.Http.Request.Intf,
@@ -58,8 +57,7 @@ constructor TResourceWebServer.Create(
 begin
   inherited Create(Interpreters);
 
-  Guard.CheckNotNull(StreamResourceReader, 'StreamResourceReader');
-  FStreamResourceReader := StreamResourceReader;
+  FStreamResourceReader := Utilities.CheckNotNullAndSet(StreamResourceReader, 'StreamResourceReader');
 end;
 
 function TResourceWebServer.Process(
