@@ -58,6 +58,14 @@ type
     function GetApiKey: string;
   end;
 
+  {$M+}
+  TMyObject = class
+  published
+    function Id: Integer;
+    function Name: Nullable<string>;
+  end;
+  {$M-}
+
   [TestFixture]
   TVirtualRestApiJsonBaseBehaviorTest = class(TObject)
   public
@@ -102,15 +110,6 @@ begin
 
   Assert.AreEqual(SomeRequest.Value.SomeData, Response.SomeData);
 end;
-
-type
-  {$M+}
-  TMyObject = class
-  published
-    function Id: Integer;
-    function Name: Nullable<string>;
-  end;
-  {$M-}
 
 procedure TVirtualRestApiJsonBaseBehaviorTest.TestConvertTValueToString;
 var

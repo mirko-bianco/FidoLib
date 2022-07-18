@@ -519,6 +519,7 @@ var
   Param: TRttiParameter;
   Call: Shared<TClientVirtualApiCall>;
   ActiveConfig: IActiveClientVirtualApiConfiguration;
+  HeaderName: string;
 begin
   if SameText(Method.Name, 'IsActive') then
   begin
@@ -602,6 +603,11 @@ begin
 
     raise EFidoClientApiException.Create(Call.Value.ResponseCode, Call.Value.ResponseContent);
   end;
+
+  // Sets out parameters that are linked to headers.
+  for Index := 0 to High(Method.GetParameters) do
+    if (pfOut in Method.GetParameters[Index].Flags) and EndPointInfo.HeaderParams.TryGetValue(Method.GetParameters[Index].Name, HeaderName) then
+      Args[Index + 1] := Call.Value.ResponseHeaders.Values[HeaderName];
 
   if EndPointInfo.ResponseHeaderParamInfo.HasValue and (Call.Value.ResponseCode = EndPointInfo.ResponseHeaderParamInfo.Value.ResponseCode) then
     for Index := 0 to High(Method.GetParameters) do

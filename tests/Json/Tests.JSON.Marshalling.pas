@@ -21,6 +21,7 @@ uses
 type
   TMediaType = (mtLP, mtCassette, mtCD, mtOnline);
 
+
   {$M+}
   TMyObject = class
   strict private
@@ -30,6 +31,7 @@ type
     property Id: Integer read FId write FId;
     property Name: Nullable<string> read FName write FName;
   end;
+  {$M-}
 
   IMyObjectReadOnlyList = IReadOnlyList<TMyObject>;
 
@@ -97,7 +99,7 @@ type
 
   ITestReadOnlyList = IReadOnlyList<ITest>;
   ITestEnumReadOnlyList = IReadOnlyList<TTestEnum>;
-  {$M-}
+  TIntegerResult = TResult<Integer>;
 
   [TestFixture]
   TJSONMarshallingTests = class(TObject)
