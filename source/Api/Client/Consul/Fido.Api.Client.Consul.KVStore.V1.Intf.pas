@@ -26,13 +26,12 @@ interface
 
 uses
   System.SysUtils,
-  Rest.Types,
 
   Spring.Collections,
 
   Fido.Api.Client.VirtualApi.Attributes,
   Fido.Api.Client.VirtualApi.Intf,
-
+  Fido.Http.Types,
   Fido.Consul.Types,
   Fido.Api.Client.Consul.Constants;
 

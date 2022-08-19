@@ -26,7 +26,7 @@ interface
 
 uses
   System.Classes,
-  Rest.Types,
+  Fido.Http.Types,
 
   Spring,
   Spring.Collections;
@@ -48,7 +48,7 @@ type
   private
     FApiName: string;
     FApiMethodName: string;
-    FApiMethod: TRESTRequestMethod;
+    FApiMethod: THttpMethod;
     FStarted: TDateTime;
     FFinished: TDateTime;
     FResponseCode: Integer;
@@ -68,7 +68,7 @@ type
     HandleRedirects: boolean;
     Timeout: Cardinal;
   public
-    constructor Create(const ApiName: string; const ApiMethodName: string; const ApiMethod: TRESTRequestMethod);
+    constructor Create(const ApiName: string; const ApiMethodName: string; const ApiMethod: THttpMethod);
     destructor Destroy; override;
 
     function TryGetParameterValue(const Kind: TClientVirtualApiCallParameterKind; const Name: string; out Value: string): Boolean;
@@ -78,7 +78,7 @@ type
 
     property ApiName: string read FApiName write SetApiName;
     property ApiMethodName: string read FApiMethodName write SetApiMethodName;
-    property ApiMethod: TRESTRequestMethod read FApiMethod;
+    property ApiMethod: THttpMethod read FApiMethod;
     property Parameters: IReadOnlyList<TClientVirtualApiCallParameter> read GetParameters;
     property IsOK: Boolean read GetIsOK;
     property Started: TDateTime read FStarted;
@@ -100,7 +100,7 @@ uses
 constructor TClientVirtualApiCall.Create(
   const ApiName: string;
   const ApiMethodName: string;
-  const ApiMethod: TRESTRequestMethod);
+  const ApiMethod: THttpMethod);
 begin
   Guard.CheckFalse(ApiName.IsEmpty);
   Guard.CheckFalse(ApiMethodName.IsEmpty);

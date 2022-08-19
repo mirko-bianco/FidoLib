@@ -31,12 +31,14 @@ uses
   System.Json,
   System.TypInfo,
   System.Generics.Collections,
-  Rest.Types,
-  Rest.Client,
+  IdHttp,
+  IdSSLOpenSSL,
 
   Spring,
   Spring.Collections,
 
+  Fido.Utilities,
+  Fido.Http.Types,
   Fido.Api.Client.VirtualApi.Abstract,
   Fido.Api.Client.VirtualApi.Intf,
   Fido.Json.Marshalling,
@@ -60,60 +62,100 @@ implementation
 
 procedure TJSONClientVirtualApi<T, IConfiguration>.CallApi(const Call: TClientVirtualApiCall);
 var
-  ApiClient: Shared<TRestClient>;
-  ApiRequest: Shared<TApiClientVirtualApiRequest>;
-  ApiResponse: Shared<TRestResponse>;
+  ApiClient: Shared<TidHttp>;
   Pair: TPair<string, string>;
   Parameter: TClientVirtualApiCallParameter;
-  RestParam: TREstRequestPArameter;
+  Index: Integer;
+  Query: string;
+  FormData: Shared<TStrings>;
+  SourceStream: Shared<TStringStream>;
+  ResponseContent: string;
+  Headers: Shared<TStrings>;
 begin
   inherited;
 
   Guard.CheckNotNull(Call, 'Call');
   Guard.CheckNotNull(Call.ResponseHeaders, 'Call.ResponseHeaders');
 
-  ApiClient := TRestClient.Create(nil);
-  ApiRequest := TApiClientVirtualApiRequest.Create(nil);
-  ApiRequest.Value.SynchronizedEvents := False;
-  ApiResponse := TRestResponse.Create(nil);
+  ApiClient := TIdHttp.Create(nil);
+  ApiClient.Value.HandleRedirects := Call.HandleRedirects;
+  ApiClient.Value.Request.UserAgent := 'FidoLib websocket client';
+  ApiClient.Value.Request.ContentType := GetAcceptHeaderWithApiVersion(Call.ContentType);
+  ApiClient.Value.Request.CharSet := 'utf-8';
+  ApiClient.Value.Response.ContentType := GetAcceptHeaderWithApiVersion(Call.ContentType);
 
-  ApiClient.Value.Accept := GetAcceptHeaderWithApiVersion(Call.ContentType);
-  ApiClient.Value.ContentType := Call.ContentType;
-  ApiClient.Value.BaseURL := Call.Url;
-  ApiClient.Value.RaiseExceptionOn500 := False;
+  ApiClient.Value.ConnectTimeout := Call.Timeout;
+  ApiClient.Value.ReadTimeout := Call.Timeout;
 
-  ApiRequest.Value.Client := ApiClient;
-  ApiRequest.Value.Response := ApiResponse;
-  ApiRequest.Value.Method := Call.ApiMethod;
-  ApiRequest.Value.Timeout := Call.Timeout;
-
-  for Parameter in Call.Parameters do
+  if Call.Url.StartsWith('https://', True) then
   begin
-    Guard.CheckFalse(Parameter.Value.IsEmpty);
-    case Parameter.Kind of
-      pkQuery,
-      pkForm:
-        ApiRequest.Value.AddParameter(Parameter.Name, Parameter.Value);
-      pkHeader:
-      begin
-        RestParam := ApiRequest.Value.Params.AddHeader(Parameter.Name, Parameter.Value);
-        RestParam.Options := [poDoNotEncode];
-      end;
-      pkFile:
-        ; // unimplemented
-    end;
+    ApiClient.Value.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(ApiClient.Value);
+    TIdSSLIOHandlerSocketOpenSSL(ApiClient.Value.IOHandler).SSLOptions.Mode := TIdSSLMode.sslmClient;
+    TIdSSLIOHandlerSocketOpenSSL(ApiClient.Value.IOHandler).SSLOptions.SSLVersions := [TIdSSLVersion.sslvTLSv1, TIdSSLVersion.sslvTLSv1_1, TIdSSLVersion.sslvTLSv1_2];
+    TIdSSLIOHandlerSocketOpenSSL(ApiClient.Value.IOHandler).SSLOptions.Method := sslvTLSv1_2;
+    TIdSSLIOHandlerSocketOpenSSL(ApiClient.Value.IOHandler).PassThrough := False;
   end;
 
+  FormData := TStringList.Create;
+
+  for Index := 0 to Call.Parameters.Count - 1 do
+  begin
+    Parameter := Call.Parameters[Index];
+    Guard.CheckFalse(Parameter.Value.IsEmpty);
+    case Parameter.Kind of
+      pkQuery: begin
+        Query := Query + Utilities.IfThen<string>(Query.IsEmpty, '', '&') + Format('%s=%s', [Parameter.Name, Parameter.Value]);
+      end;
+      pkHeader: begin
+        ApiClient.Value.Request.CustomHeaders.AddValue(Parameter.Name, Parameter.Value);
+      end;
+      pkForm: begin
+        FormData.Value.AddPair(Parameter.Name, Parameter.Value);
+      end;
+      pkFile:;  // Not supported;
+    end;
+  end;
+  if not Query.IsEmpty then
+    Query := '?' + Query;
+
   if not Call.PostBody.IsEmpty then
-    ApiRequest.Value.AddBody(Call.PostBody, ctAPPLICATION_JSON);
+    SourceStream := TStringStream.Create(Call.PostBody, TEncoding.UTF8)
+  else
+    SourceStream := TStringStream.Create(FormData.Value.DelimitedText, TEncoding.UTF8);
 
   try
-    ApiRequest.Value.HandleRedirects := Call.HandleRedirects;
-    ApiRequest.Value.Execute;
-    Call.Finish(ApiResponse.Value.StatusCode, ApiResponse.Value.Content, ApiResponse.Value.Headers);
+    case Call.ApiMethod of
+      rmUnknown: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmUnknown]]));
+      rmGET: ResponseContent := ApiClient.Value.Get(Call.Url + Query);
+      rmPOST: ResponseContent := ApiClient.Value.Post(Call.Url + Query, SourceStream);
+      rmPUT: ResponseContent := ApiClient.Value.Put(Call.Url + Query, SourceStream);
+      rmPATCH: ResponseContent := ApiClient.Value.Patch(Call.Url + Query, SourceStream);
+      rmDELETE: ResponseContent := ApiClient.Value.Delete(Call.Url + Query);
+      rmHEAD: ApiClient.Value.Head(Call.Url + Query);
+      rmOPTIONS: ResponseContent := ApiClient.Value.Options(Call.Url + Query);
+      rmCOPY: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmCOPY]]));
+      rmLINK: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmLINK]]));
+      rmUNLINK: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmUNLINK]]));
+      rmPURGE: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmPURGE]]));
+      rmLOCK: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmLOCK]]));
+      rmUNLOCK: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmUNLOCK]]));
+      rmPROPFIND: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmPROPFIND]]));
+      rmVIEW: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmVIEW]]));
+    end;
+
+    Headers := TStringList.Create;
+    for Index := 0 to ApiClient.Value.Response.RawHeaders.Count - 1 do
+      Headers.Value.AddPair(ApiClient.Value.Response.RawHeaders.Names[Index], ApiClient.Value.Response.RawHeaders.Values[ApiClient.Value.Response.RawHeaders.Names[Index]]);
+
+    Call.Finish(ApiClient.Value.ResponseCode, ResponseContent, Headers);
   except
     on E: Exception do
-      Call.Finish(-1, E.Message, ApiResponse.Value.Headers);
+    begin
+      Headers := TStringList.Create;
+      for Index := 0 to ApiClient.Value.Response.RawHeaders.Count - 1 do
+        Headers.Value.AddPair(ApiClient.Value.Response.RawHeaders.Names[Index], ApiClient.Value.Response.RawHeaders.Values[ApiClient.Value.Response.RawHeaders.Names[Index]]);
+      Call.Finish(-1, E.Message, Headers);
+    end;
   end;
 end;
 

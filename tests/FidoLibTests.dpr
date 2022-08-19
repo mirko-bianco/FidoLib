@@ -58,7 +58,8 @@ uses
   Fido.Memory.EventsDriven.Broker.PubSub.Test in 'EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.Test.pas',
   Fido.Utilities.Test in 'Fido.Utilities.Test.pas',
   Fido.Http.Utils.Test in 'Http\Fido.Http.Utils.Test.pas',
-  Fido.Functional.Tests in 'Fido.Functional.Tests.pas';
+  Fido.Functional.Tests in 'Fido.Functional.Tests.pas',
+  Fido.Web.Client.Websocket.Test in 'Web\Client\WebSocket\Fido.Web.Client.Websocket.Test.pas';
 
 {$IFNDEF TESTINSIGHT}
 var

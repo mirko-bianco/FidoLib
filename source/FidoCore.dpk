@@ -45,7 +45,8 @@ requires
   DbxCommonDriver,
   FireDAC,
   FireDACCommonDriver,
-  FireDACCommon;
+  FireDACCommon,
+  soaprtl;
 
 contains
   Fido.Collections.DeepObservableList in 'Collections\Fido.Collections.DeepObservableList.pas',
@@ -215,7 +216,6 @@ contains
   Fido.Web.Server.WebSocket.Intf in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.Intf.pas',
   Fido.Web.Server.WebSocket in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.pas',
   Fido.Web.Server.WebSocket.Client in 'Web\Server\WebSocket\Fido.Web.Server.WebSocket.Client.pas',
-  Fido.Web.Server.Http.Indy in 'Web\Server\Fido.Web.Server.Http.Indy.pas',
   Fido.Web.Client.WebSocket.Intf in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.Intf.pas',
   Fido.Web.Client.WebSocket in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.pas',
   Fido.Http.Utils in 'Http\Fido.Http.Utils.pas',
@@ -227,7 +227,10 @@ contains
   Fido.Functional.Ifs in 'Fido.Functional.Ifs.pas',
   Fido.Functional in 'Fido.Functional.pas',
   Fido.Functional.Retries in 'Fido.Functional.Retries.pas',
-  Fido.Functional.Tries in 'Fido.Functional.Tries.pas';
+  Fido.Functional.Tries in 'Fido.Functional.Tries.pas',
+  Fido.Web.Client.WebSocket.SignalR in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.pas',
+  Fido.Web.Client.WebSocket.SignalR.Types in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.Types.pas',
+  Fido.Web.Client.WebSocket.TcpClient.Intf in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.Intf.pas',
+  Fido.Web.Client.WebSocket.TcpClient in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas';
 
 end.
-

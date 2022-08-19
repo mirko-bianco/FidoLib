@@ -7,7 +7,6 @@ uses
   System.SysUtils,
   System.DateUtils,
   DUnitX.TestFramework,
-  Rest.Types,
   Data.DBXPlatform,
 
   Spring,
@@ -17,6 +16,7 @@ uses
 
   Fido.Testing.Mock.Utils,
 
+  Fido.Http.Types,
   Fido.Json.Marshalling,
   Fido.OwningObject,
   Fido.Api.Client.VirtualApi.Intf,

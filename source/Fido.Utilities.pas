@@ -25,7 +25,20 @@ unit Fido.Utilities;
 interface
 
 uses
+  System.Classes,
   System.SysUtils,
+  System.DateUtils,
+  System.ZLib,
+  Soap.EncdDecd,
+  System.NetEncoding,
+
+  IdGlobal,
+  IdHashSHA,
+  IdHMAC,
+  IdHMACSHA1,
+  IdSSLOpenSSL,
+  IdCompressorZLib,
+  idZLib,
 
   Spring;
 
@@ -46,9 +59,36 @@ type
       class function &Not(const Check: TCheckPredicate): TCheckPredicate; static;
       class function IsNotEmpty(const Value: string): TCheckPredicate; static;
     end;
+
+    class function CalculateHMACSHA512(const Value: string; const Salt: string): string; static;
+    class function UNIXTimeInMilliseconds: Int64; static;
   end;
 
 implementation
+
+class function Utilities.CalculateHMACSHA512(
+  const Value: string;
+  const Salt: string): string;
+var
+  HMAC: Shared<TIdHMACSHA512>;
+  Hash: TIdBytes;
+begin
+  LoadOpenSSLLibrary;
+  if not TIdHashSHA512.IsAvailable then
+    raise Exception.Create('SHA256 hashing is not available!');
+  HMAC := TIdHMACSHA512.Create;
+  HMAC.Value.Key := IndyTextEncoding_UTF8.GetBytes(Salt);
+  Hash := HMAC.Value.HashValue(IndyTextEncoding_UTF8.GetBytes(Value));
+  Result := ToHex(Hash).ToUpper;
+end;
+
+class function Utilities.UNIXTimeInMilliseconds: Int64;
+var
+  DateTime: TDateTime;
+begin
+  DateTime := TTimeZone.Local.ToUniversalTime(Now);
+  Result := MilliSecondsBetween(DateTime, UnixDateDelta);
+end;
 
 class function Utilities.IfThen<T>(
   const PredicateFunc: TFunc<Boolean>;

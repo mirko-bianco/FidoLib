@@ -34,12 +34,11 @@ uses
   System.RegularExpressions,
   System.Generics.Defaults,
   System.Generics.Collections,
-  Rest.Types,
-  Rest.Client,
 
   Spring,
   Spring.Collections,
 
+  Fido.Http.Types,
   Fido.Utilities,
   Fido.VirtualInterface,
   Fido.Api.Client.VirtualApi.Intf,
@@ -80,7 +79,7 @@ type
 
     strict private
       FApiName: string;
-      FMethod: TRESTRequestMethod;
+      FMethod: THttpMethod;
       FEndPoint: string;
       // Method param => Api param. i.e. 'ApiKey' => 'Api-Key'
       FQueryParams: IDictionary<string, string>;
@@ -94,12 +93,12 @@ type
       FConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>;
       FHandleRedirects: boolean;
     public
-      constructor Create(const ApiName: string; const Method: TRESTRequestMethod; const EndPoint: string; const QueryParams: IDictionary<string, string>; const HeaderParams: IDictionary<string, string>;
+      constructor Create(const ApiName: string; const Method: THttpMethod; const EndPoint: string; const QueryParams: IDictionary<string, string>; const HeaderParams: IDictionary<string, string>;
         const FormParams: IDictionary<string, string>; const FileParams: IDictionary<string, string>; const RequestParam: string; const RawRequestParam: string; const Content: string;
         const ResponseHeaderParamInfo: Nullable<TClientVirtualApiEndPointInfo.TResponseHeaderParamInfo>; const ConvertResponseForErrorCodeInfo: Nullable<TConvertResponseForErrorCodeInfo>; const HandleRedirects: boolean);
 
       property ApiName: string read FApiName;
-      property Method: TRESTRequestMethod read FMethod;
+      property Method: THttpMethod read FMethod;
       property EndPoint: string read FEndPoint;
       property QueryParams: IDictionary<string, string> read FQueryParams;
       property HeaderParams: IDictionary<string, string> read FHeaderParams;
@@ -394,7 +393,7 @@ procedure TAbstractClientVirtualApi<T, IConfiguration>.ParamNamesToParamNameValu
    const Kind: TClientVirtualApiCallParameterKind;
    const Call: TClientVirtualApiCall);
 begin
-  Params.Keys.ForEach(
+  Params.Keys.Ordered.ForEach(
     procedure(const MethodParam: string)
     var
       ApiParam: string;
@@ -540,7 +539,7 @@ begin
   Call := TClientVirtualApiCall.Create(FShortApiName, Method.Name, EndPointInfo.Method);
 
   Path := '';
-  Arguments := TCollections.CreateDictionary<string, TPair<string, TValue>>(TIStringComparer.Ordinal);
+  Arguments := TCollections.CreateSortedDictionary<string, TPair<string, TValue>>(TIStringComparer.Ordinal);
 
   // content type
   Call.Value.ContentType := CONTENT;
@@ -694,7 +693,7 @@ end;
 class function TAbstractClientVirtualApi<T, IConfiguration>.InspectMethod(const Method: TRttiMethod): TClientVirtualApiEndPointInfo;
 var
   EndPointInfo: TClientVirtualApiEndPointInfo;
-  RequestMethod: TRESTRequestMethod;
+  RequestMethod: THttpMethod;
   EndPoint: string;
   QueryParams: IDictionary<string, string>;
   HeaderParams: IDictionary<string, string>;
@@ -715,10 +714,10 @@ begin
   Content := '';
   HandleRedirects := true;
 
-  QueryParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
-  HeaderParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
-  FormParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
-  FileParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
+  QueryParams := TCollections.CreateSortedDictionary<string, string>(TIStringComparer.Ordinal as IComparer<string>);
+  HeaderParams := TCollections.CreateSortedDictionary<string, string>(TIStringComparer.Ordinal as IComparer<string>);
+  FormParams := TCollections.CreateSortedDictionary<string, string>(TIStringComparer.Ordinal as IComparer<string>);
+  FileParams := TCollections.CreateSortedDictionary<string, string>(TIStringComparer.Ordinal as IComparer<string>);
 
   TCollections.CreateList<TCustomAttribute>(Method.GetAttributes)
     .Where(function(const Attribute: TCustomAttribute): Boolean
@@ -784,7 +783,7 @@ end;
 
 constructor TAbstractClientVirtualApi<T, IConfiguration>.TClientVirtualApiEndPointInfo.Create(
   const ApiName: string;
-  const Method: TRESTRequestMethod;
+  const Method: THttpMethod;
   const EndPoint: string;
   const QueryParams: IDictionary<string, string>;
   const HeaderParams: IDictionary<string, string>;
