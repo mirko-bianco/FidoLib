@@ -46,8 +46,10 @@ type
   private
     FValue: Context<T>;
 
+    {$HINTS OFF}
     function DoTry<TOut>(const Func: Context<T>.MonadFunc<TOut>; const Value: Context<T>): TFunc<TOut>; overload;
     function DoTry<TOut>(const Func: Context<T>.FunctorFunc<TOut>; const Value: Context<T>): TFunc<TOut>; overload;
+    {$HINTS ON}
   public
     constructor New(const Value: T); overload;
     constructor New(const Value: Context<T>); overload;

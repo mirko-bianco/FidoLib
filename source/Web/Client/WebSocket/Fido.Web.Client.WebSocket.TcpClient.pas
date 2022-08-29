@@ -40,6 +40,7 @@ uses
   IdSSLOpenSSL,
   IdCoderMIME,
   IdHashSHA,
+  IdSSLOpenSSLHeaders,
 
   Spring,
 
@@ -60,6 +61,7 @@ type
   TWebSocketTCPClient = class(TinterfacedObject, IWebSocketTCPClient)
   strict private
     FURL: string;
+    FSSLVersion: TIdSSLVersion;
     FOnReceivedData: TWebSocketOnReceivedData;
     FOnError: TWebSocketOnError;
     FWebsocketProtocol: string;
@@ -211,6 +213,7 @@ var
   Hash: Shared<TIdHashSHA1>;
 begin
   inherited Create;
+  FSSLVersion := sslvTLSv1_2;
 
   FInternalTCPClient := TWebSocketIdTCPClient.Create(nil);
   FClosing := False;
@@ -509,8 +512,8 @@ begin
 
     FInternalTCPClient.SetIOHandler(TIdSSLIOHandlerSocketOpenSSL.Create(FInternalTCPClient));
     TIdSSLIOHandlerSocketOpenSSL(FInternalTCPClient.IOHandler).SSLOptions.Mode := TIdSSLMode.sslmClient;
-    TIdSSLIOHandlerSocketOpenSSL(FInternalTCPClient.IOHandler).SSLOptions.SSLVersions := [TIdSSLVersion.sslvTLSv1, TIdSSLVersion.sslvTLSv1_1, TIdSSLVersion.sslvTLSv1_2];
-    TIdSSLIOHandlerSocketOpenSSL(FInternalTCPClient.IOHandler).SSLOptions.Method := sslvTLSv1_2;
+    TIdSSLIOHandlerSocketOpenSSL(FInternalTCPClient.IOHandler).SSLOptions.SSLVersions := [sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1, sslvTLSv1_1, sslvTLSv1_2];
+    TIdSSLIOHandlerSocketOpenSSL(FInternalTCPClient.IOHandler).SSLOptions.Method := FSSLVersion;
     TIdSSLIOHandlerSocketOpenSSL(FInternalTCPClient.IOHandler).PassThrough := False;
   end;
 end;
