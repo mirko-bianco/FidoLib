@@ -228,6 +228,7 @@ contains
   Fido.Functional in 'Fido.Functional.pas',
   Fido.Functional.Retries in 'Fido.Functional.Retries.pas',
   Fido.Functional.Tries in 'Fido.Functional.Tries.pas',
+  Fido.Virtual.Attributes in 'VirtualStatement\Fido.Virtual.Attributes.pas',
   Fido.Web.Client.WebSocket.SignalR in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.pas',
   Fido.Web.Client.WebSocket.SignalR.Types in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.Types.pas',
   Fido.Web.Client.WebSocket.TcpClient.Intf in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.Intf.pas',

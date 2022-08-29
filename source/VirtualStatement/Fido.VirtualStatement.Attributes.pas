@@ -120,29 +120,6 @@ type
 
   DescriptionAttribute = class(TStringAttribute);
 
-  PagingLimitAttribute = class(TCustomAttribute);
-
-  PagingOffsetAttribute = class(TCustomAttribute);
-
-{ SqlInject parameters allow to change SQL scripts in a way that is not allowed by normal parameters
-
-  Example:
-
-  [Statement(stQuery, 'Q_AN_EXAMPLE_QUERY')]
-  function Open(const [SqlInject('ORDERBY')] OrderBy: string);
-
-  Will replace the tag %ORDERBY% of the sql resource called Q_AN_EXAMPLE_QUERY with the content of the OrderBy parameter:
-  'select * from somequery order by %ORDERBY%' }
-
-  SqlInjectAttribute = class(TCustomAttribute)
-  private
-    FTag: string;
-  public
-    constructor Create(const Tag: string);
-
-    property Tag: string read FTag;
-  end;
-
 implementation
 
 Uses
@@ -163,15 +140,6 @@ constructor StatementAttribute.Create(
 begin
   FType := &Type;
   FData := Data.ToUpper;
-end;
-
-{ SqlInjectAttribute }
-
-constructor SqlInjectAttribute.Create(const Tag: string);
-begin
-  inherited Create;
-
-  FTag := Tag;
 end;
 
 end.
