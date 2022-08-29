@@ -40,6 +40,7 @@ uses
   Fido.Db.TypeConverter,
   Fido.Resource.StringReader.Intf,
   Fido.Types,
+  Fido.Virtual.Attributes,
   Fido.VirtualStatement.Attributes,
   Fido.StatementExecutor.Intf,
   Fido.VirtualInterface,

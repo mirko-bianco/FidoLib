@@ -340,6 +340,7 @@
         <DCCReference Include="Fido.Functional.pas"/>
         <DCCReference Include="Fido.Functional.Retries.pas"/>
         <DCCReference Include="Fido.Functional.Tries.pas"/>
+        <DCCReference Include="VirtualStatement\Fido.Virtual.Attributes.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

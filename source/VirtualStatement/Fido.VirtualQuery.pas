@@ -50,6 +50,7 @@ uses
   Fido.Types,
   Fido.VirtualQuery.Intf,
   Fido.VirtualQuery.Metadata.Intf,
+  Fido.Virtual.Attributes,
   Fido.VirtualQuery.Attributes,
   Fido.DesignPatterns.Adapter.DataSetAsReadonlyList;
 
