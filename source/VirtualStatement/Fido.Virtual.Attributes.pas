@@ -1,5 +1,5 @@
 (*
- * Copyright 2021 Mirko Bianco (email: writetomirko@gmail.com)
+ * Copyright 2022 Mirko Bianco (email: writetomirko@gmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,30 +20,43 @@
  * SOFTWARE.
  *)
 
-unit Fido.VirtualQuery.Attributes;
+unit Fido.Virtual.Attributes;
 
 interface
 
 type
-  SQLResourceAttribute = class(TCustomAttribute)
-  private
-    FData: string;
-  public
-    constructor Create(const Data: string);
+  PagingLimitAttribute = class(TCustomAttribute);
 
-    property Data: string read FData;
+  PagingOffsetAttribute = class(TCustomAttribute);
+
+{ SqlInject parameters allow to change SQL scripts in a way that is not allowed by normal parameters
+
+  Example:
+
+  [Statement(stQuery, 'Q_AN_EXAMPLE_QUERY')]
+  function Open(const [SqlInject('ORDERBY')] OrderBy: string);
+
+  Will replace the tag %ORDERBY% of the sql resource called Q_AN_EXAMPLE_QUERY with the content of the OrderBy parameter:
+  'select * from somequery order by %ORDERBY%' }
+
+  SqlInjectAttribute = class(TCustomAttribute)
+  private
+    FTag: string;
+  public
+    constructor Create(const Tag: string);
+
+    property Tag: string read FTag;
   end;
 
 implementation
 
-Uses
-  System.SysUtils;
+{ SqlInjectAttribute }
 
-{ SQLAttribute }
-
-constructor SQLResourceAttribute.Create(const Data: string);
+constructor SqlInjectAttribute.Create(const Tag: string);
 begin
-  FData := Data.ToUpper;
+  inherited Create;
+
+  FTag := Tag;
 end;
 
 end.

@@ -227,7 +227,8 @@ contains
   Fido.Functional.Ifs in 'Fido.Functional.Ifs.pas',
   Fido.Functional in 'Fido.Functional.pas',
   Fido.Functional.Retries in 'Fido.Functional.Retries.pas',
-  Fido.Functional.Tries in 'Fido.Functional.Tries.pas';
+  Fido.Functional.Tries in 'Fido.Functional.Tries.pas',
+  Fido.Virtual.Attributes in 'VirtualStatement\Fido.Virtual.Attributes.pas';
 
 end.
 
