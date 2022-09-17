@@ -25,6 +25,7 @@ unit Fido.Web.Client.WebSocket;
 interface
 
 uses
+  System.SysUtils,
   System.Classes,
 
   IdGlobal,
@@ -70,6 +71,12 @@ begin
   inherited Create;
 
   FEngine := Utilities.CheckNotNullAndSet(Engine, 'Engine');
+
+  FEngine.SetOnError(procedure(const Exception: Exception; var Disconnect: Boolean)
+    begin
+      Disconnect := True;
+      raise Exception;
+    end);
 end;
 
 function TWebSocketClient.Get(
