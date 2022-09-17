@@ -160,6 +160,7 @@
         <DCCReference Include="FireDAC.dcp"/>
         <DCCReference Include="FireDACCommonDriver.dcp"/>
         <DCCReference Include="FireDACCommon.dcp"/>
+        <DCCReference Include="soaprtl.dcp"/>
         <DCCReference Include="Collections\Fido.Collections.DeepObservableList.pas"/>
         <DCCReference Include="Collections\Fido.Collections.pas"/>
         <DCCReference Include="Collections\Fido.Collections.DeepObservableList.Intf.pas"/>
@@ -327,7 +328,6 @@
         <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Intf.pas"/>
         <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.pas"/>
         <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Client.pas"/>
-        <DCCReference Include="Web\Server\Fido.Web.Server.Http.Indy.pas"/>
         <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.Intf.pas"/>
         <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.pas"/>
         <DCCReference Include="Http\Fido.Http.Utils.pas"/>
@@ -341,6 +341,10 @@
         <DCCReference Include="Fido.Functional.Retries.pas"/>
         <DCCReference Include="Fido.Functional.Tries.pas"/>
         <DCCReference Include="VirtualStatement\Fido.Virtual.Attributes.pas"/>
+        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.pas"/>
+        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.Types.pas"/>
+        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.Intf.pas"/>
+        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

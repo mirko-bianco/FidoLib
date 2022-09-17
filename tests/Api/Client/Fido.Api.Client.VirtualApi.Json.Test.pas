@@ -7,7 +7,6 @@ uses
   System.SysUtils,
   System.DateUtils,
   DUnitX.TestFramework,
-  Rest.Types,
   Data.DBXPlatform,
 
   Spring,
@@ -17,6 +16,7 @@ uses
 
   Fido.Testing.Mock.Utils,
 
+  Fido.Http.Types,
   Fido.Json.Marshalling,
   Fido.OwningObject,
   Fido.Api.Client.VirtualApi.Intf,
@@ -57,6 +57,14 @@ type
   TTestConfiguration = class(TClientVirtualApiConfiguration, ITestConfiguration)
     function GetApiKey: string;
   end;
+
+  {$M+}
+  TMyObject = class
+  published
+    function Id: Integer;
+    function Name: Nullable<string>;
+  end;
+  {$M-}
 
   [TestFixture]
   TVirtualRestApiJsonBaseBehaviorTest = class(TObject)
@@ -102,15 +110,6 @@ begin
 
   Assert.AreEqual(SomeRequest.Value.SomeData, Response.SomeData);
 end;
-
-type
-  {$M+}
-  TMyObject = class
-  published
-    function Id: Integer;
-    function Name: Nullable<string>;
-  end;
-  {$M-}
 
 procedure TVirtualRestApiJsonBaseBehaviorTest.TestConvertTValueToString;
 var

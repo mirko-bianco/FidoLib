@@ -25,8 +25,7 @@ unit Fido.Api.Client.VirtualApi.ElasticSearch.Authenticated.Document.Intf;
 interface
 
 uses
-  Rest.Types,
-
+  Fido.Http.Types,
   Fido.Api.Client.VirtualApi.Intf,
   Fido.Api.Client.VirtualApi.Attributes,
   Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Request,

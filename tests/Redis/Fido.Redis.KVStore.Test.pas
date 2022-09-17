@@ -110,7 +110,7 @@ var
   ExpectedResult: string;
 begin
   Key := MockUtils.SomeString;
-  ExpectedResult := MockUtils.SomeNullableString;
+  ExpectedResult := MockUtils.WithNullChance(0).SomeNullableString;
 
   Client := Mock<IFidoRedisClient>.Create;
   Client.Setup.Returns<Context<Nullable<string>>>(Context<Nullable<string>>.New(ExpectedResult)).When.GET(Format('%s%s', [KEYPREFIX, Key]), INFINITE);

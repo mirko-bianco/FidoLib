@@ -25,13 +25,13 @@ unit Fido.Api.Client.VirtualApi.ElasticSearch.Document.Intf;
 interface
 
 uses
-  Rest.Types,
   System.Generics.Collections,
   System.Classes,
 
   Spring,
   Spring.Collections,
 
+  Fido.Http.Types,
   Fido.OwningObject,
   Fido.Api.Client.VirtualApi.Intf,
   Fido.Api.Client.VirtualApi.Attributes,
