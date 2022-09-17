@@ -55,7 +55,6 @@ type
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterWebSocket(const WebSocketClass: TClass);
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
     procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
@@ -152,11 +151,6 @@ procedure TConsulAwareApiServer.RegisterResponseMiddleware(
   const Step: TResponseMiddlewareProc);
 begin
   FApiServer.RegisterResponseMiddleware(Name, Step);
-end;
-
-procedure TConsulAwareApiServer.RegisterWebSocket(const WebSocketClass: TClass);
-begin
-  FApiServer.RegisterWebSocket(WebSocketClass);
 end;
 
 procedure TConsulAwareApiServer.SetActive(const Value: Boolean);

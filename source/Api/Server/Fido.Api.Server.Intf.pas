@@ -31,8 +31,6 @@ uses
 
   Fido.Http.Request.Intf,
   Fido.Http.Response.Intf,
-  Fido.Web.Server.WebSocket.Loop.Intf,
-  Fido.Web.Server.WebSocket.Loop.Abstract,
   Fido.JSON.Marshalling,
   Fido.Api.Server.Exceptions;
 
@@ -52,7 +50,6 @@ type
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterWebSocket(const WebSocketClass: TClass); deprecated;
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
     procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
