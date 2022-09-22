@@ -32,12 +32,11 @@ uses
   Spring,
   Spring.Collections,
 
-  Fido.Utilities,
   Fido.Http.Types,
   Fido.Http.RequestInfo.Intf,
   Fido.Http.ResponseInfo.Intf,
   Fido.Http.Response.Intf,
-  Fido.DesignPatterns.Adapter.TIdHTTPRequestInfoAsIHTTPRequestInfo;
+  Fido.DesignPatterns.Decorator.TIdHTTPRequestInfoAsIHTTPRequestInfo;
 
 type
   THttpResponse = class(TInterfacedObject, IHttpResponse)
@@ -50,25 +49,30 @@ type
     FMimeType: TMimeType;
     FResponseText: string;
 
-    constructor StringsToDictionary(const Strings: TStrings; const Dictionary: IDictionary<string, string>);
-
+    constructor StringsToDictionary(
+      const Strings: TStrings;
+      const Dictionary: IDictionary<string, string>);
     procedure ApplyChanges;
   public
     constructor Create(
       const RequestInfo: IHTTPRequestInfo;
       const ResponseInfo: IHTTPResponseInfo);
 
-    procedure SetResponseCode(const ResponseCode: Integer;const ResponseText: string = '');
+    procedure SetResponseCode(
+      const ResponseCode: Integer;
+      const ResponseText: string = '');
     function Body: string;
     procedure SetBody(const Body: string);
     procedure SetStream(const Stream: TStream);
     function HeaderParams: IDictionary<string, string>;
     function MimeType: TMimeType;
     procedure SetMimeType(const MimeType: TMimeType);
-    procedure ServeFile(const FilenamePath: string);
+
+    procedure ServeFile(FilenamePath: string);
     procedure WriteHeader;
+
     procedure WriteBytesToWebSocket(const Buffer: TWSBytes);
-    procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; const ByteCount: Integer; const Append: Boolean = True);
+    procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; ByteCount: Integer; Append: Boolean = True);
     procedure DisconnectWebSocket;
 
     function GetWebSocketSignature(const Key: string): string;
@@ -78,7 +82,7 @@ implementation
 
 { THttpResponse }
 
-procedure THttpResponse.ServeFile(const FilenamePath: string);
+procedure THttpResponse.ServeFile(FilenamePath: string);
 begin
   FResponseInfo.SmartServeFile(FilenamePath);
 end;
@@ -94,9 +98,7 @@ begin
   FResponseInfo.SetContentType(SMimeType[MimeType]);
 end;
 
-procedure THttpResponse.SetResponseCode(
-  const ResponseCode: Integer;
-  const ResponseText: string);
+procedure THttpResponse.SetResponseCode(const ResponseCode: Integer; const ResponseText: string);
 begin
   FResponseCode := ResponseCode;
   FResponseText := ResponseText;
@@ -108,9 +110,7 @@ begin
   FResponseInfo.SetContentStream(Stream);
 end;
 
-constructor THttpResponse.StringsToDictionary(
-  const Strings: TStrings;
-  const Dictionary: IDictionary<string, string>);
+constructor THttpResponse.StringsToDictionary(const Strings: TStrings; const Dictionary: IDictionary<string, string>);
 var
   I: Integer;
 begin
@@ -120,7 +120,7 @@ begin
   Strings.Text := FResponseInfo.EncodeString(Strings.Text);
 
   for I := 0 to Strings.Count - 1 do
-    Dictionary[Strings.Names[I]] := Strings.ValueFromIndex[I];
+    Dictionary.AddOrSetValue(Strings.Names[I], Strings.ValueFromIndex[I]);
 end;
 
 procedure THttpResponse.WriteBytesToWebSocket(const Buffer: TWSBytes);
@@ -133,9 +133,7 @@ begin
   FResponseInfo.WriteHeader;
 end;
 
-constructor THttpResponse.Create(
-  const RequestInfo: IHTTPRequestInfo;
-  const ResponseInfo: IHTTPResponseInfo);
+constructor THttpResponse.Create(const RequestInfo: IHTTPRequestInfo; const ResponseInfo: IHTTPResponseInfo);
 var
   TempBodyParams: Shared<TStringList>;
   Accepts: Shared<TStringList>;
@@ -156,8 +154,10 @@ var
         Exit(THttpMethod(I));
   end;
 begin
-  FRequestInfo := Utilities.CheckNotNullAndSet(RequestInfo, 'RequestInfo');
-  FResponseInfo := Utilities.CheckNotNullAndSet(ResponseInfo, 'ResponseInfo');
+  Guard.CheckNotNull(RequestInfo, 'RequestInfo');
+  Guard.CheckNotNull(ResponseInfo, 'ResponseInfo');
+  FRequestInfo := RequestInfo;
+  FResponseInfo := ResponseInfo;
 
   inherited Create;
 
@@ -169,8 +169,8 @@ begin
   Accepts.Value.Delimiter := ',';
   Accepts.Value.DelimitedText := RequestInfo.Accept;
 
-  Found := False;
   MimeTypeIndex := -1;
+  Found := False;
   for I := 0 to Accepts.Value.Count - 1 do
   begin
     MimeLine := TStringList.Create;
@@ -196,9 +196,6 @@ begin
     FMimeType := TMimeType(MimeTypeIndex);
 
   StringsToDictionary(RequestInfo.RawHeaders, FHeaderParams);
-
-  FHeaderParams.Remove('Content-Length');
-  FHeaderParams.Remove('Content-type');
 
   FResponseCode := ResponseInfo.ResponseCode;
   ResponseInfo.SetContentType(SMimeType[FMimeType]);
@@ -239,10 +236,8 @@ begin
   Result := FMimeType;
 end;
 
-procedure THttpResponse.ReadBytesFromWebSocket(
-  var Buffer: TWSBytes;
-  const ByteCount: Integer;
-  const Append: Boolean);
+procedure THttpResponse.ReadBytesFromWebSocket(var Buffer: TWSBytes;
+  ByteCount: Integer; Append: Boolean);
 begin
   FResponseInfo.ReadBytesFromWebSocket(Buffer, ByteCount, Append);
 end;
