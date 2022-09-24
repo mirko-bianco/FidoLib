@@ -58,6 +58,7 @@ type
     procedure RegisterWebSocket(const WebSocketClass: TClass);
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
   end;
 
 implementation
@@ -92,6 +93,11 @@ end;
 function TConsulAwareApiServer.Port: Word;
 begin
   Result := FApiServer.Port;
+end;
+
+procedure TConsulAwareApiServer.RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
+begin
+  FApiServer.RegisterExceptionMiddleware(MiddlewareProc)
 end;
 
 procedure TConsulAwareApiServer.RegisterRequestMiddleware(

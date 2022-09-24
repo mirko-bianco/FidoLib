@@ -32,13 +32,17 @@ uses
   Fido.Http.Request.Intf,
   Fido.Http.Response.Intf,
   Fido.Web.Server.WebSocket.Loop.Intf,
-  Fido.Web.Server.WebSocket.Loop.Abstract;
+  Fido.Web.Server.WebSocket.Loop.Abstract,
+  Fido.JSON.Marshalling,
+  Fido.Api.Server.Exceptions;
 
 type
   {$M+}
   TRequestMiddlewareFunc = reference to function(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
 
   TResponseMiddlewareProc = reference to procedure(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
+
+  TExceptionMiddlewareProc = reference to procedure(const E: TObject);
   {$M-}
 
   IApiServer = interface(IInvokable)
@@ -51,8 +55,26 @@ type
     procedure RegisterWebSocket(const WebSocketClass: TClass); deprecated;
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
   end;
 
+var
+  DefaultExceptionMiddlewareProc: TExceptionMiddlewareProc;
+
 implementation
+
+initialization
+  DefaultExceptionMiddlewareProc := procedure(const E: TObject)
+    begin
+      if E.InheritsFrom(EJSONUnmarshaller) then
+        raise EApiServer400.Create((E as Exception).Message);
+      if E.InheritsFrom(EJSONMarshaller) then
+        raise EApiServer400.Create((E as Exception).Message);
+      if E.InheritsFrom(EJSONVirtualDto) then
+        raise EApiServer400.Create((E as Exception).Message);
+
+      if not E.InheritsFrom(EApiServer) then
+        raise EApiServer500.Create((E as Exception).Message);
+    end;
 
 end.

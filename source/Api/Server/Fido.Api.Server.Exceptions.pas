@@ -32,23 +32,50 @@ uses
   Fido.Exceptions;
 
 type
-  EApiServer400 = class(EFidoException); //Bad request
+  EApiServer = class(EFidoException)
+  private
+    FCode: Integer;
+    FShortMsg: string;
+  public
+    constructor Create(const Code: Integer; const ShortMsg: string; const Msg: string); overload;
+    constructor Create(const Code: Integer; const ShortMsg: string; const Msg: string; const Logger: ILogger; const &Class: string; const Method: string); overload;
 
-  EApiServer401 = class(EFidoException); //Unauthorized
-
-  EApiServer403 = class(EFidoException); //Forbidden
-
-  EApiServer404 = class(EFidoException); //Not found
-
-  EApiServer409 = class(EFidoException); //Conflict
-
-  EApiServer500 = class(EFidoException) //Internal server error
-    constructor Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string);
+    function Code: Integer;
+    function ShortMsg: string;
   end;
 
-  EApiServer503 = class(EFidoException); //Service unavailable
+  EApiServer400 = class(EApiServer)
+    constructor Create(const Msg: string);
+  end; //Bad request
 
-  EApiServer504 = class(EFidoException); //Gateway timeout
+  EApiServer401 = class(EApiServer)
+    constructor Create(const Msg: string);
+  end; //Unauthorized
+
+  EApiServer403 = class(EApiServer)
+    constructor Create(const Msg: string);
+  end; //Forbidden
+
+  EApiServer404 = class(EApiServer)
+    constructor Create(const Msg: string);
+  end; //Not found
+
+  EApiServer409 = class(EApiServer)
+    constructor Create(const Msg: string);
+  end; //Conflict
+
+  EApiServer500 = class(EApiServer)
+    constructor Create(const Msg: string); overload;
+    constructor Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string); overload;
+  end; //Internal server error
+
+  EApiServer503 = class(EApiServer)
+    constructor Create(const Msg: string);
+  end; //Service unavailable
+
+  EApiServer504 = class(EApiServer)
+    constructor Create(const Msg: string);
+  end; //Gateway timeout
 
 
 implementation
@@ -63,7 +90,7 @@ constructor EApiServer500.Create(
 var
   LoggedData: Shared<TLoggedData>;
 begin
-  inherited Create(Msg);
+  Create(Msg);
 
   LoggedData := TLoggedData.Create('Error', &Class, Method);
 
@@ -73,6 +100,95 @@ begin
     Msg,
     nil,
     TValue.From<TLoggedData>(LoggedData.Value)));
+end;
+
+constructor EApiServer500.Create(const Msg: string);
+begin
+  inherited Create(500, 'Internal server error', Msg);
+end;
+
+{ EApiServer }
+
+function EApiServer.Code: Integer;
+begin
+  Result := FCode;
+end;
+
+constructor EApiServer.Create(const Code: Integer; const ShortMsg: string; const Msg: string);
+begin
+  inherited Create(Msg);
+  FCode := Code;
+  FShortMsg := ShortMsg;
+end;
+
+constructor EApiServer.Create(const Code: Integer; const ShortMsg: string; const Msg: string; const Logger: ILogger; const &Class, Method: string);
+var
+  LoggedData: Shared<TLoggedData>;
+begin
+  Create(Code, ShortMsg, Msg);
+
+  LoggedData := TLoggedData.Create('Error', &Class, Method);
+
+  Logger.Log(TLogEvent.Create(
+    TLogLevel.Error,
+    TLogEventType.Text,
+    Msg,
+    nil,
+    TValue.From<TLoggedData>(LoggedData.Value)));
+end;
+
+function EApiServer.ShortMsg: string;
+begin
+  Result := FShortMsg;
+end;
+
+{ EApiServer400 }
+
+constructor EApiServer400.Create(const Msg: string);
+begin
+  inherited Create(400, 'Bad request', Msg);
+end;
+
+{ EApiServer401 }
+
+constructor EApiServer401.Create(const Msg: string);
+begin
+  inherited Create(401, 'Unauthorized', Msg);
+end;
+
+{ EApiServer403 }
+
+constructor EApiServer403.Create(const Msg: string);
+begin
+  inherited Create(403, 'Forbidden', Msg);
+end;
+
+{ EApiServer404 }
+
+constructor EApiServer404.Create(const Msg: string);
+begin
+  inherited Create(404, 'Not found', Msg);
+end;
+
+{ EApiServer409 }
+
+constructor EApiServer409.Create(const Msg: string);
+begin
+  inherited Create(409, 'Conflict', Msg);
+end;
+
+{ EApiServer503 }
+
+constructor EApiServer503.Create(const Msg: string);
+begin
+  inherited Create(503, 'Service unavailable', Msg);
+end;
+
+{ EApiServer504 }
+
+constructor EApiServer504.Create(const Msg: string);
+begin
+  inherited Create(504, 'Gateway timeout', Msg);
 end;
 
 end.
