@@ -224,6 +224,11 @@ contains
   Fido.Web.Client.WebSocket.SignalR in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.pas',
   Fido.Web.Client.WebSocket.SignalR.Types in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.Types.pas',
   Fido.Web.Client.WebSocket.TcpClient.Intf in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.Intf.pas',
-  Fido.Web.Client.WebSocket.TcpClient in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas';
+  Fido.Web.Client.WebSocket.TcpClient in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas',
+  Fido.Currying in 'Fido.Currying.pas',
+  Fido.Caching.Intf in 'Fido.Caching.Intf.pas',
+  Fido.Caching.FIFO in 'Fido.Caching.FIFO.pas',
+  Fido.Caching.Usage in 'Fido.Caching.Usage.pas',
+  Fido.Caching.Memoize in 'Fido.Caching.Memoize.pas';
 
 end.

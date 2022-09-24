@@ -56,7 +56,9 @@ uses
   Fido.Utilities.Test in 'Fido.Utilities.Test.pas',
   Fido.Http.Utils.Test in 'Http\Fido.Http.Utils.Test.pas',
   Fido.Functional.Tests in 'Fido.Functional.Tests.pas',
-  Fido.Web.Client.Websocket.Test in 'Web\Client\WebSocket\Fido.Web.Client.Websocket.Test.pas';
+  Fido.Web.Client.Websocket.Test in 'Web\Client\WebSocket\Fido.Web.Client.Websocket.Test.pas',
+  Fido.Currying.Test in 'Fido.Currying.Test.pas',
+  Fido.Caching.test in 'Fido.Caching.test.pas';
 
 {$IFNDEF TESTINSIGHT}
 var
