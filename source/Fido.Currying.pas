@@ -28,16 +28,10 @@ uses
   Fido.Types;
 
 type
-  TCurrying3Result<P2, P3, R> = reference to function(const Parameter2: P2): TOneParamFunction<P3, R>;
-  TCurrying3Func<P1, P2, P3, R> = reference to function(const Parameter1: P1): TCurrying3Result<P2, P3, R>;
-
-  TCurrying4Result<P2, P3, P4, R> = reference to function(const Parameter2: P2): TCurrying3Result<P3, P4, R>;
-  TCurrying4Func<P1, P2, P3, P4, R> = reference to function(const Parameter1: P1): TCurrying4Result<P2, P3, P4, R>;
-
   Curry = record
     class function Cook<P1, P2, R>(const SourceFunction: TTwoParamsFunction<P1, P2, R>): TOneParamFunction<P1, TOneParamFunction<P2, R>>; overload; static;
-    class function Cook<P1, P2, P3, R>(const SourceFunction: TThreeParamsFunction<P1, P2, P3, R>): TCurrying3Func<P1, P2, P3, R>; overload; static;
-    class function Cook<P1, P2, P3, P4, R>(const SourceFunction: TFourParamsFunction<P1, P2, P3, P4, R>): TCurrying4Func<P1, P2, P3, P4, R>; overload; static;
+    class function Cook<P1, P2, P3, R>(const SourceFunction: TThreeParamsFunction<P1, P2, P3, R>): TOneParamFunction<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>; overload; static;
+    class function Cook<P1, P2, P3, P4, R>(const SourceFunction: TFourParamsFunction<P1, P2, P3, P4, R>): TOneParamFunction<P1, TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>>; overload; static;
   end;
 
 implementation
@@ -55,9 +49,9 @@ begin
     end;
 end;
 
-class function Curry.Cook<P1, P2, P3, R>(const SourceFunction: TThreeParamsFunction<P1, P2, P3, R>): TCurrying3Func<P1, P2, P3, R>;
+class function Curry.Cook<P1, P2, P3, R>(const SourceFunction: TThreeParamsFunction<P1, P2, P3, R>): TOneParamFunction<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>;
 begin
-  Result := function(const Parameter1: P1): TCurrying3Result<P2, P3, R>
+  Result := function(const Parameter1: P1): TOneParamFunction<P2, TOneParamFunction<P3, R>>
     begin
       result := function(const Parameter2: P2): TOneParamFunction<P3, R>
         begin
@@ -69,11 +63,11 @@ begin
     end;
 end;
 
-class function Curry.Cook<P1, P2, P3, P4, R>(const SourceFunction: TFourParamsFunction<P1, P2, P3, P4, R>): TCurrying4Func<P1, P2, P3, P4, R>;
+class function Curry.Cook<P1, P2, P3, P4, R>(const SourceFunction: TFourParamsFunction<P1, P2, P3, P4, R>): TOneParamFunction<P1, TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>>;
 begin
-  Result := function(const Parameter1: P1): TCurrying4Result<P2, P3, P4, R>
+  Result := function(const Parameter1: P1): TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>
     begin
-      result := function(const Parameter2: P2): TCurrying3Result<P3, P4, R>
+      result := function(const Parameter2: P2): TOneParamFunction<P3, TOneParamFunction<P4, R>>
         begin
           Result := function(const Parameter3: P3): TOneParamFunction<P4, R>
             begin
