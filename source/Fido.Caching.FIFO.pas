@@ -42,6 +42,7 @@ type
   public
     constructor Create(const Size: Int64);
     function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
   end;
 
 implementation
@@ -59,19 +60,33 @@ begin
     FSize := 1;
 end;
 
+function TFIFOCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+var
+  Exists: Boolean;
+begin
+  FLock.BeginWrite;
+  try
+    Result := AFunction(Param);
+    Exists := FMap.ContainsKey(Param);
+    FMap[Param] := Result;
+    if Exists then
+      Exit;
+
+    FQueue.Enqueue(Param);
+    if FQueue.Count > FSize then
+      FMap.Remove(FQueue.Extract);
+  finally
+    FLock.EndWrite;
+  end;
+end;
+
 function TFIFOCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 begin
-  FLock.BeginRead;
+  FLock.BeginWrite;
   try
     if FMap.TryGetValue(Param, Result) then
       Exit;
-  finally
-    FLock.EndRead;
-  end;
-
-  Result := AFunction(Param);
-  FLock.BeginWrite;
-  try
+    Result := AFunction(Param);
     FMap[Param] := Result;
     FQueue.Enqueue(Param);
     if FQueue.Count > FSize then

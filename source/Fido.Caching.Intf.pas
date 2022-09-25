@@ -31,7 +31,10 @@ type
   ICache<P, R> = Interface(IInvokable)
     ['{60819F67-2B66-46BA-8F78-22C3597E4FEB}']
 
+    // It executes the function if it has not been cached yet and then caches it, otherwise retrieves the value from the cache
     function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    // ForceIt always executes the function and then caches it. Useful when you want to re-cache stale data
+    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
   end;
 
 implementation

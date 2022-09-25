@@ -40,6 +40,7 @@ type
   public
     constructor Create;
     function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
   end;
 
 implementation
@@ -53,19 +54,24 @@ begin
   FMap := TCollections.CreateDictionary<P, R>;
 end;
 
+function TMemoize<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+begin
+  FLock.BeginWrite;
+  try
+    Result := AFunction(Param);
+    FMap[Param] := Result;
+  finally
+    FLock.EndWrite;
+  end;
+end;
+
 function TMemoize<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 begin
-  FLock.BeginRead;
+  FLock.BeginWrite;
   try
     if FMap.TryGetValue(Param, Result) then
       Exit;
-  finally
-    FLock.EndRead;
-  end;
-
-  Result := AFunction(Param);
-  FLock.BeginWrite;
-  try
+    Result := AFunction(Param);
     FMap[Param] := Result;
   finally
     FLock.EndWrite;

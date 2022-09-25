@@ -20,10 +20,19 @@ type
     procedure FIFOCachingWorks;
 
     [Test]
+    procedure FIFOForceCachingWorks;
+
+    [Test]
     procedure MemoizeWorks;
 
     [Test]
+    procedure ForceMemoizeWorks;
+
+    [Test]
     procedure UsageCachingWorks;
+
+    [Test]
+    procedure UsageForceCachingWorks;
   end;
 
 implementation
@@ -81,6 +90,98 @@ begin
 
   Assert.AreEqual(2, Result);
   Assert.AreEqual(4, Count);
+end;
+
+procedure TCachingTests.FIFOForceCachingWorks;
+var
+  Cache: ICache<Integer, Integer>;
+  Result: Integer;
+begin
+  Count := 0;
+
+  Cache := TFIFOCache<Integer, Integer>.Create(2);
+
+  // Call with 1
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(1, Count);
+
+  // Call with 1 again
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(2, Count);
+
+  // Call with 2
+  Result := Cache.ForceIt(Add1, 2);
+
+  Assert.AreEqual(3, Result);
+  Assert.AreEqual(3, Count);
+
+  // Call with 2 again
+  Result := Cache.ForceIt(Add1, 2);
+
+  Assert.AreEqual(3, Result);
+  Assert.AreEqual(4, Count);
+
+  // Call with 3
+  Result := Cache.ForceIt(Add1, 3);
+
+  Assert.AreEqual(4, Result);
+  Assert.AreEqual(5, Count);
+
+  // Call with 1
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(6, Count);
+end;
+
+procedure TCachingTests.ForceMemoizeWorks;
+var
+  Cache: ICache<Integer, Integer>;
+  Result: Integer;
+begin
+  Count := 0;
+
+  Cache := TMemoize<Integer, Integer>.Create;
+
+  // Call with 1
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(1, Count);
+
+  // Call with 1 again
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(2, Count);
+
+  // Call with 2
+  Result := Cache.ForceIt(Add1, 2);
+
+  Assert.AreEqual(3, Result);
+  Assert.AreEqual(3, Count);
+
+  // Call with 2 again
+  Result := Cache.ForceIt(Add1, 2);
+
+  Assert.AreEqual(3, Result);
+  Assert.AreEqual(4, Count);
+
+  // Call with 3
+  Result := Cache.ForceIt(Add1, 3);
+
+  Assert.AreEqual(4, Result);
+  Assert.AreEqual(5, Count);
+
+  // Call with 1
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(6, Count);
 end;
 
 procedure TCachingTests.MemoizeWorks;
@@ -185,6 +286,64 @@ begin
 
   Assert.AreEqual(3, Result);
   Assert.AreEqual(4, Count);
+end;
+
+procedure TCachingTests.UsageForceCachingWorks;
+var
+  Cache: ICache<Integer, Integer>;
+  Result: Integer;
+begin
+  Count := 0;
+
+  Cache := TUsageCache<Integer, Integer>.Create(2);
+
+  // Call with 1
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(1, Count);
+
+  // Call with 1 again
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(2, Count);
+
+  // Call with 2
+  Result := Cache.ForceIt(Add1, 2);
+
+  Assert.AreEqual(3, Result);
+  Assert.AreEqual(3, Count);
+
+  // Call with 2 again
+  Result := Cache.ForceIt(Add1, 2);
+
+  Assert.AreEqual(3, Result);
+  Assert.AreEqual(4, Count);
+
+  // Call with 1 again
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(5, Count);
+
+  // Call with 3
+  Result := Cache.ForceIt(Add1, 3);
+
+  Assert.AreEqual(4, Result);
+  Assert.AreEqual(6, Count);
+
+  // Call with 1
+  Result := Cache.ForceIt(Add1, 1);
+
+  Assert.AreEqual(2, Result);
+  Assert.AreEqual(7, Count);
+
+  // Call with 2,
+  Result := Cache.ForceIt(Add1, 2);
+
+  Assert.AreEqual(3, Result);
+  Assert.AreEqual(8, Count);
 end;
 
 initialization

@@ -42,6 +42,7 @@ type
   public
     constructor Create(const Size: Int64);
     function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
   end;
 
 implementation
@@ -60,32 +61,48 @@ begin
     FSize := 1;
 end;
 
-function TUsageCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TUsageCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 var
-  Found: Boolean;
+  Exists: Boolean;
+  Index: Integer;
 begin
-  FLock.BeginRead;
-  try
-    Found := FMap.TryGetValue(Param, Result);
-  finally
-    FLock.EndRead;
-  end;
-  if Found then
-  begin
-    FLock.BeginWrite;
-    try
-      FAgeList.Delete(FAgeList.IndexOf(Param));
-      FAgeList.Add(Param);
-    finally
-      FLock.EndWrite;
-    end;
-    Exit;
-  end;
-
-  Result := AFunction(Param);
   FLock.BeginWrite;
   try
+    Result := AFunction(Param);
+    Exists := FMap.ContainsKey(Param);
     FMap[Param] := Result;
+    if Exists then
+      Exit;
+
+    Index := FAgeList.IndexOf(Param);
+    if Index > -1 then
+      FAgeList.Delete(Index);
+    FAgeList.Add(Param);
+
+    if FAgeList.Count > FSize then
+    begin
+      FMap.Remove(FAgeList[0]);
+      FAgeList.Delete(0);
+    end;
+  finally
+    FLock.EndWrite;
+  end;
+end;
+
+function TUsageCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+var
+  Exists: Boolean;
+begin
+  FLock.BeginWrite;
+  try
+    Exists := FMap.TryGetValue(Param, Result);
+    if Exists then
+      FAgeList.Delete(FAgeList.IndexOf(Param))
+    else
+    begin
+      Result := AFunction(Param);
+      FMap[Param] := Result;
+    end;
     FAgeList.Add(Param);
     if FAgeList.Count > FSize then
     begin
