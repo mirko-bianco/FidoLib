@@ -13,6 +13,8 @@ Below is a list of the most important features:
 - [Boxes](#boxes)
 - [Events driven architecture](#events-driven-architecture)
 - [Functional programming](#functional-programming)
+- [Currying](#Currying)
+- [Caching](#Caching)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -1851,5 +1853,126 @@ begin
     );
   
   ...
+```
+
+## Currying
+
+Units: `Fido.Currying`.
+
+Currying allows you to transform a function with multiple parameters in sequence of one-parameter functions.
+
+FidoLib allows you to do that by using the Currying tool:
+
+```pascal
+function Add(const P1: Integer; const P2: Integer): Integer;
+begin
+  Result := P1 + P2;
+end;
+  
+begin
+  Result := Writeln(Curry.Cook<Integer, Integer, Integer>(Add)(1)(2)); //This will return 3
+end;
+```
+
+## Caching
+
+Units: `Fido.caching.Intf`,  `Fido.caching`.
+
+FidoLib support a "functional" caching. That means you can cache the results of functions... basically memoizing.
+
+Since pure memoization is not always optimal, FidoLib supports three types of caching:
+
+- **Memoization**. The cache has no limit.
+- **FIFO**. The cache has a limited size. when the size is reached the first item that was added is removed.
+- **Usage**. The cache has a limited size. when the size is reached the items that are added/accessed the last are kept.
+
+When an item in the cache becomes stale it can be forced by using the `.ForceIt` method.
+
+Caching is supported for functions up to four parameters:
+
+```pascal
+  IOneParamCache<P, R> = Interface(IInvokable)
+    ['{60819F67-2B66-46BA-8F78-22C3597E4FEB}']
+
+    // It executes the function if it has not been cached yet and then caches it, otherwise retrieves the value from the cache
+    function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    // ForceIt always executes the function and then caches it. Useful when you want to re-cache stale data
+    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+  end;
+
+  ITwoParamsCache<P1, P2, R> = interface(IInvokable)
+    ['{BCD8DB8D-25A8-4991-B1FB-B6213B03A556}']
+
+    function It(const AFunction: TTwoParamsFunction<P1, P2, R>; const Param1: P1; const Param2: P2): R;
+    function ForceIt(const AFunction: TTwoParamsFunction<P1, P2, R>; const Param1: P1; const Param2: P2): R;
+  end;
+
+  IThreeParamsCache<P1, P2, P3, R> = interface(IInvokable)
+    ['{DDC1A3B3-8E6E-4F1B-BFC8-474D7F186237}']
+
+    function It(const AFunction: TThreeParamsFunction<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
+    function ForceIt(const AFunction: TThreeParamsFunction<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
+  end;
+
+  IFourParamsCache<P1, P2, P3, P4, R> = interface(IInvokable)
+    ['{6C1E8BDD-9805-4095-8179-BC0230F9EC19}']
+
+    function It(const AFunction: TFourParamsFunction<P1, P2, P3, P4, R>; const Param1: P1; const Param2: P2; const Param3: P3; const Param4: P4): R;
+    function ForceIt(const AFunction: TFourParamsFunction<P1, P2, P3, P4, R>; const Param1: P1; const Param2: P2; const Param3: P3; const Param4: P4): R;
+  end;
+```
+
+An example of usage: 
+
+```pascal
+program CachingExample;
+
+{$APPTYPE CONSOLE}
+
+{$R *.res}
+
+uses
+  Fido.Caching.Intf,
+  Fido.Caching;
+
+type
+  TCalculator = class
+  private
+    FAddCache: ITwoParamsCache<Integer, Integer, Integer>;
+    function DoAdd(const Param1: Integer; const Param2: Integer): Integer;
+  public
+    constructor Create;
+
+    function Add(const Param1: Integer; const Param2: Integer): Integer;
+  end;
+
+{ TCalculator }
+
+constructor TCalculator.Create;
+begin
+  inherited;
+  FAddCache := Caching.TwoParams.Memoize<Integer, Integer, Integer>;
+end;
+
+function TCalculator.DoAdd(const Param1, Param2: Integer): Integer;
+begin
+  Result := Param1 + Param2;
+end;
+
+function TCalculator.Add(const Param1, Param2: Integer): Integer;
+begin
+  Result := FAddCache.It(DoAdd, Param1, Param2);
+end;
+
+var
+  Calculator: TCalculator;
+begin
+  Calculator := TCalculator.Create;
+
+  Writeln(Calculator.Add(1, 1));
+  Writeln(Calculator.Add(1, 2));
+  Writeln(Calculator.Add(1, 1));
+  Readln;
+end.
 ```
 

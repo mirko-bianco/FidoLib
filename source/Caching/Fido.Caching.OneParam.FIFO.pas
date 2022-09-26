@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.Caching.FIFO;
+unit Fido.Caching.OneParam.FIFO;
 
 interface
 
@@ -33,7 +33,7 @@ uses
   Fido.Caching.Intf;
 
 type
-  TFIFOCache<P, R> = class(TInterfacedObject, ICache<P, R>)
+  TFIFOOneParamCache<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
     FSize: Int64;
     FLock: IReadWriteSync;
@@ -47,9 +47,9 @@ type
 
 implementation
 
-{ TFIFOCache<P, R> }
+{ TFIFOOneParamCache<P, R> }
 
-constructor TFIFOCache<P, R>.Create(const Size: Int64);
+constructor TFIFOOneParamCache<P, R>.Create(const Size: Int64);
 begin
   inherited Create;
   FLock := TMREWSync.Create;
@@ -60,7 +60,7 @@ begin
     FSize := 1;
 end;
 
-function TFIFOCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TFIFOOneParamCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 var
   Exists: Boolean;
 begin
@@ -80,7 +80,7 @@ begin
   end;
 end;
 
-function TFIFOCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TFIFOOneParamCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 begin
   FLock.BeginWrite;
   try

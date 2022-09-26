@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.Caching.Memoize;
+unit Fido.Caching.OneParam.Memoize;
 
 interface
 
@@ -33,7 +33,7 @@ uses
   Fido.Caching.Intf;
 
 type
-  TMemoize<P, R> = class(TInterfacedObject, ICache<P, R>)
+  TMemoizeOneParam<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
     FLock: IReadWriteSync;
     FMap: IDictionary<P, R>;
@@ -45,16 +45,16 @@ type
 
 implementation
 
-{ TMemoize<P, R> }
+{ TMemoizeOneParam<P, R> }
 
-constructor TMemoize<P, R>.Create;
+constructor TMemoizeOneParam<P, R>.Create;
 begin
   inherited;
   FLock := TMREWSync.Create;
   FMap := TCollections.CreateDictionary<P, R>;
 end;
 
-function TMemoize<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TMemoizeOneParam<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 begin
   FLock.BeginWrite;
   try
@@ -65,7 +65,7 @@ begin
   end;
 end;
 
-function TMemoize<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TMemoizeOneParam<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 begin
   FLock.BeginWrite;
   try

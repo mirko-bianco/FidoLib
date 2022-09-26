@@ -20,7 +20,7 @@
  * SOFTWARE.
  *)
 
-unit Fido.Caching.Usage;
+unit Fido.Caching.OneParam.Usage;
 
 interface
 
@@ -33,7 +33,7 @@ uses
   Fido.Caching.Intf;
 
 type
-  TUsageCache<P, R> = class(TInterfacedObject, ICache<P, R>)
+  TUsageOneParamCache<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
     FSize: Int64;
     FLock: IReadWriteSync;
@@ -47,9 +47,9 @@ type
 
 implementation
 
-{ TUsageCache<P, R> }
+{ TUsageOneParamCache<P, R> }
 
-constructor TUsageCache<P, R>.Create(const Size: Int64);
+constructor TUsageOneParamCache<P, R>.Create(const Size: Int64);
 begin
   inherited Create;
 
@@ -61,7 +61,7 @@ begin
     FSize := 1;
 end;
 
-function TUsageCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TUsageOneParamCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 var
   Exists: Boolean;
   Index: Integer;
@@ -89,7 +89,7 @@ begin
   end;
 end;
 
-function TUsageCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TUsageOneParamCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
 var
   Exists: Boolean;
 begin

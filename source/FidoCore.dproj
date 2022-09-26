@@ -338,10 +338,14 @@
         <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.Intf.pas"/>
         <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas"/>
         <DCCReference Include="Fido.Currying.pas"/>
-        <DCCReference Include="Fido.Caching.Intf.pas"/>
-        <DCCReference Include="Fido.Caching.FIFO.pas"/>
-        <DCCReference Include="Fido.Caching.Usage.pas"/>
-        <DCCReference Include="Fido.Caching.Memoize.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.FourParams.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.Intf.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.OneParam.FIFO.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.OneParam.Memoize.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.OneParam.Usage.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.ThreeParams.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.TwoParams.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

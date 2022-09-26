@@ -8,9 +8,9 @@ uses
 
   Fido.Types,
   Fido.Caching.Intf,
-  Fido.Caching.FIFO,
-  Fido.Caching.Memoize,
-  Fido.Caching.Usage;
+  Fido.Caching.OneParam.FIFO,
+  Fido.Caching.OneParam.Memoize,
+  Fido.Caching.OneParam.Usage;
 
 type
   [TestFixture]
@@ -48,12 +48,12 @@ end;
 
 procedure TCachingTests.FIFOCachingWorks;
 var
-  Cache: ICache<Integer, Integer>;
+  Cache: IOneParamCache<Integer, Integer>;
   Result: Integer;
 begin
   Count := 0;
 
-  Cache := TFIFOCache<Integer, Integer>.Create(2);
+  Cache := TFIFOOneParamCache<Integer, Integer>.Create(2);
 
   // Call with 1
   Result := Cache.It(Add1, 1);
@@ -94,12 +94,12 @@ end;
 
 procedure TCachingTests.FIFOForceCachingWorks;
 var
-  Cache: ICache<Integer, Integer>;
+  Cache: IOneParamCache<Integer, Integer>;
   Result: Integer;
 begin
   Count := 0;
 
-  Cache := TFIFOCache<Integer, Integer>.Create(2);
+  Cache := TFIFOOneParamCache<Integer, Integer>.Create(2);
 
   // Call with 1
   Result := Cache.ForceIt(Add1, 1);
@@ -140,12 +140,12 @@ end;
 
 procedure TCachingTests.ForceMemoizeWorks;
 var
-  Cache: ICache<Integer, Integer>;
+  Cache: IOneParamCache<Integer, Integer>;
   Result: Integer;
 begin
   Count := 0;
 
-  Cache := TMemoize<Integer, Integer>.Create;
+  Cache := TMemoizeOneParam<Integer, Integer>.Create;
 
   // Call with 1
   Result := Cache.ForceIt(Add1, 1);
@@ -186,12 +186,12 @@ end;
 
 procedure TCachingTests.MemoizeWorks;
 var
-  Cache: ICache<Integer, Integer>;
+  Cache: IOneParamCache<Integer, Integer>;
   Result: Integer;
 begin
   Count := 0;
 
-  Cache := TMemoize<Integer, Integer>.Create;
+  Cache := TMemoizeOneParam<Integer, Integer>.Create;
 
   // Call with 1
   Result := Cache.It(Add1, 1);
@@ -232,12 +232,12 @@ end;
 
 procedure TCachingTests.UsageCachingWorks;
 var
-  Cache: ICache<Integer, Integer>;
+  Cache: IOneParamCache<Integer, Integer>;
   Result: Integer;
 begin
   Count := 0;
 
-  Cache := TUsageCache<Integer, Integer>.Create(2);
+  Cache := TUsageOneParamCache<Integer, Integer>.Create(2);
 
   // Call with 1
   Result := Cache.It(Add1, 1);
@@ -290,12 +290,12 @@ end;
 
 procedure TCachingTests.UsageForceCachingWorks;
 var
-  Cache: ICache<Integer, Integer>;
+  Cache: IOneParamCache<Integer, Integer>;
   Result: Integer;
 begin
   Count := 0;
 
-  Cache := TUsageCache<Integer, Integer>.Create(2);
+  Cache := TUsageOneParamCache<Integer, Integer>.Create(2);
 
   // Call with 1
   Result := Cache.ForceIt(Add1, 1);
