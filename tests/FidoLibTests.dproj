@@ -217,9 +217,6 @@
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas"/>
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Retries.Test.pas"/>
         <DCCReference Include="Fido.Boxes.Test.pas"/>
-        <DCCReference Include="Async\Fido.Async.Funcs.Test.pas"/>
-        <DCCReference Include="Async\Fido.Async.Procs.Test.pas"/>
-        <DCCReference Include="Slots\Fido.Slots.Binding.Tests.pas"/>
         <DCCReference Include="Consul\Fido.Consul.KVStore.Test.pas"/>
         <DCCReference Include="Consul\Fido.Consul.Service.Test.pas"/>
         <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.Queue.Test.pas"/>

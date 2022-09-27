@@ -34,59 +34,15 @@ uses
   Fido.Http.Request.Intf,
   Fido.Http.Response.Intf,
 
-  Fido.Web.Server.WebSocket.Loop.Abstract,
-  Fido.Web.Server.WebSocket.Loop.Intf,
-
   Fido.Web.Server.WebSocket,
   Fido.Web.Server.WebSocket.Intf;
 
 type
-  ServerWebSocket = class
-    class function DetectLoop(const WebSockets: IDictionary<string, TClass>; const HttpRequest: IHttpRequest; const HttpResponse: IHttpResponse; out WebSocket: ILoopServerWebSocket): Boolean;
-      deprecated 'Please use IServerWebSocket';
-  end;
-
   WebSocketServer = class
     class function GetFor<T>(const Server: IWebSocketServer): IWebSocketServer<T>;
   end;
 
 implementation
-
-class function ServerWebSocket.DetectLoop(
-  const WebSockets: IDictionary<string, TClass>;
-  const HttpRequest: IHttpRequest;
-  const HttpResponse: IHttpResponse;
-  out WebSocket: ILoopServerWebSocket): Boolean;
-var
-  Key, Ver: string;
-  WebSocketClass: TClass;
-  Context: TRttiContext;
-  InstanceType: TRttiInstanceType;
-begin
-  WebSocketClass := nil;
-  with WebSockets.Keys.GetEnumerator do
-    while MoveNext do
-      if TRegEx.IsMatch(HttpRequest.URI.ToUpper, Current.ToUpper) then
-        WebSocketClass := WebSockets.Items[Current];
-  if WebSocketClass = nil then
-    if not WebSockets.TryGetValue('$', WebSocketClass) then
-      Exit(False);
-
-  Key := HttpRequest.HeaderParams.GetValueOrDefault('Sec-WebSocket-Key');
-  Ver := HttpRequest.HeaderParams.GetValueOrDefault('Sec-WebSocket-Version');
-  if (Key <> '') and (Ver = '13') then
-  begin
-    Context := TRttiContext.Create;
-    InstanceType := Context.GetType(WebSocketClass).AsInstance;
-    WebSocket := InstanceType.GetMethod('Create').Invoke(
-      WebSocketClass,
-      [TValue.From<string>(Key), TValue.From<IHttpResponse>(HttpResponse)]).AsType<ILoopServerWebSocket>;
-
-    Result := True;
-  end else begin
-    Result := False;
-  end;
-end;
 
 { WebSocketServer }
 

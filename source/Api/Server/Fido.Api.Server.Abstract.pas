@@ -45,10 +45,7 @@ uses
   Fido.Http.Response.Intf,
   Fido.Http.Types,
   Fido.Http.Utils,
-  Fido.Web.Server.Websocket.Loop.Abstract,
-  Fido.Web.Server.Intf,
-  Fido.Web.Server.WebSocket.Loop.Intf,
-  Fido.Web.Server.WebSocket.Tool;
+  Fido.Web.Server.Intf;
 
 type
   EFidoApiException = class(EFidoException);
@@ -64,7 +61,6 @@ type
     FResponseMiddlewares: IDictionary<string, TResponseMiddlewareProc>;
     FExceptionMiddlewareProc: TExceptionMiddlewareProc;
     FLock: IReadWriteSync;
-    FWebSockets: IDictionary<string, TClass>;
   private
     function TryGetEndPoint(const ApiRequest: IHttpRequest; out EndPoint: TEndPoint): Boolean;
     function TrySetPathParams(const EndPoint: TEndPoint; const URI: string; const PathParams: IDictionary<string, string>): Boolean;
@@ -95,7 +91,6 @@ type
     function IsActive: Boolean; virtual; abstract;
     procedure SetActive(const Value: Boolean); virtual; abstract;
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterWebSocket(const WebSocketClass: TClass); deprecated 'Please use IServerWebSocket';
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
     procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
@@ -151,7 +146,6 @@ var
 begin
   inherited Create;
   FLock := TMREWSync.Create;
-  FWebSockets := TCollections.CreateDictionary<string, TClass>(TIStringComparer.Ordinal);
 
   UseSSL := SSLCertData.IsValid;
 
@@ -451,7 +445,6 @@ var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
   PathParams: IDictionary<string, string>;
-  WebSocket: ILoopServerWebSocket;
 begin
   PathParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
 
@@ -465,13 +458,7 @@ begin
     if ApiResponse.MimeType = mtUnknown then
      raise EApiServer400.Create('Response mime type not supported.');
 
-    if ServerWebSocket.DetectLoop(FWebSockets, ApiRequest, ApiResponse, WebSocket) then
-    begin
-      //This will loop until the websocket is active. then it can exit.
-      WebSocket.Run;
-      Exit;
-    end
-    else if FWebServer.Process(ApiRequest, ApiResponse) then
+  if FWebServer.Process(ApiRequest, ApiResponse) then
     begin
       ApiResponse.SetResponseCode(200, 'OK');
       Exit;
@@ -725,29 +712,6 @@ begin
     end);
 end;
 
-procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterWebSocket(const WebSocketClass: TClass);
-var
-  Context: TRttiContext;
-  RttiType: TRttiType;
-  Attribute: TCustomAttribute;
-  Path: string;
-begin
-  if not WebSocketClass.InheritsFrom(TLoopServerWebSocket) then
-    Exit;
-  Context := TRttiContext.Create;
-  RttiType := Context.GetType(WebSocketClass);
-
-  if TCollections.CreateList<TCustomAttribute>(RttiType.GetAttributes).TryGetFirst(
-      Attribute,
-      function(const Attribute: TCustomAttribute): Boolean
-      begin
-        Result := Attribute is WebSocketPathAttribute;
-      end) then
-    Path := (Attribute as WebSocketPathAttribute).Path;
-
-  FLock.BeginWrite;
-  try
-    FWebSockets.Add(TranslatePathToRegEx(Path), WebSocketClass);
   finally
     FLock.EndWrite;
   end;
@@ -758,11 +722,6 @@ begin
   FLock.BeginWrite;
   try
     FExceptionMiddlewareProc := MiddlewareProc;
-  finally
-    FLock.EndWrite;
-  end;
-end;
-
 procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterRequestMiddleware(
   const Name: string;
   const Step: TRequestMiddlewareFunc);
