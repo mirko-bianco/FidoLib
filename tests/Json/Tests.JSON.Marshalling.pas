@@ -615,10 +615,11 @@ begin
   Object2.Id := 2;
   Object2.Name := 'Name 2';
   Object3.Id := 3;
+  Object3.AnArray := TCollections.CreateList<string>(['an item', 'another item']).AsReadOnlyList;
 
   List := TCollections.CreateList<TMyRecord>([Object1, Object2, Object3]);
 
-  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"},{"Id":3,"Name":null}]', JSONMarshaller.From<IReadOnlyList<TMyRecord>>(List.AsReadOnlyList));
+  Assert.AreEqual('[{"Id":1,"Name":"name 1","AnArray":null},{"Id":2,"Name":"name 2","AnArray":null},{"Id":3,"Name":null,"AnArray":["an item","another item"]}]', JSONMarshaller.From<IReadOnlyList<TMyRecord>>(List.AsReadOnlyList));
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToObject;

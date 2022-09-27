@@ -62,6 +62,7 @@ type
     FApiServerResponseFactory: TApiServerResponseFactoryFunc;
     FRequestMiddlewares: IDictionary<string, TRequestMiddlewareFunc>;
     FResponseMiddlewares: IDictionary<string, TResponseMiddlewareProc>;
+    FExceptionMiddlewareProc: TExceptionMiddlewareProc;
     FLock: IReadWriteSync;
     FWebSockets: IDictionary<string, TClass>;
   private
@@ -97,6 +98,7 @@ type
     procedure RegisterWebSocket(const WebSocketClass: TClass); deprecated 'Please use IServerWebSocket';
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
   end;
 
 implementation
@@ -169,6 +171,7 @@ begin
 
   FRequestMiddlewares := TCollections.CreateDictionary<string, TRequestMiddlewareFunc>(TIStringComparer.Ordinal);
   FResponseMiddlewares := TCollections.CreateDictionary<string, TResponseMiddlewareProc>(TIStringComparer.Ordinal);
+  FExceptionMiddlewareProc := DefaultExceptionMiddlewareProc;
 end;
 
 destructor TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.Destroy;
@@ -452,116 +455,81 @@ var
 begin
   PathParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
 
-  if ApiRequest.Method = rmUnknown then
-  begin
-    ApiResponse.SetResponseCode(404, 'Invalid HTTP method.');
-    Exit;
-  end;
+  try
+    if ApiRequest.Method = rmUnknown then
+      raise EApiServer404.Create('Invalid HTTP method.');
 
-  if ApiRequest.MimeType = mtUnknown then
-  begin
-    ApiResponse.SetResponseCode(400, 'Request mime type not supported.');
-    Exit;
-  end;
+    if ApiRequest.MimeType = mtUnknown then
+      raise EApiServer400.Create('Request mime type not supported.');
 
-  if ApiResponse.MimeType = mtUnknown then
-  begin
-    ApiResponse.SetResponseCode(406);
-    Exit;
-  end;
+    if ApiResponse.MimeType = mtUnknown then
+     raise EApiServer400.Create('Response mime type not supported.');
 
-  if ServerWebSocket.DetectLoop(FWebSockets, ApiRequest, ApiResponse, WebSocket) then
-  begin
-    //This will loop until the websocket is active. then it can exit.
-    WebSocket.Run;
-    Exit;
-  end
-  else if FWebServer.Process(ApiRequest, ApiResponse) then
-  begin
-    ApiResponse.SetResponseCode(200, 'OK');
-    Exit;
-  end;
+    if ServerWebSocket.DetectLoop(FWebSockets, ApiRequest, ApiResponse, WebSocket) then
+    begin
+      //This will loop until the websocket is active. then it can exit.
+      WebSocket.Run;
+      Exit;
+    end
+    else if FWebServer.Process(ApiRequest, ApiResponse) then
+    begin
+      ApiResponse.SetResponseCode(200, 'OK');
+      Exit;
+    end;
 
-  if not TryGetEndPoint(ApiRequest, EndPoint) then
-  begin
-    ApiResponse.SetResponseCode(404, 'Endpoint not found.');
-    Exit;
-  end;
+    if not TryGetEndPoint(ApiRequest, EndPoint) then
+      raise EApiServer404.Create('Endpoint not found.');
 
-  if (ApiResponse.MimeType = mtAll) and (High(EndPoint.Produces)>=0) then
-    ApiResponse.SetMimeType(EndPoint.Produces[0]);
-  RttiType := RttiContext.GetType(EndPoint.Instance.AsObject.ClassType);
+    if (ApiResponse.MimeType = mtAll) and (High(EndPoint.Produces)>=0) then
+      ApiResponse.SetMimeType(EndPoint.Produces[0]);
+    RttiType := RttiContext.GetType(EndPoint.Instance.AsObject.ClassType);
 
-  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
-    .Where(function(const Method: TRttiMethod): Boolean
-      begin
-        Result := UpperCase(Method.Name) = UpperCase(EndPoint.MethodName);
-      end)
-    .ForEach(procedure(const Method: TRttiMethod)
-      var
-        Params: TArray<TValue>;
-        Param: TValue;
-        Step: TPair<string, string>;
-        PApiepFunc: TRequestMiddlewareFunc;
-        PostStepProc: TResponseMiddlewareProc;
-        ResponseCode: Integer;
-        ResponseText: string;
-        Result: TValue;
-      begin
-        if not TrySetPathParams(EndPoint, ApiRequest.URI, PathParams) then
+    TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+      .Where(function(const Method: TRttiMethod): Boolean
         begin
-          ApiResponse.SetResponseCode(400, 'Bad number or type of path parameters.');
-          Exit;
-        end;
-
-        if not TrySetMethodParams(ApiRequest, PathParams, EndPoint, Params) then
+          Result := UpperCase(Method.Name) = UpperCase(EndPoint.MethodName);
+        end)
+      .ForEach(procedure(const Method: TRttiMethod)
+        var
+          Params: TArray<TValue>;
+          Param: TValue;
+          Step: TPair<string, string>;
+          PApiepFunc: TRequestMiddlewareFunc;
+          PostStepProc: TResponseMiddlewareProc;
+          ResponseCode: Integer;
+          ResponseText: string;
+          Result: TValue;
         begin
-          ApiResponse.SetResponseCode(400, 'Bad number or type of parameters.');
-          Exit;
-        end;
+          if not TrySetPathParams(EndPoint, ApiRequest.URI, PathParams) then
+            raise EApiServer400.Create('Bad number or type of path parameters.');
 
-        try
-          for Step in Endpoint.PreProcessPipelineSteps do
-            if not FRequestMiddlewares.TryGetValue(Step.Key, PApiepFunc) then
-              raise EFidoApiException.Create('RequestMiddleware ' + Step.Key + ' not found.')
-            else if not PApiepFunc(Step.Value, ApiRequest, ResponseCode, ResponseText) then
+          if not TrySetMethodParams(ApiRequest, PathParams, EndPoint, Params) then
+            raise EApiServer400.Create('Bad number or type of parameters.');
+
+          try
+            for Step in Endpoint.PreProcessPipelineSteps do
+              if not FRequestMiddlewares.TryGetValue(Step.Key, PApiepFunc) then
+                raise EFidoApiException.Create('RequestMiddleware ' + Step.Key + ' not found.')
+              else if not PApiepFunc(Step.Value, ApiRequest, ResponseCode, ResponseText) then
+              begin
+                ApiResponse.SetResponseCode(ResponseCode, ResponseText);
+                Exit;
+              end;
+
+            Result := Method.Invoke(EndPoint.Instance, Params);
+
+            for Step in Endpoint.PostProcessPipelineSteps do
             begin
-              ApiResponse.SetResponseCode(ResponseCode, ResponseText);
-              Exit;
+              if not FResponseMiddlewares.TryGetValue(Step.Key, PostStepProc) then
+                raise EFidoApiException.Create('ResponseMiddleware ' + Step.Key + ' not found.');
+              PostStepProc(Step.Value, ApiRequest, ApiResponse)
             end;
 
-          Result := Method.Invoke(EndPoint.Instance, Params);
-
-          for Step in Endpoint.PostProcessPipelineSteps do
-          begin
-            if not FResponseMiddlewares.TryGetValue(Step.Key, PostStepProc) then
-              raise EFidoApiException.Create('ResponseMiddleware ' + Step.Key + ' not found.');
-            PostStepProc(Step.Value, ApiRequest, ApiResponse)
+            UpdateResponse(Method, Result, ApiResponse, EndPoint, Params);
+          except
+            on E: Exception do
+              FExceptionMiddlewareProc(E);
           end;
-
-          UpdateResponse(Method, Result, ApiResponse, EndPoint, Params);
-
-        except
-          on E: EApiServer400 do
-            ApiResponse.SetResponseCode(400, 'Bad request.');
-          on E: EApiServer401 do
-            ApiResponse.SetResponseCode(401, 'Unhautorized.');
-          on E: EApiServer403 do
-            ApiResponse.SetResponseCode(403, 'Forbidden.');
-          on E: EApiServer404 do
-            ApiResponse.SetResponseCode(404, 'Not found.');
-          on E: EApiServer409 do
-            ApiResponse.SetResponseCode(409, 'Conflict.');
-          on E: EApiServer500 do
-            ApiResponse.SetResponseCode(500, 'Internal server error.');
-          on E: EApiServer503 do
-            ApiResponse.SetResponseCode(503, 'Service not available.');
-          on E: EApiServer504 do
-            ApiResponse.SetResponseCode(504, 'Gateway timeout.');
-          else
-            raise;
-          Exit;
-        end;
 
         if Result.IsObject then
           Result.AsObject.Free;
@@ -570,6 +538,13 @@ begin
             Param.AsObject.Free;
         Exit;
       end);
+  except
+    on E: EApiServer do
+      ApiResponse.SetResponseCode(E.Code, E.ShortMsg)
+    else
+      raise;
+    Exit;
+  end;
 end;
 
 procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterResource(const Resource: TObject);
@@ -773,6 +748,16 @@ begin
   FLock.BeginWrite;
   try
     FWebSockets.Add(TranslatePathToRegEx(Path), WebSocketClass);
+  finally
+    FLock.EndWrite;
+  end;
+end;
+
+procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
+begin
+  FLock.BeginWrite;
+  try
+    FExceptionMiddlewareProc := MiddlewareProc;
   finally
     FLock.EndWrite;
   end;

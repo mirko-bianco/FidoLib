@@ -858,6 +858,7 @@ A server is the engine that will respond to incoming requests. Fido library prov
     procedure RegisterWebSocket(const WebSocketClass: TClass);
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const Middleware: TExceptionMiddlewareProc);
   end;
 ```
 
