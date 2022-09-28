@@ -712,16 +712,16 @@ begin
     end);
 end;
 
-  finally
-    FLock.EndWrite;
-  end;
-end;
-
 procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
 begin
   FLock.BeginWrite;
   try
     FExceptionMiddlewareProc := MiddlewareProc;
+  finally
+    FLock.EndWrite;
+  end;
+end;
+
 procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterRequestMiddleware(
   const Name: string;
   const Step: TRequestMiddlewareFunc);
