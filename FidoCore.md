@@ -1886,7 +1886,7 @@ Since pure memoization is not always optimal, FidoLib supports three types of ca
 - **FIFO**. The cache has a limited size. when the size is reached the first item that was added is removed.
 - **Usage**. The cache has a limited size. when the size is reached the items that are added/accessed the last are kept.
 
-When an item in the cache becomes stale it can be forced by using the `.ForceIt` method.
+When an item in the cache becomes stale its value can be forced by using the `.ForceIt` method.
 
 Caching is supported for functions up to four parameters:
 
