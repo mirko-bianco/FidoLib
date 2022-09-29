@@ -224,6 +224,15 @@ contains
   Fido.Web.Client.WebSocket.SignalR in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.pas',
   Fido.Web.Client.WebSocket.SignalR.Types in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.Types.pas',
   Fido.Web.Client.WebSocket.TcpClient.Intf in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.Intf.pas',
-  Fido.Web.Client.WebSocket.TcpClient in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas';
+  Fido.Web.Client.WebSocket.TcpClient in 'Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas',
+  Fido.Currying in 'Fido.Currying.pas',
+  Fido.Caching.FourParams in 'Caching\Fido.Caching.FourParams.pas',
+  Fido.Caching.Intf in 'Caching\Fido.Caching.Intf.pas',
+  Fido.Caching.OneParam.FIFO in 'Caching\Fido.Caching.OneParam.FIFO.pas',
+  Fido.Caching.OneParam.Memoize in 'Caching\Fido.Caching.OneParam.Memoize.pas',
+  Fido.Caching.OneParam.Usage in 'Caching\Fido.Caching.OneParam.Usage.pas',
+  Fido.Caching.ThreeParams in 'Caching\Fido.Caching.ThreeParams.pas',
+  Fido.Caching.TwoParams in 'Caching\Fido.Caching.TwoParams.pas',
+  Fido.Caching in 'Caching\Fido.Caching.pas';
 
 end.

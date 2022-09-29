@@ -163,6 +163,11 @@ type
     property IsFunction: boolean read GetIsFunction;
   end;
 
+  TOneParamFunction<P, R> = reference to function(const Parameter: P): R;
+  TTwoParamsFunction<P1, P2, R> = reference to function(const Parameter1: P1; const Parameter2: P2): R;
+  TThreeParamsFunction<P1, P2, P3, R> = reference to function(const Parameter1: P1; const Parameter2: P2; const Parameter3: P3): R;
+  TFourParamsFunction<P1, P2, P3, P4, R> = reference to function(const Parameter1: P1; const Parameter2: P2; const Parameter3: P3; const Parameter4: P4): R;
+
 implementation
 
 { TDatasetFieldAttribute }
