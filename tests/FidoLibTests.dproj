@@ -238,6 +238,7 @@
         <DCCReference Include="Http\Fido.Http.Utils.Test.pas"/>
         <DCCReference Include="Fido.Functional.Tests.pas"/>
         <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.Websocket.Test.pas"/>
+        <DCCReference Include="Json\Tests.JSON.Mapping.pas"/>
         <DCCReference Include="Fido.Currying.Test.pas"/>
         <DCCReference Include="Fido.Caching.test.pas"/>
         <BuildConfiguration Include="Base">

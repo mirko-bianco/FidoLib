@@ -684,7 +684,7 @@ begin
     begin
       Result := Value.ToUpper;
     end,
-    function(const Value: string): string
+    function(const Value: string; const TypInfo: pTypeInfo): string
     begin
       Result := Value.ToLower;
     end,
@@ -704,7 +704,7 @@ begin
     begin
       Result := Format('{"name": "%s"}', [Value.Name.Value]);
     end,
-    function(const Value: string): TMyRecord
+    function(const Value: string; const TypInfo: pTypeInfo): TMyRecord
     begin
       Result.Id := 1;
       Result.Name := Value;

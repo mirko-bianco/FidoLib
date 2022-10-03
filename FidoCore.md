@@ -213,7 +213,7 @@ Let's say you don't want to encode your datetimes in ISO8601 (the standard mappi
     begin
       Result := DateToMyFormat(Value);
     end,
-    function(const Value: string): TDateTime
+    function(const Value: string; const TypInfo: pTypeInfo): TDateTime
     var
       DateTimeValue: TDateTime;
     begin
@@ -240,8 +240,6 @@ You can also override the default mapping for enumeratives (that by default uses
     end);
 ```
 
-
-
 ##### Mapping classes and interfaces
 
 Fido library will unmarshal classes and interfaces, adopting the following rules:
@@ -259,6 +257,25 @@ Fido library will marshall classes, adopting the following rules:
 
 - Only published parameter-less functions are used
 - Only published readable properties will be used
+
+It happens that you want to use your own marshalling/unmarshalling for your classes (although I don't understand why since Fido mechanism is amazing! :) ). In this case you can override the registration for a specific class:
+
+```pascal
+  uses
+    Fido.JSON.Mapping;
+    
+  MappingsUtilities.RegisterType<TMyClass>(
+    function(const Value: TMyClass): string
+    begin
+      // Whatever implementation you like
+    end,
+    function(const Value: string; const TypInfo: pTypeInfo): TMyClass
+    begin
+      // whatever implementation you like
+    end);
+```
+
+**IMPORTANT**: The marshalling will use the mapping if the class is the same OR if it is a descendent of the registered class. Long story short you do not need to register all of the classes, but just the ancestor.
 
 ##### Usage
 
