@@ -184,6 +184,7 @@ begin
       if Trim(MimeLine.Value[0].ToUpper) = StringMimeType.ToUpper then
       begin
         Found := True;
+        FMimeType := TMimeType(MimeTypeIndex);
         Break;
       end;
     end;
@@ -191,9 +192,6 @@ begin
     if Found then
       Break
   end;
-
-  if Found then
-    FMimeType := TMimeType(MimeTypeIndex);
 
   StringsToDictionary(RequestInfo.RawHeaders, FHeaderParams);
 
