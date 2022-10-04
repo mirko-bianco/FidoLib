@@ -30,6 +30,7 @@ uses
   System.Generics.Collections,
   FireDAC.Comp.Client,
   FireDAC.Stan.Intf,
+  FireDAC.Stan.Option,
 
   Spring.Collections,
 
@@ -67,6 +68,7 @@ begin
       Result.Params.Clear;
       Result.Params.AddStrings(FFireDacConnections.GetUpdateableValue);
       Result.LoginPrompt := False;
+      Result.FetchOptions.Mode := fmAll;
       with Result.FormatOptions.MapRules.Add do
       begin
         SourceDataType := dtByteString;
