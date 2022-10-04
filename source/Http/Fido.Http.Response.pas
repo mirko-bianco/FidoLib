@@ -170,7 +170,7 @@ begin
   Accepts.Value.DelimitedText := RequestInfo.Accept;
 
   Found := False;
-  MimeTypeIndex := -1;
+  FMimeType := mtDefault;
   for I := 0 to Accepts.Value.Count - 1 do
   begin
     MimeLine := TStringList.Create;
