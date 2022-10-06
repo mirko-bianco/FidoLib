@@ -39,7 +39,6 @@ uses
   Fido.Redis.Client.Intf;
 
 type
-
   TRedisKVStore = class(TInterfacedObject, IKVStore)
   private var
     FKeyPrefix: string;
@@ -49,7 +48,7 @@ type
 
     function Is1(const Value: Integer): Boolean;
     function DoDelete(const Timeout: Cardinal): Context<string>.MonadFunc<Integer>;
-    function DoGet(const Timeout: Integer): Context<string>.MonadFunc<Nullable<string>>;
+    function DoGet(const Timeout: Integer): Context<string>.FunctorFunc<string>;
     function GetValueOrDefault(const Value: Nullable<string>): string;
     function DoPut(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Boolean>;
   public
@@ -89,7 +88,12 @@ function TRedisKVStore.Delete(
   const Key: string;
   const Timeout: Cardinal): Context<Boolean>;
 begin
-  Result := Retry<string>.New(Context<string>.New(Key).Map<string>(FormatKey)).Map<Integer>(DoDelete(Timeout), Retries.GetRetriesOnExceptionFunc()).Map<Boolean>(Is1);
+  Result := Retry<string>.
+    New(Context<string>.
+      New(Key).
+      Map<string>(FormatKey)).
+    Map<Integer>(DoDelete(Timeout), Retries.GetRetriesOnExceptionFunc()).
+    Map<Boolean>(Is1);
 end;
 
 function TRedisKVStore.FormatKey(const Key: string): string;
@@ -97,14 +101,14 @@ begin
   Result := Format('%s%s', [FKeyPrefix, Key]);
 end;
 
-function TRedisKVStore.DoGet(const Timeout: Integer): Context<string>.MonadFunc<Nullable<string>>;
+function TRedisKVStore.DoGet(const Timeout: Integer): Context<string>.FunctorFunc<string>;
 var
   Client: IFidoRedisClient;
 begin
   Client := FRedisClient;
-  Result := function(const Key: string): Context<Nullable<string>>
+  Result := function(const Key: string): string
   begin
-    Result := Client.GET(Key, Timeout);
+    Result := Client.GET(Key, Timeout).Map<string>(GetValueOrDefault);
   end;
 end;
 
@@ -117,7 +121,11 @@ function TRedisKVStore.Get(
   const Key: string;
   const Timeout: Cardinal): Context<string>;
 begin
-  Result := Retry<string>.New(Context<string>.New(Key).Map<string>(FormatKey)).Map<Nullable<string>>(DoGet(Timeout), Retries.GetRetriesOnExceptionFunc()).Map<string>(GetValueOrDefault);
+  Result := Retry<string>.
+    New(Context<string>.
+      New(Key).
+      Map<string>(FormatKey)).
+    Map<string>(DoGet(Timeout), Retries.GetRetriesOnExceptionFunc());
 end;
 
 function TRedisKVStore.Is1(const Value: Integer): Boolean;
@@ -142,7 +150,9 @@ function TRedisKVStore.Put(
   const Value: string;
   const Timeout: Cardinal): Context<Boolean>;
 begin
-  Result := Retry<TArray<string>>.New([FormatKey(Key), Value]).Map<Boolean>(DoPut(Timeout), Retries.GetRetriesOnExceptionFunc());
+  Result := Retry<TArray<string>>.
+    New([FormatKey(Key), Value]).
+    Map<Boolean>(DoPut(Timeout), Retries.GetRetriesOnExceptionFunc());
 end;
 
 end.

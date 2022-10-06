@@ -6,6 +6,8 @@ uses
   System.Classes,
   System.SysUtils,
   System.JSON,
+  System.TypInfo,
+  System.Rtti,
 
   Spring,
   Spring.Logging,
