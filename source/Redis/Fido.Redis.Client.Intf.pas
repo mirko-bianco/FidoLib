@@ -30,7 +30,6 @@ uses
   Spring,
 
   Redis.Commons,
-  Redis.Values,
 
   Fido.Functional;
 

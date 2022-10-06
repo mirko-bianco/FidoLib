@@ -256,7 +256,7 @@ begin
        if not DestValue.TryAsType<TB>(GenericDest) then
          raise EFidoMappingException.CreateFmt('Cannot resolve type "%s"', [DestValue.TypeInfo.Name]);
       MapProc(GenericSource, GenericDest);
-      if DestValue.IsEmpty then
+      if DestValue.IsEmpty or (DestValue.Kind = tkRecord) or (DestValue.Kind = tkMRecord) then
         DestValue := TValue.From<TB>(GenericDest);
 
     end;
