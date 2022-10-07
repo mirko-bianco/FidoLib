@@ -33,9 +33,9 @@ uses
 
 type
   TBaseTransactionHandler = class (TInterfacedObject, ITransactionHandler)
-  private
-    procedure TestNesting(const Commiting: boolean; const ID: integer);
   protected
+    procedure TestNesting(const Commiting: boolean; const ID: integer);
+
     procedure RaiseError(const Msg: string; const Args: array of const);
     procedure DoStart; virtual;
     procedure DoCommit; virtual;
