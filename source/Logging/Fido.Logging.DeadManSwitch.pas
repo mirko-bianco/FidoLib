@@ -33,7 +33,6 @@ uses
   Spring.Logging,
   Spring.Logging.Appenders.Base,
 
-  Fido.Async.Procs,
   Fido.Logging.Types,
   Fido.Api.Client.VirtualApi.ElasticSearch.Document.Intf,
   Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Request;

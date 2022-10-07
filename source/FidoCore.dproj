@@ -206,8 +206,6 @@
         <DCCReference Include="Fido.Utilities.pas"/>
         <DCCReference Include="Fido.VirtualInterface.pas"/>
         <DCCReference Include="Collections\Fido.Collections.PerThreadDictionary.pas"/>
-        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Loop.Intf.pas"/>
-        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Loop.Abstract.pas"/>
         <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Tool.pas"/>
         <DCCReference Include="Fido.Types.TGuid.Variant.pas"/>
         <DCCReference Include="Logging\Fido.Logging.DeadManSwitch.pas"/>
@@ -276,14 +274,8 @@
         <DCCReference Include="Web\Server\Fido.Web.Server.Null.pas"/>
         <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Retries.pas"/>
         <DCCReference Include="Fido.Boxes.pas"/>
-        <DCCReference Include="Async\Fido.Async.Funcs.pas"/>
-        <DCCReference Include="Async\Fido.Async.Procs.pas"/>
         <DCCReference Include="Api\Server\Fido.Api.Server.Abstract.pas"/>
         <DCCReference Include="Logging\Fido.Logging.Appenders.PermanentFile.pas"/>
-        <DCCReference Include="Slots\Fido.Slots.Attributes.pas"/>
-        <DCCReference Include="Slots\Fido.Slots.Binding.pas"/>
-        <DCCReference Include="Slots\Fido.Slots.Intf.pas"/>
-        <DCCReference Include="Slots\Fido.Slots.pas"/>
         <DCCReference Include="Collections\Fido.Collections.PerXDictionary.Intf.pas"/>
         <DCCReference Include="Db\Fido.Db.Connections.FireDac.PerThread.pas"/>
         <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.AgentService.V1.Intf.pas"/>
@@ -345,6 +337,15 @@
         <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.Types.pas"/>
         <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.Intf.pas"/>
         <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas"/>
+        <DCCReference Include="Fido.Currying.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.FourParams.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.Intf.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.OneParam.FIFO.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.OneParam.Memoize.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.OneParam.Usage.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.ThreeParams.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.TwoParams.pas"/>
+        <DCCReference Include="Caching\Fido.Caching.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

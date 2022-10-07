@@ -4,8 +4,7 @@ interface
 
 uses
   Fido.Http.Types,
-  Fido.Api.Server.Resource.Attributes,
-  Fido.Web.Server.WebSocket.Loop.Intf;
+  Fido.Api.Server.Resource.Attributes;
 
 type
   {$M+}

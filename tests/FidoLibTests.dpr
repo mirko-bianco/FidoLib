@@ -36,9 +36,6 @@ uses
   Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test in 'DesignPatterns\Fido.DesignPatterns.Adapter.JsonArrayAsReadonlyList.Test.pas',
   Fido.DesignPatterns.Retries.Test in 'DesignPatterns\Fido.DesignPatterns.Retries.Test.pas',
   Fido.Boxes.Test in 'Fido.Boxes.Test.pas',
-  Fido.Async.Funcs.Test in 'Async\Fido.Async.Funcs.Test.pas',
-  Fido.Async.Procs.Test in 'Async\Fido.Async.Procs.Test.pas',
-  Fido.Slots.Binding.Tests in 'Slots\Fido.Slots.Binding.Tests.pas',
   Fido.Consul.KVStore.Test in 'Consul\Fido.Consul.KVStore.Test.pas',
   Fido.Consul.Service.Test in 'Consul\Fido.Consul.Service.Test.pas',
   Fido.EventsDriven.Listener.Queue.Test in 'EventsDriven\Fido.EventsDriven.Listener.Queue.Test.pas',
@@ -59,7 +56,9 @@ uses
   Fido.Utilities.Test in 'Fido.Utilities.Test.pas',
   Fido.Http.Utils.Test in 'Http\Fido.Http.Utils.Test.pas',
   Fido.Functional.Tests in 'Fido.Functional.Tests.pas',
-  Fido.Web.Client.Websocket.Test in 'Web\Client\WebSocket\Fido.Web.Client.Websocket.Test.pas';
+  Fido.Web.Client.Websocket.Test in 'Web\Client\WebSocket\Fido.Web.Client.Websocket.Test.pas',
+  Fido.Currying.Test in 'Fido.Currying.Test.pas',
+  Fido.Caching.test in 'Fido.Caching.test.pas';
 
 {$IFNDEF TESTINSIGHT}
 var

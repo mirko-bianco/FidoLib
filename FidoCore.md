@@ -11,11 +11,10 @@ Below is a list of the most important features:
 - [Websockets](#websockets)
 - [Consul and Fabio support](#consul-and-fabio-support)
 - [Boxes](#boxes)
-- [Async procedures](#async-procedures) **[Deprecated]**
-- [Async functions](#async-functions) **[Deprecated]**
-- [Signals and slots](#signals-and-slots) **[Deprecated]**
 - [Events driven architecture](#events-driven-architecture)
 - [Functional programming](#functional-programming)
+- [Currying](#Currying)
+- [Caching](#Caching)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -858,6 +857,7 @@ A server is the engine that will respond to incoming requests. Fido library prov
     procedure RegisterWebSocket(const WebSocketClass: TClass);
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const Middleware: TExceptionMiddlewareProc);
   end;
 ```
 
@@ -1387,294 +1387,6 @@ end;
 
 ```
 
-
-
-### Async procedures
-
- **[Deprecated]** Please use functional programming features
-
-Unit `Fido.Async.Procs`.
-
-Async procedures let you run a procedure or a sequence of procedures in a separate thread. You can use three different approaches:
-
-- *fire and forget*. A separate task is created and executed without the caller having any control of how and when it will terminate.
-- *fire and get ITask*. A separate task is created and executed and the caller gets an `ITask` that the caller can use.
-- *fire and wait*. A separate task is created and executed, and the caller waits for the `Resolve` method to finish to know the final status of the async procedure.
-
-##### Usage
-
-```pascal
-var
-  AsyncProc: IAsyncProc;
-  Task: ITask;
-  FinalStatus: TAsyncProcStatus;
-begin
-  AsyncProc := AsyncProcs.
-    Queue(
-      procedure
-      begin
-        //First step
-      end).
-    &Then(
-      procedure
-      begin
-        //Second step
-      end). 
-    &Then(
-      procedure
-      begin
-        //Third step
-      end).
-    Within(100, //Ms
-      procedure
-      begin
-        //What to do if it expires
-      end).
-    Catch(
-      procedure(const E: Exception)
-      begin
-        //What to do in case of exception
-      end);
-
-  AsyncProc.Run; //Fire and forget
-  
-  Task := AsyncProc.Run.Task; //Fire and get ITask
-  
-  FinalStatus := AsyncProc.Run.Resolve; //Fire and wait
-end;
-```
-
-
-
-### Async functions
-
-**[Deprecated]** Please use functional programming features
-
-Unit `Fido.Async.Funcs`.
-
-Async functions let you run a function or a sequence of functions in a separate thread. You can use three different approaches:
-
-- *fire and forget*. A separate task is created and executed without the caller having any control of how and when it will terminate.
-- *fire and get ITask*. A separate task is created and executed and the caller gets an `ITask` that the caller can use.
-- *fire and wait*. A separate task is created, and executed and the caller waits for the `Resolve` method to finish to know the final status and value of the async function.
-
-##### Usage
-
-```pascal
-var
-  AsyncFunc: IAsyncFunc<Integer, string>;
-  Future: ITask;
-  FuncResult: TAsyncFuncResult<string>;
-begin
-  AsyncFunc := AsyncFunc<Integer, string>.
-    Queue(
-      AsyncFuncMapping.Action<Integer, Integer>(function(const Value: Integer): Extended
-      begin
-        //First Step from Integer (input type) to Extended
-      end)).
-    &Then(
-      AsyncFuncMapping.Action<Extended, Boolean>(function(const Value: Extended): Boolean
-      begin
-        //Second Step from Extended to Boolean
-      end)). 
-    &Then(
-      AsyncFuncMapping.Action<Boolean, string>(function(const Value: Boolean): string
-      begin
-        //Final Step from Boolean to string (result type)
-      end)).
-    Within(100, //Ms
-      function: string
-      begin
-        //What to do and/or return if it expires.
-        //If the function raises an exception then the status will still be expired, otherwise it will be finished
-      end).
-    Catch(
-      function(const E: Exception): string
-      begin
-        //What to do and/or return in case of exception
-      end);
-
-  AsyncFunc.Run(100); //Fire and forget
-  
-  Future := AsyncFunc.Run(100).Task; //Fire and get ITask
-  
-  FuncResult := AsyncProc.Run(100).Resolve; //Fire and wait
-end;
-```
-
-## Signals and slots
-
-**[Deprecated]** Please use the the Intra-Memory Events Driven Architecture implementation
-
-Unit: `Fido.Slots.Intf`.
-
-When you work with MVVM, it is easy to consume the View model from the View. The binding functionalities from [FidoGui](./FidoGui.md) allow you to easily bind components and entities (or other components). But, to be really workable, a solution should also provide a mechanism to link, without coupling, the View model to the View (or two components that are not supposed to see each other).
-
-We based our functionalities on the signal and slots from the Qt C++ library.
-
-##### The mechanism
-
-The mechanism is pretty simple:
-
-- Signals are messages broadcasted by an `IObserver` 
-- Signals values must be formatted as `TArray<TValue>`
-- Slots can be either a `Spring.TAction<TArray<TValue>>`, or a `public` procedure whose parameters are compatible with the signal. If the signal values are not in the same format, there is the possibility to map the values to the parameters required by the slot.  
-- The signal can contain a number of parameters greater than the number required by the slot.
-
-##### Usage
-
-You can bind signals and slots in two ways:
-
-The first is by code:
-
-```pascal
-type
-  TMainView = class(TForm)
-    ...
-  private
-    FTokenScheduler: ITokenScheduler;
-    FSlots: ISlots;
-    FViewModel: IMainViewModel;
-
-    ...
-    procedure SetupTokenSchedulerSlots;
-    procedure SetupViewModelSlots;
-  public
-    ...
-    procedure SetMemo(const Text: string);
-    procedure OnLogStatusChanged(const Logged: Boolean);
-  end;
-  
-implementation
-
-...
-
-procedure TMainView.SetupTokenSchedulerSlots;
-begin
-  // When the FTokenScheduler broadcasts the LOGGED_MESSAGE message the MainView.OnLogStatusChanged procedure will be called
-  Slots.RegisterWithClass<TMainView>(
-    FSlots,
-    FTokenScheduler,
-    LOGGED_MESSAGE,
-    ftSynched,
-    Self,
-    'OnLogStatusChanged',
-    function(params: TArray<TValue>): TArray<TValue>
-    begin
-      SetLength(Result, 1);
-      Result[0] := Params[0].AsType<Integer> = 1; // Converts from Integer to Boolean; 
-    end);
-    
-  // When the FTokenScheduler broadcasts the TOKEN_CHANGED_MESSAGE message the MainView.SetMemo procedure will be called
-  Slots.RegisterWithClass<TMainView>(
-    FSlots,
-    FTokenScheduler,
-    TOKEN_CHANGED_MESSAGE,
-    ftSynched,
-    Self,
-    'SetMemo');
-
-  // When the FTokenScheduler broadcasts the TOKEN_REFRESH_FAILED_MESSAGE message the anonymous action will be called.
-  FSlots.Register(
-    FTokenScheduler,
-    TOKEN_REFRESH_FAILED_MESSAGE,
-    ftSynched,
-    procedure(const Params: TArray<TValue>)
-    var
-      Exc: Exception;
-    begin
-      Exc := Params[0].AsType<Exception>;
-      if Exc is EFidoClientApiException then
-        TDialogService.MessageDialog(
-          Format('[%d] %s', [(Exc as EFidoClientApiException).ErrorCode, (Exc as EFidoClientApiException).ErrorMessage]),
-          TMsgDlgType.mtError,
-          [TMsgDlgBtn.mbOK],
-          TMsgDlgBtn.mbOK,
-          0,
-          nil)
-      else
-        TDialogService.MessageDialog(
-          Exc.Message,
-          TMsgDlgType.mtError,
-          [TMsgDlgBtn.mbOK],
-          TMsgDlgBtn.mbOK,
-          0,
-          nil)
-    end);
-end;
-
-procedure TMainView.SetupViewModelSlots;
-begin
-  // When theFViewModel broadcasts the VIEW_BUSY_MESSAGE message the anonymous action will be called.
-  FSlots.Register(
-    FViewModel,
-    VIEW_BUSY_MESSAGE,
-    ftSynched,
-    procedure(const Params: TArray<TValue>)
-    var
-      Busy: Boolean;
-    begin
-      Busy := Params[0].AsType<Boolean>;
-
-      MainToolBar.Enabled := not Busy;
-
-      if Busy then
-        Self.OnCloseQuery := FormCloseQueryNo
-      else
-        Self.OnCloseQuery := FormCloseQueryYes;
-    end);
-end;
-```
-
-The second one is by attributes, but in this case there is not parameters overriding functionality:
-
-```pascal
-type
-  TMainView = class(TForm)
-    ...
-  private
-    FTokenScheduler: ITokenScheduler;
-    FSlots: ISlots;
-    FViewModel: IMainViewModel;
-    ....
-
-    procedure SetupTokenSchedulerSlots;
-    procedure SetupViewModelSlots;
-  public
-    ...
-
-    [SignalToSlot('FTokenScheduler', TOKEN_CHANGED_MESSAGE, ftSynched)]
-    procedure OnTokenChanged(const Text: string);
-    [SignalToSlot('FTokenScheduler', LOGGED_MESSAGE, ftSynched)]
-    procedure OnLogStatusChanged(const Logged: Boolean);
-    [SignalToSlot('FTokenScheduler', TOKEN_REFRESH_FAILED_MESSAGE, ftSynched)]
-    procedure OnTokenRefreshFailed(const E: Exception);
-    [SignalToSlot('FViewModel', VIEW_BUSY_MESSAGE, ftSynched)]
-    procedure OnBusyChange(const Busy: Boolean);
-
-    ...
-  end; 
-  
-implementation
-
-...
-
-procedure TMainView.SetupTokenSchedulerSlots;
-begin
-  Slots.Register(FSlots, FTokenScheduler, Self)
-end;
-
-procedure TMainView.SetupViewModelSlots;
-begin
-  Slots.Register(FSlots, FViewModel, Self)
-end;
-```
-
-Slots can be of two types:
-
-- `stSynched`, the slot will be synchronized with the main thread  
-- `stNotSynched`, the slot will not be synchronized with the main thread.
-
 ## Events driven architecture
 
 Units folder: `EventsDriven`.
@@ -2141,5 +1853,126 @@ begin
     );
   
   ...
+```
+
+## Currying
+
+Units: `Fido.Currying`.
+
+Currying allows you to transform a function with multiple parameters in sequence of one-parameter functions.
+
+FidoLib allows you to do that by using the Currying tool:
+
+```pascal
+function Add(const P1: Integer; const P2: Integer): Integer;
+begin
+  Result := P1 + P2;
+end;
+  
+begin
+  Result := Writeln(Curry.Cook<Integer, Integer, Integer>(Add)(1)(2)); //This will return 3
+end;
+```
+
+## Caching
+
+Units: `Fido.caching.Intf`,  `Fido.caching`.
+
+FidoLib support a "functional" caching. That means you can cache the results of functions... basically memoizing.
+
+Since pure memoization is not always optimal, FidoLib supports three types of caching:
+
+- **Memoization**. The cache has no limit.
+- **FIFO**. The cache has a limited size. when the size is reached the first item that was added is removed.
+- **Usage**. The cache has a limited size. when the size is reached the items that are added/accessed the last are kept.
+
+When an item in the cache becomes stale its value can be forced by using the `.ForceIt` method.
+
+Caching is supported for functions up to four parameters:
+
+```pascal
+  IOneParamCache<P, R> = Interface(IInvokable)
+    ['{60819F67-2B66-46BA-8F78-22C3597E4FEB}']
+
+    // It executes the function if it has not been cached yet and then caches it, otherwise retrieves the value from the cache
+    function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    // ForceIt always executes the function and then caches it. Useful when you want to re-cache stale data
+    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+  end;
+
+  ITwoParamsCache<P1, P2, R> = interface(IInvokable)
+    ['{BCD8DB8D-25A8-4991-B1FB-B6213B03A556}']
+
+    function It(const AFunction: TTwoParamsFunction<P1, P2, R>; const Param1: P1; const Param2: P2): R;
+    function ForceIt(const AFunction: TTwoParamsFunction<P1, P2, R>; const Param1: P1; const Param2: P2): R;
+  end;
+
+  IThreeParamsCache<P1, P2, P3, R> = interface(IInvokable)
+    ['{DDC1A3B3-8E6E-4F1B-BFC8-474D7F186237}']
+
+    function It(const AFunction: TThreeParamsFunction<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
+    function ForceIt(const AFunction: TThreeParamsFunction<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
+  end;
+
+  IFourParamsCache<P1, P2, P3, P4, R> = interface(IInvokable)
+    ['{6C1E8BDD-9805-4095-8179-BC0230F9EC19}']
+
+    function It(const AFunction: TFourParamsFunction<P1, P2, P3, P4, R>; const Param1: P1; const Param2: P2; const Param3: P3; const Param4: P4): R;
+    function ForceIt(const AFunction: TFourParamsFunction<P1, P2, P3, P4, R>; const Param1: P1; const Param2: P2; const Param3: P3; const Param4: P4): R;
+  end;
+```
+
+An example of usage: 
+
+```pascal
+program CachingExample;
+
+{$APPTYPE CONSOLE}
+
+{$R *.res}
+
+uses
+  Fido.Caching.Intf,
+  Fido.Caching;
+
+type
+  TCalculator = class
+  private
+    FAddCache: ITwoParamsCache<Integer, Integer, Integer>;
+    function DoAdd(const Param1: Integer; const Param2: Integer): Integer;
+  public
+    constructor Create;
+
+    function Add(const Param1: Integer; const Param2: Integer): Integer;
+  end;
+
+{ TCalculator }
+
+constructor TCalculator.Create;
+begin
+  inherited;
+  FAddCache := Caching.TwoParams.Memoize<Integer, Integer, Integer>;
+end;
+
+function TCalculator.DoAdd(const Param1, Param2: Integer): Integer;
+begin
+  Result := Param1 + Param2;
+end;
+
+function TCalculator.Add(const Param1, Param2: Integer): Integer;
+begin
+  Result := FAddCache.It(DoAdd, Param1, Param2);
+end;
+
+var
+  Calculator: TCalculator;
+begin
+  Calculator := TCalculator.Create;
+
+  Writeln(Calculator.Add(1, 1));
+  Writeln(Calculator.Add(1, 2));
+  Writeln(Calculator.Add(1, 1));
+  Readln;
+end.
 ```
 

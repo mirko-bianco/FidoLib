@@ -1,5 +1,5 @@
 (*
- * Copyright 2021 Mirko Bianco (email: writetomirko@gmail.com)
+ * Copyright 2022 Mirko Bianco (email: writetomirko@gmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,35 +20,62 @@
  * SOFTWARE.
  *)
 
-unit Fido.Web.Server.WebSocket.Tool;
+unit Fido.Caching.OneParam.Memoize;
 
 interface
 
 uses
-  System.RegularExpressions,
   System.SysUtils,
-  System.Rtti,
 
   Spring.Collections,
 
-  Fido.Http.Request.Intf,
-  Fido.Http.Response.Intf,
-
-  Fido.Web.Server.WebSocket,
-  Fido.Web.Server.WebSocket.Intf;
+  Fido.Types,
+  Fido.Caching.Intf;
 
 type
-  WebSocketServer = class
-    class function GetFor<T>(const Server: IWebSocketServer): IWebSocketServer<T>;
+  TMemoizeOneParam<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
+  private var
+    FLock: IReadWriteSync;
+    FMap: IDictionary<P, R>;
+  public
+    constructor Create;
+    function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
   end;
 
 implementation
 
-{ WebSocketServer }
+{ TMemoizeOneParam<P, R> }
 
-class function WebSocketServer.GetFor<T>(const Server: IWebSocketServer): IWebSocketServer<T>;
+constructor TMemoizeOneParam<P, R>.Create;
 begin
-  Result := TWebSocketServer<T>.Create(Server);
+  inherited;
+  FLock := TMREWSync.Create;
+  FMap := TCollections.CreateDictionary<P, R>;
+end;
+
+function TMemoizeOneParam<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+begin
+  FLock.BeginWrite;
+  try
+    Result := AFunction(Param);
+    FMap[Param] := Result;
+  finally
+    FLock.EndWrite;
+  end;
+end;
+
+function TMemoizeOneParam<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+begin
+  FLock.BeginWrite;
+  try
+    if FMap.TryGetValue(Param, Result) then
+      Exit;
+    Result := AFunction(Param);
+    FMap[Param] := Result;
+  finally
+    FLock.EndWrite;
+  end;
 end;
 
 end.
