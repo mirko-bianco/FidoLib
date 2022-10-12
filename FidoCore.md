@@ -1378,6 +1378,7 @@ var
   Box: IBox<Boolean>;
   ROBox: IReadonlyBox<Boolean>;
   Updater: TBoxUpdater<Boolean>;
+  UpdaterProc: TBoxUpdaterProc<Boolean>;
 begin
   Box := Box<Boolean>.Setup(True);
 
@@ -1385,21 +1386,57 @@ begin
     procedure
     begin
       WriteLn(Box.Value); // This would be True
-      Box.UpdateValue(False);
+      // Update the value passing a value directly
+      Box.UpdateValue(False); 
     end).Wait;
 
-  WriteLn(Box.Value); //This would be False;
-
-  Box := Box<Boolean>.Setup(True, Updater);
-
+  WriteLn(Box.Value); // This would be False;
+  
+  Box.UpdateValue(True); // Back to True
+  
   TTask.Run(
     procedure
     begin
       WriteLn(Box.Value); // This would be True
+      // Update the value passing a method that will set the value
+      // The context of the method is thread safe
+      Box.UpdateValue(procedure(var Value: Boolean) 
+        begin
+          Value := False;
+        end);
+    end).Wait;
+
+  WriteLn(Box.Value); // This would be False;
+  
+  ROBox := Box<Boolean>.Setup(True, Updater);
+  
+  TTask.Run(
+    procedure
+    begin
+      WriteLn(ROBox.Value); // This would be True
+      // Update the value passing a value directly
       Updater(False);
     end).Wait;
 
-  WriteLn(Box.Value); //This would be False;
+  WriteLn(ROBox.Value); //This would be False;
+  
+  ROBox := Box<Boolean>.Setup(True, UpdaterProc);
+  
+  Updater(True); // Back to True
+  
+  TTask.Run(
+    procedure
+    begin
+      WriteLn(ROBox.Value); // This would be True
+      // Update the value passing a method that will set the value
+      // The context of the method is thread safe
+      UpdaterProc(procedure(var Value: Boolean)
+        begin
+          Value := False;
+        end);
+    end).Wait;
+
+  WriteLn(ROBox.Value); //This would be False;
 end;
 
 ```
