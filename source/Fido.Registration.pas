@@ -27,6 +27,8 @@ interface
 uses
   Spring.Container,
 
+  Fido.Exceptions.Marshalling,
+
   Fido.Resource.StringReader.Intf,
   Fido.Resource.StringReader,
 

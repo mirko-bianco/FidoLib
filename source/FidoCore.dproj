@@ -346,6 +346,7 @@
         <DCCReference Include="Caching\Fido.Caching.ThreeParams.pas"/>
         <DCCReference Include="Caching\Fido.Caching.TwoParams.pas"/>
         <DCCReference Include="Caching\Fido.Caching.pas"/>
+        <DCCReference Include="Fido.Exceptions.Marshalling.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

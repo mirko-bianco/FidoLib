@@ -17,7 +17,9 @@ uses
   Fido.Types,
   Fido.Testing.Mock.Utils,
   Fido.JSON.Mapping,
-  Fido.JSON.Marshalling;
+  Fido.JSON.Marshalling,
+  Fido.Exceptions.Marshalling,
+  Fido.Api.Server.Exceptions;
 
 type
   {$M+}
@@ -50,6 +52,9 @@ type
 
     [Test]
     procedure UnMarshallingADescendentClassWorks;
+
+    [Test]
+    procedure MarshallingExceptionWorks;
   end;
 
 implementation
@@ -85,6 +90,15 @@ begin
   MyDescObject.Value.Name := 'Mirko';
 
   Assert.AreEqual('{"ID":100,"Name":"Mirko","BirthDate":"1\/1\/2022"}', JSONMarshaller.From(MyDescObject.Value));
+end;
+
+procedure TJSONMappingTests.MarshallingExceptionWorks;
+var
+  Exc: Shared<EApiServer500>;
+begin
+  Exc := EApiServer500.Create('An error');
+
+  Assert.AreEqual('{"Message":"An error","Code":500,"ShortMsg":"Internal server error"}', JSONMarshaller.From(Exc.Value))
 end;
 
 procedure TJSONMappingTests.UnMarshallingADescendentClassWorks;
