@@ -26,6 +26,7 @@ interface
 
 uses
   System.Classes,
+  System.SyncObjs,
   System.SysUtils,
   System.Math,
   System.JSON,
@@ -65,7 +66,7 @@ type
     FOnError: TWebSocketOnError;
     FOnReceivedWebsocketMessage: TWebSocketOnReceivedMessage;
 
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FResultEventsMethodsMap: IDictionary<Int64, TOnMethodResultReceived>;
     FMethodsResultsMap: IDictionary<Int64, TSignalRMethodResult>;
   private
@@ -98,9 +99,9 @@ constructor TSignalR.Create(
   const WebSocketClient: IWebSocketClient;
   const OnError: TWebSocketOnError);
 var
-  LLock: IReadWriteSync;
   LResultEventsMap: IDictionary<Int64, TOnMethodResultReceived>;
   LMethodsResultsMap: IDictionary<Int64, TSignalRMethodResult>;
+  LLock: TLightweightMREW;
 begin
   Guard.CheckNotNull<TTSignalROnReceivedMessage>(OnReceivedMessage, 'OnReceivedMessage');
 
@@ -111,9 +112,9 @@ begin
   FWebSocketClient := Utilities.CheckNotNullAndSet(WebSocketClient, 'WebSocketClient');
   FOnError := OnError;
 
-  LLock := FLock;
   LResultEventsMap := FResultEventsMethodsMap;
   LMethodsResultsMap := FMethodsResultsMap;
+  LLock := FLock;
 
  {$REGION ' OnReceivedWebsocketMessage '}
   FOnReceivedWebsocketMessage := procedure(const Message: string)
@@ -215,7 +216,6 @@ end;
 class operator TSignalR.Initialize(out Dest: TSignalR);
 begin
   Dest.FCallId := Box<Int64>.Setup(0);
-  Dest.FLock := TMREWSync.Create;
 
   Dest.FResultEventsMethodsMap := TCollections.createDictionary<Int64, TOnMethodResultReceived>;
   Dest.FMethodsResultsMap := TCollections.createDictionary<Int64, TSignalRMethodResult>;

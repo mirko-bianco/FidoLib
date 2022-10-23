@@ -25,7 +25,7 @@ unit Fido.Caching.OneParam.Usage;
 interface
 
 uses
-  System.SysUtils,
+  System.SyncObjs,
 
   Spring.Collections,
 
@@ -36,7 +36,7 @@ type
   TUsageOneParamCache<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
     FSize: Int64;
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FMap: IDictionary<P, R>;
     FAgeList: IList<P>;
   public
@@ -53,7 +53,6 @@ constructor TUsageOneParamCache<P, R>.Create(const Size: Int64);
 begin
   inherited Create;
 
-  FLock := TMREWSync.Create;
   FMap := TCollections.CreateDictionary<P, R>;
   FAgeList := TCollections.CreateList<P>;
   FSize := Size;

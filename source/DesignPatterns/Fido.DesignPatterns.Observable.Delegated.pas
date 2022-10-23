@@ -27,6 +27,7 @@ interface
 uses
   System.Classes,
   System.SysUtils,
+  System.SyncObjs,
   Spring,
   Spring.Collections,
 
@@ -40,7 +41,7 @@ uses
 type
   TDelegatedObservable = class(TInterfacedObject, IObservable)
   strict private
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FIdentity: string;
     FObservable: Weak<IInterface>;
     FNeedsSync: boolean;
@@ -140,7 +141,6 @@ var
   Name: string;
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FObservers := TCollections.CreateList<Weak<IObserver>>;
   if not Assigned(Observable) then
     FObservable := Self

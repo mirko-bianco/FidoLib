@@ -29,6 +29,7 @@ uses
   System.Rtti,
   System.Json,
   System.TypInfo,
+  System.SyncObjs,
 
   Spring,
   Spring.Collections,
@@ -53,7 +54,7 @@ type
       GETTER_PREFIX = 'GET';
       SETTER_PREFIX = 'SET';
     var
-      FLock: IReadWriteSync;
+      FLock: TLightweightMREW;
       FMappersMap: IDictionary<PTypeInfo, IDictionary<PTypeInfo, TValueMapProc>>;
 
       function TryGetGetterMethodPropName(const RttiMeth: TRttiMethod; out PropertyName: string): Boolean;
@@ -87,7 +88,6 @@ implementation
 constructor Mappers.TMappers.Create;
 begin
   inherited;
-  FLock := TMREWSync.Create;
   FMappersMap := Spring.Collections.TCollections.CreateDictionary<PTypeInfo, IDictionary<PTypeInfo, TValueMapProc>>;
 end;
 

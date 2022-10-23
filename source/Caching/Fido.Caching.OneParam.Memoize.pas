@@ -25,7 +25,7 @@ unit Fido.Caching.OneParam.Memoize;
 interface
 
 uses
-  System.SysUtils,
+  System.SyncObjs,
 
   Spring.Collections,
 
@@ -35,7 +35,7 @@ uses
 type
   TMemoizeOneParam<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FMap: IDictionary<P, R>;
   public
     constructor Create;
@@ -50,7 +50,6 @@ implementation
 constructor TMemoizeOneParam<P, R>.Create;
 begin
   inherited;
-  FLock := TMREWSync.Create;
   FMap := TCollections.CreateDictionary<P, R>;
 end;
 

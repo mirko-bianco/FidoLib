@@ -26,6 +26,7 @@ interface
 
 uses
   System.SysUtils,
+  System.SyncObjs,
   System.RegularExpressions,
   System.Rtti,
   System.TypInfo,
@@ -60,7 +61,7 @@ type
     FRequestMiddlewares: IDictionary<string, TRequestMiddlewareFunc>;
     FResponseMiddlewares: IDictionary<string, TResponseMiddlewareProc>;
     FExceptionMiddlewareProc: TExceptionMiddlewareProc;
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
   private
     function TryGetEndPoint(const ApiRequest: IHttpRequest; out EndPoint: TEndPoint): Boolean;
     function TrySetPathParams(const EndPoint: TEndPoint; const URI: string; const PathParams: IDictionary<string, string>): Boolean;
@@ -145,7 +146,6 @@ var
   UseSSL: Boolean;
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
 
   UseSSL := SSLCertData.IsValid;
 

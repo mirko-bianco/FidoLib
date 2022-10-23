@@ -30,6 +30,7 @@ uses
   {$else}
   Posix.Pthread,
   {$endif}
+  System.SyncObjs,
   System.Threading,
   System.SysUtils,
   System.Classes,
@@ -47,7 +48,7 @@ type
   type
     TThreadId = Int64;
   strict private
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FFactoryFunc: TFunc<T>;
   protected
     FItems: IDictionary<TThreadId, T>;
@@ -70,7 +71,6 @@ constructor TPerThreadDictionary<T>.Create(
   const FactoryFunc: TFunc<T>);
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<TThreadId, T>(Ownership);
   FFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<T>>(FactoryFunc, 'FFactoryFunc');
 end;

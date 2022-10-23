@@ -25,7 +25,7 @@ unit Fido.Boxes;
 interface
 
 uses
-  System.SysUtils;
+  System.SyncObjs;
 
 type
   IReadonlyBox<T> = interface(IInvokable)
@@ -42,7 +42,7 @@ type
 
   TBox<T> = class(TInterfacedObject, IReadonlyBox<T>, IBox<T>)
   private var
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FValue: T;
   public
     constructor Create(const Value: T); overload;
@@ -86,7 +86,6 @@ end;
 constructor TBox<T>.Create(const Value: T);
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FValue := Value;
 end;
 

@@ -8,7 +8,9 @@ The Fido library is highly opinionated but it won't force you to adopt it entire
 
 The Fido library is mostly based on composition and attributes, hence it won't force you to revolutionize your current base hierarchy structure.
 
-The Fido library supports Delphi version 10.4 and higher. 
+The Fido library maintainers believe in constant improvement. For this reason, when confronted with the choice between “preserve backward compatibility” and “add a new feature”, we will move forward. Sorry, people who’re still using Delphi 7.
+
+The Fido library supports Delphi version 10.4.1 and higher. 
 
 ## Acknowledgements
 
