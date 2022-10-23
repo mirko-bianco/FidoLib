@@ -233,6 +233,7 @@ contains
   Fido.Caching.OneParam.Usage in 'Caching\Fido.Caching.OneParam.Usage.pas',
   Fido.Caching.ThreeParams in 'Caching\Fido.Caching.ThreeParams.pas',
   Fido.Caching.TwoParams in 'Caching\Fido.Caching.TwoParams.pas',
-  Fido.Caching in 'Caching\Fido.Caching.pas';
+  Fido.Caching in 'Caching\Fido.Caching.pas',
+  Fido.Exceptions.Marshalling in 'Fido.Exceptions.Marshalling.pas';
 
 end.

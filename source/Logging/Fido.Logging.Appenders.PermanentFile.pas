@@ -41,7 +41,7 @@ begin
     begin
       Result := FormatDateTime(DateTimeFormat, Value);
     end,
-    function(const Value: string): TDateTime
+    function(const Value: string; const TypInfo: pTypeInfo): TDateTime
     begin
       Result := 0;
     end,
@@ -101,7 +101,7 @@ initialization
       JsonObject.Value.AddPair('Tag', Value.Tag);
       Result := JsonObject.Value.ToJSON;
     end,
-    function(const Value: string): TLogEvent
+    function(const Value: string; const TypInfo: pTypeInfo): TLogEvent
     begin
     end);
 

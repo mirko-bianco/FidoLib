@@ -32,6 +32,7 @@ uses
   Fido.Exceptions;
 
 type
+  {$M+}
   EApiServer = class(EFidoException)
   private
     FCode: Integer;
@@ -39,10 +40,11 @@ type
   public
     constructor Create(const Code: Integer; const ShortMsg: string; const Msg: string); overload;
     constructor Create(const Code: Integer; const ShortMsg: string; const Msg: string; const Logger: ILogger; const &Class: string; const Method: string); overload;
-
+  published
     function Code: Integer;
     function ShortMsg: string;
   end;
+  {$M-}
 
   EApiServer400 = class(EApiServer)
     constructor Create(const Msg: string);
@@ -65,6 +67,7 @@ type
   end; //Conflict
 
   EApiServer500 = class(EApiServer)
+  public
     constructor Create(const Msg: string); overload;
     constructor Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string); overload;
   end; //Internal server error
