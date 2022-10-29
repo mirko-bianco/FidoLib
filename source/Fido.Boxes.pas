@@ -34,10 +34,15 @@ type
     function Value: T;
   end;
 
+  TBoxUpdater<T> = reference to procedure(const Value: T);
+  TBoxUpdaterVar<T> = reference to procedure(var Value: T);
+  TBoxUpdaterProc<T> = reference to procedure(const Updater: TBoxUpdaterVar<T>);
+
   IBox<T> = interface(IReadonlyBox<T>)
     ['{35CA4A5D-2E2F-4BA1-9930-7F71459D76D5}']
 
-    procedure UpdateValue(const Value: T);
+    procedure UpdateValue(const Value: T); overload;
+    procedure UpdateValue(const Updater: TBoxUpdaterVar<T>); overload;
   end;
 
   TBox<T> = class(TInterfacedObject, IReadonlyBox<T>, IBox<T>)
@@ -49,13 +54,13 @@ type
 
     function Value: T;
 
-    procedure UpdateValue(const Value: T);
+    procedure UpdateValue(const Value: T); overload;
+    procedure UpdateValue(const Updater: TBoxUpdaterVar<T>); overload;
   end;
-
-  TBoxUpdater<T> = reference to procedure(const Value: T);
 
   Box<T> = record
     class function Setup(const Value: T; out Updater: TBoxUpdater<T>): IReadonlyBox<T>; overload; static;
+    class function Setup(const Value: T; out UpdaterProc: TBoxUpdaterProc<T>): IReadonlyBox<T>; overload; static;
     class function Setup(const Value: T): IBox<T>; overload; static;
   end;
 
@@ -81,6 +86,21 @@ begin
   Result := TBox<T>.Create(Value);
 end;
 
+class function Box<T>.Setup(const Value: T; out UpdaterProc: TBoxUpdaterProc<T>): IReadonlyBox<T>;
+var
+  Box: IBox<T>;
+begin
+  Box := TBox<T>.Create(Value);
+
+  UpdaterProc := procedure(const Updater: TBoxUpdaterVar<T>)
+    var
+      Value: T;
+    begin
+      Box.UpdateValue(Updater);
+    end;
+  Result := Box;
+end;
+
 { TBox<T> }
 
 constructor TBox<T>.Create(const Value: T);
@@ -90,6 +110,16 @@ begin
   FValue := Value;
 end;
 
+
+procedure TBox<T>.UpdateValue(const Updater: TBoxUpdaterVar<T>);
+begin
+  FLock.BeginWrite;
+  try
+    Updater(FValue);
+  finally
+    FLock.EndWrite;
+  end;
+end;
 
 procedure TBox<T>.UpdateValue(const Value: T);
 begin
