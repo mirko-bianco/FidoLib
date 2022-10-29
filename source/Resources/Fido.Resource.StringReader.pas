@@ -53,14 +53,14 @@ end;
 
 function TStringResourceReader.GetStringResource(const ResName: string): string;
 var
-  ResourceStream: Shared<TStream>;
-  StringStream: Shared<TStringStream>;
+  ResourceStream: IShared<TStream>;
+  StringStream: IShared<TStringStream>;
 begin
-  ResourceStream := FStreamResourceReader.GetResourceStream(ResName);
-  StringStream := TStringStream.Create;
+  ResourceStream := Shared.Make(FStreamResourceReader.GetResourceStream(ResName));
+  StringStream := Shared.Make(TStringStream.Create);
 
-  StringStream.Value.LoadFromStream(ResourceStream);
-  Result := StringStream.Value.DataString;
+  StringStream.LoadFromStream(ResourceStream);
+  Result := StringStream.DataString;
 end;
 
 end.

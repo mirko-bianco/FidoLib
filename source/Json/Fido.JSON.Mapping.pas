@@ -279,11 +279,11 @@ begin
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TValue
     var
-      JSONNull: Shared<TJSONNull>;
+      JSONNull: IShared<TJSONNull>;
     begin
-      JSONNull := TJSONNull.Create;
+      JSONNull := Shared.Make(TJSONNull.Create);
 
-      if Value.IsEmpty or Value.ToLower.Equals(JSONNull.Value.ToJSON.ToLower) then
+      if Value.IsEmpty or Value.ToLower.Equals(JSONNull.ToJSON.ToLower) then
         Result := TValue.From<Nullable<T>>(nil)
       else
         Result := TValue.From<Nullable<T>>(Nullable<T>.Create(JSONUnmarhallingToFunc(Value, TypInfo)));
@@ -353,10 +353,10 @@ initialization
   MappingsUtilities.RegisterEnumeratives(
     function(const Value: TValue): Nullable<string>
     var
-      JSONNumber: Shared<TJSONNumber>;
+      JSONNumber: IShared<TJSONNumber>;
     begin
-      JSONNumber := TJSONNumber.Create(Integer(Value.AsVariant));
-      Result := JSONNumber.Value.ToJSON;
+      JSONNumber := Shared.Make(TJSONNumber.Create(Integer(Value.AsVariant)));
+      Result := JSONNumber.ToJSON;
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TValue
     begin
@@ -505,19 +505,19 @@ initialization
   MappingsUtilities.RegisterPrimitive<Boolean>(
     function(const Value: Boolean): string
     var
-      JSONBool: Shared<TJSONBool>;
+      JSONBool: IShared<TJSONBool>;
     begin
-      JSONBool := TJSONBool.Create(Value);
-      Result := JSONBool.Value.ToJSON;
+      JSONBool := Shared.Make(TJSONBool.Create(Value));
+      Result := JSONBool.ToJSON;
     end,
     function(const Value: string; const TypInfo: pTypeInfo): Boolean
     var
-      JSONTrue: Shared<TJSONTrue>;
+      JSONTrue: IShared<TJSONTrue>;
     begin
-      JSONTrue := TJSONTrue.Create;
+      JSONTrue := Shared.Make(TJSONTrue.Create);
 
       Result := False;
-      if SameText(Value, JSONTrue.Value.ToJSON) then
+      if SameText(Value, JSONTrue.ToJSON) then
         Result := True;
     end);
 

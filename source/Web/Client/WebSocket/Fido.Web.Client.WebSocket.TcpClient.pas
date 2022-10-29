@@ -135,20 +135,20 @@ function TWebSocketTCPClient.Get(
   const URL: string;
   const CustomHeaders: TStrings): string;
 var
-  Http: Shared<TIdHTTP>;
+  Http: IShared<TIdHTTP>;
   FormattedURL: string;
 begin
-  Http := TIdHTTP.Create(nil);
+  Http := Shared.Make(TIdHTTP.Create(nil));
 
   FormattedURL := FormatURL(URL);
 
   CheckSsl(FormattedURL);
 
-  Http.Value.IOHandler := FInternalTCPClient.Socket;
-  Http.Value.Request.UserAgent := 'FidoLib websocket client';
-  Http.Value.Request.CustomHeaders.AddStrings(CustomHeaders);
+  Http.IOHandler := FInternalTCPClient.Socket;
+  Http.Request.UserAgent := 'FidoLib websocket client';
+  Http.Request.CustomHeaders.AddStrings(CustomHeaders);
 
-  Result := Http.Value.Get(FormattedURL);
+  Result := Http.Get(FormattedURL);
 end;
 
 procedure TWebSocketTCPClient.Connect(
@@ -156,7 +156,7 @@ procedure TWebSocketTCPClient.Connect(
   const CustomHeaders: TStrings;
   const WebsocketProtocol: string);
 var
-  URI: Shared<TIdURI>;
+  URI: IShared<TIdURI>;
   FormattedURL: string;
   Header: string;
 begin
@@ -171,20 +171,20 @@ begin
   FInternalTCPClient.Connect;
 
 
-  URI := TIdURI.Create(FormattedURL);
-  if URI.Value.Protocol.ToLower.Contains('wss') then
-    URI.Value.Protocol := ReplaceOnlyFirst(URI.Value.Protocol.ToLower, 'wss', 'https')
+  URI := Shared.Make(TIdURI.Create(FormattedURL));
+  if URI.Protocol.ToLower.Contains('wss') then
+    URI.Protocol := ReplaceOnlyFirst(URI.Protocol.ToLower, 'wss', 'https')
   else
-    URI.Value.Protocol := ReplaceOnlyFirst(URI.Value.Protocol.ToLower, 'ws', 'http');
-  if URI.Value.Path.Trim.IsEmpty then
-    URI.Value.Path := '/';
-  if not URI.Value.Port.IsEmpty then
-    URI.Value.Host := URI.Value.Host + ':' + URI.Value.Port;
-  if (URI.Value.Params <> '') then
-    FInternalTCPClient.IOHandler.WriteLn(Format('GET %s HTTP/1.1', [URI.Value.Path + URI.Value.Document + '?' + URI.Value.Params]))
+    URI.Protocol := ReplaceOnlyFirst(URI.Protocol.ToLower, 'ws', 'http');
+  if URI.Path.Trim.IsEmpty then
+    URI.Path := '/';
+  if not URI.Port.IsEmpty then
+    URI.Host := URI.Host + ':' + URI.Port;
+  if (URI.Params <> '') then
+    FInternalTCPClient.IOHandler.WriteLn(Format('GET %s HTTP/1.1', [URI.Path + URI.Document + '?' + URI.Params]))
   else
-    FInternalTCPClient.IOHandler.WriteLn(Format('GET %s HTTP/1.1', [URI.Value.Path + URI.Value.Document]));
-  FInternalTCPClient.IOHandler.WriteLn(Format('Host: %s', [URI.Value.Host]));
+    FInternalTCPClient.IOHandler.WriteLn(Format('GET %s HTTP/1.1', [URI.Path + URI.Document]));
+  FInternalTCPClient.IOHandler.WriteLn(Format('Host: %s', [URI.Host]));
   FInternalTCPClient.IOHandler.WriteLn('User-Agent: FidoLib websocket client');
   FInternalTCPClient.IOHandler.WriteLn('Connection: keep-alive, Upgrade');
   FInternalTCPClient.IOHandler.WriteLn('Upgrade: WebSocket');
@@ -210,7 +210,7 @@ constructor TWebSocketTCPClient.Create;
 var
   Bytes: TIdBytes;
   Index: Integer;
-  Hash: Shared<TIdHashSHA1>;
+  Hash: IShared<TIdHashSHA1>;
 begin
   inherited Create;
   FSSLVersion := sslvTLSv1_2;
@@ -226,8 +226,8 @@ begin
     Bytes[Index] := byte(random(255));
   FKey := TIdEncoderMIME.EncodeBytes(Bytes);
 
-  Hash := TIdHashSHA1.Create;
-  FExpectedAcceptResponse := TIdEncoderMIME.EncodeBytes(Hash.Value.HashString(FKey + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'));
+  Hash := Shared.Make(TIdHashSHA1.Create);
+  FExpectedAcceptResponse := TIdEncoderMIME.EncodeBytes(Hash.HashString(FKey + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'));
 end;
 
 destructor TWebSocketTCPClient.Destroy;
@@ -342,10 +342,10 @@ procedure TWebSocketTCPClient.ValidateWebSocket;
 var
   StringStream: string;
   Data: Byte;
-  Headers: Shared<TStringlist>;
+  Headers: IShared<TStringlist>;
 begin
   StringStream := EmptyStr;
-  Headers := TStringList.Create;
+  Headers := Shared.Make(TStringList.Create);
 
   FUpgraded := False;
   while Connected and not FUpgraded do
@@ -362,7 +362,7 @@ begin
       end
       else
       begin
-        Headers.Value.Add(StringStream.Trim);
+        Headers.Add(StringStream.Trim);
         StringStream := EmptyStr;
       end;
     end;
@@ -497,15 +497,15 @@ end;
 
 procedure TWebSocketTCPClient.CheckSsl(const URL: string);
 var
-  URI: Shared<TIdURI>;
+  URI: IShared<TIdURI>;
 begin
-  URI := TIdURI.Create(URL);
+  URI := Shared.Make(TIdURI.Create(URL));
 
-  if URI.Value.Protocol.ToLower.Contains('wss') then
-    URI.Value.Protocol := ReplaceOnlyFirst(URI.Value.Protocol.ToLower, 'wss', 'https')
+  if URI.Protocol.ToLower.Contains('wss') then
+    URI.Protocol := ReplaceOnlyFirst(URI.Protocol.ToLower, 'wss', 'https')
   else
-    URI.Value.Protocol := ReplaceOnlyFirst(URI.Value.Protocol.ToLower, 'ws', 'http');
-  if URI.Value.Protocol.ToLower.Equals('https') then
+    URI.Protocol := ReplaceOnlyFirst(URI.Protocol.ToLower, 'ws', 'http');
+  if URI.Protocol.ToLower.Equals('https') then
   begin
     if Assigned(FInternalTCPClient.IOHandler) and (FInternalTCPClient.IOHandler is TIdSSLIOHandlerSocketOpenSSL) then
       Exit;
@@ -520,32 +520,32 @@ end;
 
 function TWebSocketTCPClient.FormatURL(const URL: string): string;
 var
-  URI: Shared<TIdURI>;
+  URI: IShared<TIdURI>;
   Port: Word;
 begin
-  URI := TIdURI.Create(URL);
+  URI := Shared.Make(TIdURI.Create(URL));
 
-  if URI.Value.Path.Trim.IsEmpty then
-    URI.Value.Path := '/';
+  if URI.Path.Trim.IsEmpty then
+    URI.Path := '/';
 
-  Port := StrToIntDef(URI.Value.Port, 0);
+  Port := StrToIntDef(URI.Port, 0);
   if (Port = 0) then
-    if (URI.Value.Protocol.ToLower.Equals('https') or URI.Value.Protocol.ToLower.Equals('wss')) then
+    if (URI.Protocol.ToLower.Equals('https') or URI.Protocol.ToLower.Equals('wss')) then
       Port := 443
     else
       Port := 80;
 
-  URI.Value.Port := IntToStr(Port);
+  URI.Port := IntToStr(Port);
 
-  if not URI.Value.Params.IsEmpty then
-    Result := URI.Value.Protocol + '://' + URI.Value.Host + ':' + URI.Value.Port + URI.Value.Path + URI.Value.Document + '?' + URI.Value.Params
+  if not URI.Params.IsEmpty then
+    Result := URI.Protocol + '://' + URI.Host + ':' + URI.Port + URI.Path + URI.Document + '?' + URI.Params
   else
-    Result := URI.Value.Protocol + '://' + URI.Value.Host + ':' + URI.Value.Port + URI.Value.Path + URI.Value.Document;
+    Result := URI.Protocol + '://' + URI.Host + ':' + URI.Port + URI.Path + URI.Document;
 
   if FURL.IsEmpty then
   begin
     FURL := Result;
-    FInternalTCPClient.Host := URI.Value.Host;
+    FInternalTCPClient.Host := URI.Host;
     FInternalTCPClient.Port := Port;
   end;
 

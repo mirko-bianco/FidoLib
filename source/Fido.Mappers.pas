@@ -144,7 +144,7 @@ end;
 
 function Mappers.TMappers.GetInstanceValues<TA>(const Instance: TA): IDictionary<string, TValue>;
 var
-  Context: Shared<TRttiContext>;
+  Context: TRttiContext;
   RttiType: TRttiType;
   InstanceValue: TValue;
   LResult: IDictionary<string, TValue>;
@@ -152,7 +152,7 @@ begin
   InstanceValue := TValue.From<TA>(Instance);
   LResult := TCollections.CreateDictionary<string, TValue>;
   Context := TRttiContext.Create;
-  RttiType := Context.Value.GetType(TypeInfo(TA));
+  RttiType := Context.GetType(TypeInfo(TA));
 
   TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
     .Where(function(const RttiProp: TRttiProperty): Boolean

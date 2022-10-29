@@ -74,15 +74,15 @@ class procedure Logging.LogDuration(
   const Method: string;
   const Action: TProc);
 var
-  DurationLogger: Shared<TDeadManSwitchDurationLogger>;
+  DurationLogger: IShared<TDeadManSwitchDurationLogger>;
 begin
-  DurationLogger := TDeadManSwitchDurationLogger.Create(Logger, ClassName, Method);
+  DurationLogger := Shared.Make(TDeadManSwitchDurationLogger.Create(Logger, ClassName, Method));
   try
     Action();
   except
     on E: Exception do
     begin
-      DurationLogger.Value.Cancel;
+      DurationLogger.Cancel;
       Logger.Log(TLogLevel.Error, E.Message, E);
       raise;
     end;
@@ -95,15 +95,15 @@ class function Logging.LogDuration<T>(
   const Method: string;
   const Action: TFunc<T>): T;
 var
-  DurationLogger: Shared<TDeadManSwitchDurationLogger>;
+  DurationLogger: IShared<TDeadManSwitchDurationLogger>;
 begin
-  DurationLogger := TDeadManSwitchDurationLogger.Create(Logger, ClassName, Method);
+  DurationLogger := Shared.Make(TDeadManSwitchDurationLogger.Create(Logger, ClassName, Method));
   try
     Result := Action();
   except
     on E: Exception do
     begin
-      DurationLogger.Value.Cancel;
+      DurationLogger.Cancel;
       Logger.Log(TLogLevel.Error, E.Message, E);
       raise;
     end;

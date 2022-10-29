@@ -84,7 +84,7 @@ end;
 
 constructor THttpRequest.Create(const RequestInfo: IHttpRequestInfo);
 var
-  TempBodyParams: Shared<TStringList>;
+  TempBodyParams: IShared<TStringList>;
   StringMimeType: string;
   MimeTypeIndex: Integer;
   ContentType: string;
@@ -120,14 +120,14 @@ begin
   end;
   FMimeType := TMimeType(MimeTypeIndex);
 
-  TempBodyParams := TStringList.Create;
+  TempBodyParams := Shared.Make(TStringList.Create);
 
   if Assigned(RequestInfo.PostStream) then
-    TempBodyParams.Value.LoadFromStream(RequestInfo.PostStream);
+    TempBodyParams.LoadFromStream(RequestInfo.PostStream);
 
   FBody := RequestInfo.UnparsedParams;
   if FBody.IsEmpty then
-    FBody := TempBodyParams.Value.Text;
+    FBody := TempBodyParams.Text;
 
   StringsToDictionary(RequestInfo.FormParams, FFormParams);
   StringsToDictionary(RequestInfo.QueryParams, FQueryParams);

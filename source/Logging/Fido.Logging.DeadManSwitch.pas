@@ -114,16 +114,16 @@ begin
     TTask.Run(
       procedure
       var
-        Data: Shared<TDurationData>;
+        Data: IShared<TDurationData>;
       begin
-        Data := TDurationData.Create(ClassName, MethodName, H, M, S, MS);
+        Data := Shared.Make(TDurationData.Create(ClassName, MethodName, H, M, S, MS));
         Logger.Log(
           TLogEvent.Create(
             TLogLevel.Info,
             TLogEventType.Value,
             '',
             nil,
-            Data.Value
+            Data
           ));
       end);
 
