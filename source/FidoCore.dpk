@@ -234,6 +234,7 @@ contains
   Fido.Caching.ThreeParams in 'Caching\Fido.Caching.ThreeParams.pas',
   Fido.Caching.TwoParams in 'Caching\Fido.Caching.TwoParams.pas',
   Fido.Caching in 'Caching\Fido.Caching.pas',
-  Fido.Exceptions.Marshalling in 'Fido.Exceptions.Marshalling.pas';
+  Fido.Exceptions.Marshalling in 'Fido.Exceptions.Marshalling.pas',
+  Fido.Db.Transaction.Handler.FireDac in 'Db\Fido.Db.Transaction.Handler.FireDac.pas';
 
 end.
