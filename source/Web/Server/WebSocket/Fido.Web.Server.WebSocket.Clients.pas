@@ -26,6 +26,7 @@ interface
 
 uses
   System.SysUtils,
+  System.SyncObjs,
 
   idContext,
 
@@ -39,7 +40,7 @@ type
 
   TClients = class
     strict private
-      FLock: IReadWriteSync;
+      FLock: TLightweightMREW;
       FMap: IDictionary<Integer, TWebSocketClient>;
     public
       constructor Create;
@@ -58,8 +59,6 @@ implementation
 constructor TClients.Create;
 begin
   inherited;
-  FLock := TMREWSync.Create;
-
   FMap := TCollections.CreateDictionary<Integer, TWebSocketClient>([doOwnsValues]);
 end;
 

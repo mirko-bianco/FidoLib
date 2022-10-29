@@ -31,6 +31,7 @@ uses
   {$ifdef POSIX}
   Posix.Pthread,
   {$endif}
+  System.SyncObjs,
   System.Rtti,
   System.TypInfo,
   System.SysUtils,
@@ -69,7 +70,7 @@ type
   private type
     TJsonTypeMappingsDictionary = class
     strict private
-      FLock: IReadWriteSync;
+      FLock: TLightweightMREW;
       FItems: IDictionary<string, IDictionary<pTypeInfo, TJSONMarshallingMapping>>;
     private
       function TryGetCurrentOrParent(const Mappings: IDictionary<pTypeInfo, TJSONMarshallingMapping>; const TInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping): Boolean;
@@ -82,7 +83,7 @@ type
 
     TJsonEnumerativeMappingsDictionary = class
     strict private
-      FLock: IReadWriteSync;
+      FLock: TLightweightMREW;
       FItems: IDictionary<string, TJSONMarshallingMapping>;
     public
       constructor Create;
@@ -117,7 +118,6 @@ var
 constructor MappingsUtilities.TJsonTypeMappingsDictionary.Create;
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<string, IDictionary<pTypeInfo, TJSONMarshallingMapping>>(Comparer);
 end;
 
@@ -209,7 +209,6 @@ end;
 constructor MappingsUtilities.TJsonEnumerativeMappingsDictionary.Create;
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<string, TJSONMarshallingMapping>(Comparer);
 end;
 

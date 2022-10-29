@@ -29,6 +29,7 @@ uses
   System.Classes,
   System.Rtti,
   System.SysUtils,
+  System.SyncObjs,
   System.NetEncoding,
   System.Threading,
   System.Generics.Collections,
@@ -49,7 +50,7 @@ type
   TQueueEventsDrivenListener<PayloadType> = class (TInterfacedObject, IEventsDrivenListener)
   private var
     FActive: IBox<Boolean>;
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FSubscriptions: IDictionary<string, TConsumerData>;
     FSubscriptionsTask: ITask;
     FPollingIntervalMSec: Integer;
@@ -77,7 +78,6 @@ begin
 
   FSubscriptions := TCollections.CreateDictionary<string, TConsumerData>;
   FPollingIntervalMSec := 250;
-  FLock := TMREWSync.Create;
 
   FActive := Box<Boolean>.Setup(True);
 
@@ -106,9 +106,6 @@ procedure TQueueEventsDrivenListener<PayloadType>.PerformEventPolling(const Queu
 var
   Items: TArray<TPair<string, TConsumerData>>;
 begin
-  if not Assigned(FLock) then
-    Exit;
-
   FLock.BeginRead;
 
   Items := &Try<Void>.New(Void.Get).Map<TArray<TPair<string, TConsumerData>>>(Void.MapFunc<TArray<TPair<string, TConsumerData>>>(function: TArray<TPair<string, TConsumerData>>

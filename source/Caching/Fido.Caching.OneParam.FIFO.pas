@@ -26,6 +26,7 @@ interface
 
 uses
   System.SysUtils,
+  System.SyncObjs,
 
   Spring.Collections,
 
@@ -36,7 +37,7 @@ type
   TFIFOOneParamCache<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
     FSize: Int64;
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FMap: IDictionary<P, R>;
     FQueue: IQueue<P>;
   public
@@ -52,7 +53,6 @@ implementation
 constructor TFIFOOneParamCache<P, R>.Create(const Size: Int64);
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FMap := TCollections.CreateDictionary<P, R>;
   FQueue := TCollections.CreateQueue<P>;
   FSize := Size;

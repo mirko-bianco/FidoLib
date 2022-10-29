@@ -26,6 +26,7 @@ interface
 
 uses
   System.SysUtils,
+  System.SyncObjs,
   System.Classes,
   System.Generics.Collections,
 
@@ -41,7 +42,7 @@ uses
 type
   TAbstractMemoryPubSubEventsDrivenBroker<PayloadType> = class abstract(TInterfacedObject, IPubSubEventsDrivenBroker<PayloadType>)
   private
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FNotifications: IDictionary<string, IDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>>;
   protected
     procedure Run(const Proc: TProc); virtual; abstract;
@@ -75,7 +76,6 @@ begin
   inherited;
 
   FNotifications := TCollections.CreateDictionary<string, IDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>>;
-  FLock := TMREWSync.Create;
 end;
 
 function TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Push(
