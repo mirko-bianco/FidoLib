@@ -25,7 +25,8 @@ unit Fido.Caching;
 interface
 
 uses
-  Fido.Types,
+  Spring,
+
   Fido.Caching.Intf,
   Fido.Caching.OneParam.FIFO,
   Fido.Caching.OneParam.Usage,
@@ -83,9 +84,9 @@ end;
 class function Caching.TwoParams.FIFO<P1, P2, R>(const Size: Int64): ITwoParamsCache<P1, P2, R>;
 begin
   Result := TTwoParamsCache<P1, P2, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, R>>
+    function: IOneParamCache<P1, Func<P2, R>>
     begin
-      Result := TFIFOOneParamCache<P1, TOneParamFunction<P2, R>>.Create(Size);
+      Result := TFIFOOneParamCache<P1, Func<P2, R>>.Create(Size);
     end,
     function: IOneParamCache<P2, R>
     begin
@@ -96,9 +97,9 @@ end;
 class function Caching.TwoParams.Memoize<P1, P2, R>: ITwoParamsCache<P1, P2, R>;
 begin
   Result := TTwoParamsCache<P1, P2, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, R>>
+    function: IOneParamCache<P1, Func<P2, R>>
     begin
-      Result := TMemoizeOneParam<P1, TOneParamFunction<P2, R>>.Create;
+      Result := TMemoizeOneParam<P1, Func<P2, R>>.Create;
     end,
     function: IOneParamCache<P2, R>
     begin
@@ -109,9 +110,9 @@ end;
 class function Caching.TwoParams.Usage<P1, P2, R>(const Size: Int64): ITwoParamsCache<P1, P2, R>;
 begin
   Result := TTwoParamsCache<P1, P2, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, R>>
+    function: IOneParamCache<P1, Func<P2, R>>
     begin
-      Result := TUsageOneParamCache<P1, TOneParamFunction<P2, R>>.Create(Size);
+      Result := TUsageOneParamCache<P1, Func<P2, R>>.Create(Size);
     end,
     function: IOneParamCache<P2, R>
     begin
@@ -124,13 +125,13 @@ end;
 class function Caching.ThreeParams.FIFO<P1, P2, P3, R>(const Size: Int64): IThreeParamsCache<P1, P2, P3, R>;
 begin
   Result := TThreeParamsCache<P1, P2, P3, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>
+    function: IOneParamCache<P1, Func<P2, Func<P3, R>>>
     begin
-      Result := TFIFOOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>.Create(Size);
+      Result := TFIFOOneParamCache<P1, Func<P2, Func<P3, R>>>.Create(Size);
     end,
-    function: IOneParamCache<P2, TOneParamFunction<P3, R>>
+    function: IOneParamCache<P2, Func<P3, R>>
     begin
-      Result := TFIFOOneParamCache<P2, TOneParamFunction<P3, R>>.Create(Size);
+      Result := TFIFOOneParamCache<P2, Func<P3, R>>.Create(Size);
     end,
     function: IOneParamCache<P3, R>
     begin
@@ -141,13 +142,13 @@ end;
 class function Caching.ThreeParams.Memoize<P1, P2, P3, R>: IThreeParamsCache<P1, P2, P3, R>;
 begin
   Result := TThreeParamsCache<P1, P2, P3, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>
+    function: IOneParamCache<P1, Func<P2, Func<P3, R>>>
     begin
-      Result := TMemoizeOneParam<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>.Create;
+      Result := TMemoizeOneParam<P1, Func<P2, Func<P3, R>>>.Create;
     end,
-    function: IOneParamCache<P2, TOneParamFunction<P3, R>>
+    function: IOneParamCache<P2, Func<P3, R>>
     begin
-      Result := TMemoizeOneParam<P2, TOneParamFunction<P3, R>>.Create;
+      Result := TMemoizeOneParam<P2, Func<P3, R>>.Create;
     end,
     function: IOneParamCache<P3, R>
     begin
@@ -158,13 +159,13 @@ end;
 class function Caching.ThreeParams.Usage<P1, P2, P3, R>(const Size: Int64): IThreeParamsCache<P1, P2, P3, R>;
 begin
   Result := TThreeParamsCache<P1, P2, P3, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>
+    function: IOneParamCache<P1, Func<P2, Func<P3, R>>>
     begin
-      Result := TUsageOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>.Create(Size);
+      Result := TUsageOneParamCache<P1, Func<P2, Func<P3, R>>>.Create(Size);
     end,
-    function: IOneParamCache<P2, TOneParamFunction<P3, R>>
+    function: IOneParamCache<P2, Func<P3, R>>
     begin
-      Result := TUsageOneParamCache<P2, TOneParamFunction<P3, R>>.Create(Size);
+      Result := TUsageOneParamCache<P2, Func<P3, R>>.Create(Size);
     end,
     function: IOneParamCache<P3, R>
     begin
@@ -177,17 +178,17 @@ end;
 class function Caching.FourParams.FIFO<P1, P2, P3, P4, R>(const Size: Int64): IFourParamsCache<P1, P2, P3, P4, R>;
 begin
   Result := TFourParamsCache<P1, P2, P3, P4, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>>
+    function: IOneParamCache<P1, Func<P2, Func<P3, Func<P4, R>>>>
     begin
-      Result := TFIFOOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>>.Create(Size);
+      Result := TFIFOOneParamCache<P1, Func<P2, Func<P3, Func<P4, R>>>>.Create(Size);
     end,
-    function: IOneParamCache<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>
+    function: IOneParamCache<P2, Func<P3, Func<P4, R>>>
     begin
-      Result := TFIFOOneParamCache<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>.Create(Size);
+      Result := TFIFOOneParamCache<P2, Func<P3, Func<P4, R>>>.Create(Size);
     end,
-    function: IOneParamCache<P3, TOneParamFunction<P4, R>>
+    function: IOneParamCache<P3, Func<P4, R>>
     begin
-      Result := TFIFOOneParamCache<P3, TOneParamFunction<P4, R>>.Create(Size);
+      Result := TFIFOOneParamCache<P3, Func<P4, R>>.Create(Size);
     end,
     function: IOneParamCache<P4, R>
     begin
@@ -198,17 +199,17 @@ end;
 class function Caching.FourParams.Memoize<P1, P2, P3, P4, R>: IFourParamsCache<P1, P2, P3, P4, R>;
 begin
   Result := TFourParamsCache<P1, P2, P3, P4, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>>
+    function: IOneParamCache<P1, Func<P2, Func<P3, Func<P4, R>>>>
     begin
-      Result := TMemoizeOneParam<P1, TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>>.Create;
+      Result := TMemoizeOneParam<P1, Func<P2, Func<P3, Func<P4, R>>>>.Create;
     end,
-    function: IOneParamCache<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>
+    function: IOneParamCache<P2, Func<P3, Func<P4, R>>>
     begin
-      Result := TMemoizeOneParam<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>.Create;
+      Result := TMemoizeOneParam<P2, Func<P3, Func<P4, R>>>.Create;
     end,
-    function: IOneParamCache<P3, TOneParamFunction<P4, R>>
+    function: IOneParamCache<P3, Func<P4, R>>
     begin
-      Result := TMemoizeOneParam<P3, TOneParamFunction<P4, R>>.Create;
+      Result := TMemoizeOneParam<P3, Func<P4, R>>.Create;
     end,
     function: IOneParamCache<P4, R>
     begin
@@ -219,17 +220,17 @@ end;
 class function Caching.FourParams.Usage<P1, P2, P3, P4, R>(const Size: Int64): IFourParamsCache<P1, P2, P3, P4, R>;
 begin
   Result := TFourParamsCache<P1, P2, P3, P4, R>.Create(
-    function: IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>>
+    function: IOneParamCache<P1, Func<P2, Func<P3, Func<P4, R>>>>
     begin
-      Result := TUsageOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>>.Create(Size);
+      Result := TUsageOneParamCache<P1, Func<P2, Func<P3, Func<P4, R>>>>.Create(Size);
     end,
-    function: IOneParamCache<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>
+    function: IOneParamCache<P2, Func<P3, Func<P4, R>>>
     begin
-      Result := TUsageOneParamCache<P2, TOneParamFunction<P3, TOneParamFunction<P4, R>>>.Create(Size);
+      Result := TUsageOneParamCache<P2, Func<P3, Func<P4, R>>>.Create(Size);
     end,
-    function: IOneParamCache<P3, TOneParamFunction<P4, R>>
+    function: IOneParamCache<P3, Func<P4, R>>
     begin
-      Result := TUsageOneParamCache<P3, TOneParamFunction<P4, R>>.Create(Size);
+      Result := TUsageOneParamCache<P3, Func<P4, R>>.Create(Size);
     end,
     function: IOneParamCache<P4, R>
     begin

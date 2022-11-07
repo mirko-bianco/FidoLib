@@ -27,26 +27,26 @@ interface
 uses
   System.SysUtils,
 
+  Spring,
   Spring.Collections,
 
-  Fido.Types,
   Fido.Currying,
   Fido.Caching.Intf;
 
 type
   TThreeParamsCache<P1, P2, P3, R> = class(TInterfacedObject, IThreeParamsCache<P1, P2, P3, R>)
   private
-    FCurryCache: IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>;
-    FCurryCache2: IOneParamCache<P2, TOneParamFunction<P3, R>>;
+    FCurryCache: IOneParamCache<P1, Func<P2, Func<P3, R>>>;
+    FCurryCache2: IOneParamCache<P2, Func<P3, R>>;
     FCache: IOneParamCache<P3, R>;
   public
     constructor Create(
-      const CurryCacheFactory: TFunc<IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>>;
-      const CurryCache2Factory: TFunc<IOneParamCache<P2, TOneParamFunction<P3, R>>>;
+      const CurryCacheFactory: TFunc<IOneParamCache<P1, Func<P2, Func<P3, R>>>>;
+      const CurryCache2Factory: TFunc<IOneParamCache<P2, Func<P3, R>>>;
       const CacheFactory: TFunc<IOneParamCache<P3, R>>);
 
-    function It(const AFunction: TThreeParamsFunction<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
-    function ForceIt(const AFunction: TThreeParamsFunction<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
+    function It(const AFunction: Func<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
+    function ForceIt(const AFunction: Func<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
   end;
 
 implementation
@@ -54,8 +54,8 @@ implementation
 { TThreeParamsCache<P1, P2, P3, R> }
 
 constructor TThreeParamsCache<P1, P2, P3, R>.Create(
-  const CurryCacheFactory: TFunc<IOneParamCache<P1, TOneParamFunction<P2, TOneParamFunction<P3, R>>>>;
-  const CurryCache2Factory: TFunc<IOneParamCache<P2, TOneParamFunction<P3, R>>>;
+  const CurryCacheFactory: TFunc<IOneParamCache<P1, Func<P2, Func<P3, R>>>>;
+  const CurryCache2Factory: TFunc<IOneParamCache<P2, Func<P3, R>>>;
   const CacheFactory: TFunc<IOneParamCache<P3, R>>);
 begin
   inherited Create;
@@ -64,12 +64,20 @@ begin
   FCache := CacheFactory();
 end;
 
-function TThreeParamsCache<P1, P2, P3, R>.ForceIt(const AFunction: TThreeParamsFunction<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
+function TThreeParamsCache<P1, P2, P3, R>.ForceIt(
+  const AFunction: Func<P1, P2, P3, R>;
+  const Param1: P1;
+  const Param2: P2;
+  const Param3: P3): R;
 begin
   Result := FCache.ForceIt(FCurryCache2.ForceIt(FCurryCache.ForceIt(Curry.Cook<P1, P2, P3, R>(AFunction), Param1), Param2), Param3);
 end;
 
-function TThreeParamsCache<P1, P2, P3, R>.It(const AFunction: TThreeParamsFunction<P1, P2, P3, R>; const Param1: P1; const Param2: P2; const Param3: P3): R;
+function TThreeParamsCache<P1, P2, P3, R>.It(
+  const AFunction: Func<P1, P2, P3, R>;
+  const Param1: P1;
+  const Param2: P2;
+  const Param3: P3): R;
 begin
   Result := FCache.It(FCurryCache2.It(FCurryCache.It(Curry.Cook<P1, P2, P3, R>(AFunction), Param1), Param2), Param3);
 end;

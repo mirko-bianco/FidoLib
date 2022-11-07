@@ -27,24 +27,24 @@ interface
 uses
   System.SysUtils,
 
+  Spring,
   Spring.Collections,
 
-  Fido.Types,
   Fido.Currying,
   Fido.Caching.Intf;
 
 type
   TTwoParamsCache<P1, P2, R> = class(TInterfacedObject, ITwoParamsCache<P1, P2, R>)
   private
-    FCurryCache: IOneParamCache<P1, TOneParamFunction<P2, R>>;
+    FCurryCache: IOneParamCache<P1, Func<P2, R>>;
     FCache: IOneParamCache<P2, R>;
   public
     constructor Create(
-      const CurryCacheFactory: TFunc<IOneParamCache<P1, TOneParamFunction<P2, R>>>;
+      const CurryCacheFactory: TFunc<IOneParamCache<P1, Func<P2, R>>>;
       const CacheFactory: TFunc<IOneParamCache<P2, R>>);
 
-    function It(const AFunction: TTwoParamsFunction<P1, P2, R>; const Param1: P1; const Param2: P2): R;
-    function ForceIt(const AFunction: TTwoParamsFunction<P1, P2, R>; const Param1: P1; const Param2: P2): R;
+    function It(const AFunction: Func<P1, P2, R>; const Param1: P1; const Param2: P2): R;
+    function ForceIt(const AFunction: Func<P1, P2, R>; const Param1: P1; const Param2: P2): R;
   end;
 
 implementation
@@ -52,7 +52,7 @@ implementation
 { TTwoParamsCache<P1, P2, R> }
 
 constructor TTwoParamsCache<P1, P2, R>.Create(
-  const CurryCacheFactory: TFunc<IOneParamCache<P1, TOneParamFunction<P2, R>>>;
+  const CurryCacheFactory: TFunc<IOneParamCache<P1, Func<P2, R>>>;
   const CacheFactory: TFunc<IOneParamCache<P2, R>>);
 begin
   inherited Create;
@@ -60,12 +60,18 @@ begin
   FCache := CacheFactory();
 end;
 
-function TTwoParamsCache<P1, P2, R>.ForceIt(const AFunction: TTwoParamsFunction<P1, P2, R>; const Param1: P1; const Param2: P2): R;
+function TTwoParamsCache<P1, P2, R>.ForceIt(
+  const AFunction: Func<P1, P2, R>;
+  const Param1: P1;
+  const Param2: P2): R;
 begin
   Result := FCache.ForceIt(FCurryCache.ForceIt(Curry.Cook<P1, P2, R>(AFunction), Param1), Param2);
 end;
 
-function TTwoParamsCache<P1, P2, R>.It(const AFunction: TTwoParamsFunction<P1, P2, R>; const Param1: P1; const Param2: P2): R;
+function TTwoParamsCache<P1, P2, R>.It(
+  const AFunction: Func<P1, P2, R>;
+  const Param1: P1;
+  const Param2: P2): R;
 begin
   Result := FCache.It(FCurryCache.It(Curry.Cook<P1, P2, R>(AFunction), Param1), Param2);
 end;

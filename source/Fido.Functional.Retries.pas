@@ -53,7 +53,7 @@ type
   public
     constructor New(const Value: T); overload;
     constructor New(const Value: Context<T>); overload;
-    constructor New(const Func: TFunc<T>); overload;
+    constructor New(const Func: Func<T>); overload;
 
     class operator Implicit(const Value: Retry<T>): Context<T>;
     class operator Implicit(const Value: Context<T>): Retry<T>;
@@ -168,7 +168,7 @@ begin
     end;
 end;
 
-constructor Retry<T>.New(const Func: TFunc<T>);
+constructor Retry<T>.New(const Func: Func<T>);
 begin
   FValue := Func;
 end;

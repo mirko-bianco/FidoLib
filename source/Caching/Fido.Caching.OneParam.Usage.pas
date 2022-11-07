@@ -27,9 +27,9 @@ interface
 uses
   System.SyncObjs,
 
+  Spring,
   Spring.Collections,
 
-  Fido.Types,
   Fido.Caching.Intf;
 
 type
@@ -41,8 +41,8 @@ type
     FAgeList: IList<P>;
   public
     constructor Create(const Size: Int64);
-    function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
-    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    function It(const AFunction: Func<P, R>; const Param: P): R;
+    function ForceIt(const AFunction: Func<P, R>; const Param: P): R;
   end;
 
 implementation
@@ -60,7 +60,7 @@ begin
     FSize := 1;
 end;
 
-function TUsageOneParamCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TUsageOneParamCache<P, R>.ForceIt(const AFunction: Func<P, R>; const Param: P): R;
 var
   Exists: Boolean;
   Index: Integer;
@@ -88,7 +88,7 @@ begin
   end;
 end;
 
-function TUsageOneParamCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TUsageOneParamCache<P, R>.It(const AFunction: Func<P, R>; const Param: P): R;
 var
   Exists: Boolean;
 begin
