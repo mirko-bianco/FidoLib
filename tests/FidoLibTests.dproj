@@ -240,6 +240,7 @@
         <DCCReference Include="Json\Tests.JSON.Mapping.pas"/>
         <DCCReference Include="Fido.Currying.Test.pas"/>
         <DCCReference Include="Fido.Caching.test.pas"/>
+        <DCCReference Include="Fido.Channels.Test.pas"/>
         <None Include="ModelSupport_FidoLibTests\default.txaPackage"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

@@ -15,6 +15,7 @@ Below is a list of the most important features:
 - [Functional programming](#functional-programming)
 - [Currying](#Currying)
 - [Caching](#Caching)
+- [Channels](#Channels)
 
 ## Mappers
 Unit: `Fido.Mappers`.
@@ -2029,4 +2030,356 @@ begin
   Readln;
 end.
 ```
+
+## Channels
+
+Units: `Fido.channels`.
+
+> Don't communicate by sharing memory; share memory by communicating.
+
+*Go koan.*
+
+> *Channels* are the pipes that connect concurrent goroutines. You can send values into channels from one goroutine and receive those values into another goroutine.
+
+from [Go By Example](https://gobyexample.com/channels)
+
+Channels are tools implemented in modern languages like Go and Rust, so for a decent description of what they are it's probably better if you read those languages documentation.
+
+Long story short, they are one-directional pipes that are sized (allowing only some data to pass at any time) and blocking (as in, it blocks the sender if the pipe is full, and it blocks the receiver if the pipeline is empty).
+
+Our implementation allows non-blocking behavior too.
+
+**Blocking behavior**
+
+```pascal
+begin
+  var Chan := Channels.Make<Boolean>;
+  
+  TThread.CreateAnonymousThread(procedure
+    begin
+      Writeln('working...');
+      Sleep(1000);
+      Writeln('Done');
+      Chan.Send(True);
+    end).Start;
+
+  Chan.Receive;
+  Writeln('Received');
+  Readln;
+end.
+```
+
+Output:
+
+```shell
+working...
+Done
+Received
+```
+
+**Non-Blocking behavior**
+
+```pascal
+begin
+  var Chan := Channels.Make<string>;
+  var Value: string;
+
+  Chan.Send('test');
+  
+  if Chan.TrySend('another test') then
+    Writeln('Sent again')
+  else
+    Writeln('Cannot send again. Channel is full');
+
+  if Chan.TryReceive(Value) then
+    Writeln('Received');
+
+  Readln;
+end.
+```
+
+Output:
+
+```shell
+Cannot send again. Channel is full
+Received
+```
+
+**Buffered channels**
+
+```pascal
+begin
+  var Chan := Channels.Make<Boolean>(2);
+  var Value: Boolean;
+  
+  Chan.Send(True);
+  Writeln('Sent');
+  Chan.Send(True);
+  Writeln('Sent again');
+  Value := Chan.Receive;
+  Writeln('Received');
+  Value := Chan.Receive;
+  Writeln('Received again');
+  if Chan.TryReceive(Value) then
+    Writeln('Received a third time')
+  else
+    Writeln('Channel is empty. Cannot receive any further');
+  Readln;
+end.
+```
+
+Output:
+
+```shell
+Sent
+Sent again
+Received
+Received again
+Channel is empty. Cannot receive any further
+```
+
+**Channel directions**
+
+When you pass the channel as a parameter, sometimes you want to make sure that it will be used only to send or receive.
+
+```pascal
+begin
+  var Chan := Channels.Make<Boolean>;
+  
+  var SendChan := Chan.AsSender;
+  var RecChan := Chan.AsReceiver;
+end.
+```
+
+**Select**
+
+Use Select to wait on multiple channels operations. The following example will wait until both channels are queued with data.
+
+```pascal
+begin
+  var Stopwatch := TStopwatch.StartNew;
+  var C1 := Channels.Make<string>;
+  var C2 := Channels.Make<string>;
+
+  TThread.CreateAnonymousThread(procedure
+    begin
+      Sleep(2000);
+      if Assigned(C1) then
+        C1.Send('One');
+    end).Start;
+
+  TThread.CreateAnonymousThread(procedure
+    begin
+      Sleep(1000);
+      if Assigned(C2) then
+        C2.Send('Two');
+    end).Start;
+
+  var Select := Channels.Select;
+
+  Channels.Case<string>(Select, C1.AsReceiver, procedure(const Value: string)
+    begin
+      Writeln(Value);
+    end);
+  Channels.Case<string>(Select, C2.AsReceiver, procedure(const Value: string)
+    begin
+      Writeln(Value);
+    end);
+  Select.Run;
+
+  Writeln('Execution time: ', Stopwatch.Elapsed.TotalMilliseconds);
+  Readln;
+end;
+```
+
+Output:
+
+```shell
+Two
+One
+Execution time:  2.09054930000000E+0003
+```
+
+**Select with a timeout**
+
+You can set a timeout and a failed procedure, in case you are dealing with and external resource, or if you want to limit the execution time.
+
+```pascal
+begin
+  var Stopwatch := TStopwatch.StartNew;
+  var C1 := Channels.Make<string>;
+  var C2 := Channels.Make<string>;
+
+  TThread.CreateAnonymousThread(procedure
+    begin
+      Sleep(2000);
+      if Assigned(C1) then
+        C1.Send('One');
+    end).Start;
+
+  TThread.CreateAnonymousThread(procedure
+    begin
+      Sleep(1000);
+      if Assigned(C2) then
+        C2.Send('Two');
+    end).Start;
+
+  var Select := Channels.Select;
+
+  Channels.Case<string>(Select, C1.AsReceiver, procedure(const Value: string)
+    begin
+      Writeln(Value);
+    end);
+  Channels.Case<string>(Select, C2.AsReceiver, procedure(const Value: string)
+    begin
+      Writeln(Value);
+    end);
+  Select.Run(1500, procedure
+    begin
+      Writeln('Failed');
+    end);
+
+  Writeln('Execution time: ', Stopwatch.Elapsed.TotalMilliseconds);
+  Readln;
+end;
+```
+
+Output:
+
+```shell
+Two
+Failed
+Execution time:  1.53175820000000E+0003
+```
+
+**Non-blocking select**
+
+Use Select with a default action to achieve a non-blocking select.
+
+```pascal
+begin
+  var C1 := Channels.Make<string>;
+  var C2 := Channels.Make<string>;
+
+  C1.Send('One');
+
+  var Select := Channels.Select;
+
+  Channels.Case<string>(Select, C1.AsReceiver, procedure(const Value: string)
+    begin
+      Writeln(Value);
+    end);
+  Channels.Case<string>(Select, C2.AsReceiver, procedure(const Value: string)
+    begin
+      Writeln(Value);
+    end);
+  Select.Run(procedure
+      begin
+        Writeln('Default');
+      end);
+      
+  Select := Channels.Select;
+
+  Channels.Case<string>(Select, C1.AsReceiver, procedure(const Value: string)
+    begin
+      Writeln(Value);
+    end);
+  Channels.Case<string>(Select, C2.AsReceiver, procedure(const Value: string)
+    begin
+      Writeln(Value);
+    end);
+  Select.Run(procedure
+      begin
+        Writeln('Default');
+      end);
+
+  Readln;
+end;
+```
+
+Output:
+
+```shell
+One
+Default
+```
+
+**Closing channels**
+
+You can set a channel as closed. When a channel is closed sending will automatically fail.
+
+ATTENTION: that means you should check for `Closed`, as sending through a closed channel will hang. The same for receiving on a empty closed channel.
+
+```pascal
+begin
+  var Channel := Channels.Make<Boolean>(2);
+
+  Channel.Send(True);
+  Channel.Send(True);
+
+  Channel.Close;
+  
+  // Channel.Send(True); <-- This would hang
+
+  if Channel.Closed then
+    Writeln('Closed')
+  else
+    Writeln('Not closed');
+
+  Channel.Receive;
+  Channel.Receive;
+
+  // Channel.Receive; <-- This would hang
+
+  if Channel.Closed then
+    Writeln('Closed')
+  else
+    Writeln('Not closed');
+  
+  Readln;
+end;
+```
+
+Output:
+
+```shell
+Not closed
+Closed
+```
+
+**Enumerating closed channels**
+
+You can enumerate a closed channel. If you try to enumerate an open channel you receive an `EChannel` exception.
+
+```pascal
+begin
+  var Channel := Channels.Make<string>(2);
+
+  Channel.Send('One');
+  Channel.Send('Two');
+
+  Channel.Close;
+  
+  with Channel.GetEnumerator do
+    while MoveNext do
+      Writeln(Current);
+  
+  Readln;
+end;
+```
+
+Output:
+
+```shell
+One
+Two
+```
+
+
+
+
+
+
+
+
 

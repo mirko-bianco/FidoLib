@@ -348,6 +348,10 @@
         <DCCReference Include="Caching\Fido.Caching.pas"/>
         <DCCReference Include="Db\Fido.Db.Transaction.Handler.FireDac.pas"/>
         <DCCReference Include="Fido.Exceptions.Marshalling.pas"/>
+        <DCCReference Include="Db\Fido.Db.Transaction.Handler.FireDac.pas"/>
+        <DCCReference Include="Fido.Channels.Impl.pas"/>
+        <DCCReference Include="Fido.Channels.Intf.pas"/>
+        <DCCReference Include="Fido.Channels.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
