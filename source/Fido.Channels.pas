@@ -42,22 +42,22 @@ type
     class function Make<T>(const BufferSize: Integer = 1): IChannel<T>; static;
     class function Select: ISelect; static;
     // Sets up a case triggered by a message received on the channel that will execute an action
-    class procedure &Case<T>(const Select: ISelect; const Channel: IChannelReceiver<T>; const Action: Action<T>); overload; static;
+    class procedure &Case<T>(const Select: ISelect; const Channel: IChannelReceiver<T>; const Action: TAction<T>); overload; static;
     // Sets up a case triggered by a message received on the channel
     class procedure &Case<T>(const Select: ISelect; const Channel: IChannelReceiver<T>); overload; static;
   private
-    class function ValueAction<T>(const Action: Action<T>): Action<TValue>; static;
+    class function ValueAction<T>(const Action: TAction<T>): TAction<TValue>; static;
     class function Getter<T>(const Channel: IChannelReceiver<T>): TFunc<TValue>; static;
     class function TryGetter<T>(const Channel: IChannelReceiver<T>): TryReceiveFunc; static;
 
-    class function LocalAction<T>(const Action: Action<T>): Action<TValue>; static;
+    class function LocalAction<T>(const Action: TAction<T>): TAction<TValue>; static;
   end;
 
 implementation
 
 { Channels }
 
-class function Channels.LocalAction<T>(const Action: Action<T>): Action<TValue>;
+class function Channels.LocalAction<T>(const Action: TAction<T>): TAction<TValue>;
 begin
   Result := nil;
   if Assigned(Action) then
@@ -67,7 +67,7 @@ begin
       end;
 end;
 
-class function Channels.ValueAction<T>(const Action: Action<T>): Action<TValue>;
+class function Channels.ValueAction<T>(const Action: TAction<T>): TAction<TValue>;
 begin
   Result := LocalAction<T>(Action);
 end;
@@ -96,7 +96,7 @@ begin
   &Case<T>(Select, Channel, nil);
 end;
 
-class procedure Channels.&Case<T>(const Select: ISelect; const Channel: IChannelReceiver<T>; const Action: Action<T>);
+class procedure Channels.&Case<T>(const Select: ISelect; const Channel: IChannelReceiver<T>; const Action: TAction<T>);
 var
   LGetter: TFunc<TValue>;
 begin

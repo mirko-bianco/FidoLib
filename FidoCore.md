@@ -2306,7 +2306,7 @@ Default
 
 **Closing channels**
 
-You can set a channel as closed. When a channel is closed sending will automatically fail.
+You can set a channel as closed. After a channel is closed sending will hang indefinitely, That is not a problem since it's the sender who's in control of the channel.
 
 ATTENTION: that means you should check for `Closed`, as sending through a closed channel will hang. The same for receiving on a empty closed channel.
 

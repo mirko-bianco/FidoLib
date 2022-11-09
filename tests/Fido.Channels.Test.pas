@@ -43,7 +43,7 @@ type
     procedure BufferedChannelBlocksSendWhenQueueIsAvailable;
 
     [Test]
-    procedure ChannelIsClosedWhenCloseIsCalled;
+    procedure ChannelIsClosedWhenCloseIsCalledAndQueueIsEmpty;
 
     [Test]
     procedure ChannelDoesNotBlockTryReceiveEvenWhenQueueISEmpty;
@@ -53,6 +53,12 @@ type
 
     [Test]
     procedure ChannelGetEnumeratorWorksWhenChannelIsClosed;
+
+    [Test]
+    procedure ChannelSendRaisesEChannelWhenChannelIsClosed;
+
+    [Test]
+    procedure ChannelReceiveRaisesEChannelWhenChannelIsClosed;
 
     [Test]
     procedure SelectRunBlocksUntilAllChannelsAreReceivedWithNoFeedback;
@@ -220,7 +226,7 @@ begin
   Assert.IsFalse(Enumerator.MoveNext);
 end;
 
-procedure TChannelsTests.ChannelIsClosedWhenCloseIsCalled;
+procedure TChannelsTests.ChannelIsClosedWhenCloseIsCalledAndQueueIsEmpty;
 begin
   var Channel := Channels.Make<Boolean>(2);
 
@@ -229,12 +235,46 @@ begin
 
   Channel.Close;
 
-  Assert.IsTrue(Channel.Closed);
+  Assert.IsFalse(Channel.Closed);
 
   Channel.Receive;
   Channel.Receive;
 
   Assert.IsTrue(Channel.Closed);
+end;
+
+procedure TChannelsTests.ChannelReceiveRaisesEChannelWhenChannelIsClosed;
+begin
+  var Channel := Channels.Make<Boolean>(2);
+
+  Channel.Send(True);
+  Channel.Close;
+
+  Channel.Receive;
+
+  Assert.WillRaise(procedure
+    begin
+      Channel.Receive;
+    end,
+    EChannel)
+end;
+
+procedure TChannelsTests.ChannelSendRaisesEChannelWhenChannelIsClosed;
+begin
+  var Channel := Channels.Make<Boolean>(2);
+
+  Channel.Send(True);
+  Channel.Send(True);
+
+  Channel.Receive;
+
+  Channel.Close;
+
+  Assert.WillRaise(procedure
+    begin
+      Channel.Send(True);
+    end,
+    EChannel)
 end;
 
 procedure TChannelsTests.ChannelTryReceiveReturnsFalseIfDataIsNotQueued;

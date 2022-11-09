@@ -50,7 +50,6 @@ type
 
     function Receive: T;
     function TryReceive(out Value: T): Boolean;
-    procedure Close;
     function Closed: Boolean;
     function GetEnumerator: IEnumerator<T>;
   end;
@@ -75,7 +74,7 @@ type
    ISelect = interface
     ['{4ABED8E1-1683-47C5-B245-6B2452D2C543}']
 
-    procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: Action<TValue>); overload;
+    procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: TAction<TValue>); overload;
     procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc) overload;
 
     // Blocking, waiting for all the cases to happen

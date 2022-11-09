@@ -62,13 +62,13 @@ type
   TSelect = class(TInterfacedObject, ISelect)
   private
     FGetters: TArray<TFunc<TValue>>;
-    FActions: TArray<Action<TValue>>;
+    FActions: TArray<TAction<TValue>>;
     FTryGetters: TArray<TryReceiveFunc>;
 
     procedure NoAction(const Value: TValue);
     procedure NoFailAction;
   public
-    procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: Action<TValue>); overload;
+    procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: TAction<TValue>); overload;
     procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc) overload;
 
     // Blocking, waiting for all the cases to happen
@@ -107,7 +107,7 @@ function TChannel<T>.Closed: Boolean;
 begin
   TMonitor.Enter(Self);
   try
-    Result := FClosed;
+    Result := FClosed and (FQueue.Count = 0);
   finally
     TMonitor.Exit(Self);
   end;
@@ -124,11 +124,11 @@ end;
 function TChannel<T>.DoTryReceive(out Value: T): Boolean;
 begin
   Result := False;
+  if Closed then
+    raise EChannel.Create('Cannot receive from a closed channel.');
   if not TMonitor.TryEnter(Self) then
     Exit;
   try
-    if Closed and (FQueue.Count = 0) then
-      Exit;
     Result := FQueue.TryDequeue(Value);
   finally
     TMonitor.Exit(Self);
@@ -138,11 +138,11 @@ end;
 function TChannel<T>.DoTrySend(const Value: T): Boolean;
 begin
   Result := False;
-  if Closed then
-    Exit;
   if not TMonitor.TryEnter(Self) then
     Exit;
   try
+    if FClosed then
+      raise EChannel.Create('Cannot send to a closed channel.');
     if (FQueue.Count < FBufferSize) then
     begin
       FQueue.Enqueue(Value);
@@ -155,11 +155,11 @@ end;
 
 function TChannel<T>.GetEnumerator: IEnumerator<T>;
 begin
-  if not Closed then
-    raise EChannel.Create('Cannot get enumerator from an open channel.');
-
   TMonitor.Enter(Self);
   try
+    if not FClosed then
+      raise EChannel.Create('Cannot get enumerator from an open channel.');
+
     Result := TCollections.CreateList<T>(FQueue.ToArray).GetEnumerator();
   finally
     TMonitor.Exit(Self);
@@ -190,7 +190,7 @@ end;
 
 { TSelect }
 
-procedure TSelect.&Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: Action<TValue>);
+procedure TSelect.&Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: TAction<TValue>);
 begin
   SetLength(FGetters, Length(FGetters) + 1);
   FGetters[High(FGetters)] := Getter;
