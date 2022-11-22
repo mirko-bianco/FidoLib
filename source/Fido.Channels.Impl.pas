@@ -118,7 +118,7 @@ begin
   inherited Create;
   FBufferSize := BufferSize;
   FQueue := TCollections.CreateQueue<T>;
-  FCLosed := False;
+  FClosed := False;
 end;
 
 function TChannel<T>.DoTryReceive(out Value: T): Boolean;
