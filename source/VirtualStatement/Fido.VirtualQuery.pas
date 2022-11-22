@@ -155,7 +155,7 @@ begin
 
   FExecutor := Utilities.CheckNotNullAndSet(StatementExecutor, 'StatementExecutor');
   FParams := TCollections.CreateDictionary<string, TParamDescriptor>([Spring.Collections.doOwnsValues]);
-  FMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([Spring.doOwnsValues]);
+  FMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([Spring.Collections.doOwnsValues]);
 
   ProcessAllAttributes;
   ValidateStatement;
