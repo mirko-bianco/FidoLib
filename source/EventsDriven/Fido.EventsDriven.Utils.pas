@@ -65,24 +65,24 @@ begin
 
   FMappings.Items[TypeInfo(string)] := function(const Payload: TValue; const ParamsCount: Integer; const Method: TRttiMethod): TArray<TValue>
     var
-      JSONValue: Shared<TJSONValue>;
+      JSONValue: IShared<TJSONValue>;
       Index: Integer;
     begin
       SetLength(Result, ParamsCount);
 
-      JSONValue := TJSONObject.ParseJSONValue(Payload.AsType<string>);
+      JSONValue := Shared.Make(TJSONObject.ParseJSONValue(Payload.AsType<string>));
 
       if ParamsCount = 1 then
       begin
-        if JSONValue.Value is TJSONArray then
-          Result[0] := JSONUnmarshaller.To(TJSONArray(JSONValue.Value).Items[0].ToJSON, Method.GetParameters[0].ParamType.Handle)
+        if JSONValue is TJSONArray then
+          Result[0] := JSONUnmarshaller.To(TJSONArray(JSONValue).Items[0].ToJSON, Method.GetParameters[0].ParamType.Handle)
         else
           Result[0] := JSONUnmarshaller.To(Payload.AsType<string>, Method.GetParameters[0].ParamType.Handle);
         Exit(Result);
       end;
 
-      for Index := 0 to Min(TJSONArray(JSONValue.Value).Count, ParamsCount) - 1 do
-        Result[Index] := JSONUnmarshaller.To(TJSONArray(JSONValue.Value).Items[Index].ToJSON, Method.GetParameters[Index].ParamType.Handle);
+      for Index := 0 to Min(TJSONArray(JSONValue).Count, ParamsCount) - 1 do
+        Result[Index] := JSONUnmarshaller.To(TJSONArray(JSONValue).Items[Index].ToJSON, Method.GetParameters[Index].ParamType.Handle);
     end;
 
   FMappings.Items[TypeInfo(TArray<TValue>)] := function(const Payload: TValue; const ParamsCount: Integer; const Method: TRttiMethod): TArray<TValue>

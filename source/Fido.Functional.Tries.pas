@@ -250,7 +250,6 @@ function TryOut<T>.Match(
   const OnFailure: OnFailureEvent<T>;
   const OnFinally: TProc): Context<T>;
 var
-  ExceptionObject: Shared<TObject>;
   LOnFailure: OnFailureEvent<T>;
   LOnFinally: TProc;
 begin
@@ -281,7 +280,6 @@ end;
 
 function TryOut<T>.Match(const OnFinally: TProc): Context<T>;
 var
-  ExceptionObject: Shared<TObject>;
   LOnFinally: TProc;
 begin
   LOnFinally := OnFinally;

@@ -62,7 +62,7 @@ type
 
     FHost: string;
     FSecured: Boolean;
-    FCustomHeaders: Shared<TStrings>;
+    FCustomHeaders: IShared<TStringList>;
     FOnError: TWebSocketOnError;
     FOnReceivedWebsocketMessage: TWebSocketOnReceivedMessage;
 
@@ -107,8 +107,8 @@ begin
 
   FHost := Host;
   FSecured := Secured;
-  FCustomHeaders := TStringList.Create;
-  FCustomHeaders.Value.AddStrings(CustomHeaders);
+  FCustomHeaders := Shared.Make(TStringList.Create);
+  FCustomHeaders.AddStrings(CustomHeaders);
   FWebSocketClient := Utilities.CheckNotNullAndSet(WebSocketClient, 'WebSocketClient');
   FOnError := OnError;
 
@@ -207,9 +207,9 @@ constructor TSignalR.Create(
   const WebSocketClient: IWebSocketClient;
   const OnError: TWebSocketOnError);
 var
-  CustomHeaders: Shared<TStrings>;
+  CustomHeaders: IShared<TStringList>;
 begin
-  CustomHeaders := TStringList.Create;
+  CustomHeaders := Shared.Make(TStringList.Create);
   Create(Host, Secured, CustomHeaders, OnReceivedMessage, WebSocketClient, OnError);
 end;
 
@@ -273,7 +273,7 @@ procedure TSignalR.Connect(
   const OnError: TWebSocketOnError);
 var
   Url: string;
-  CustomHeaders: Shared<TStringList>;
+  CustomHeaders: IShared<TStringList>;
 begin
   Url := TIdURI.URLEncode(Utilities.IfThen(Secured, 'https://', 'http://') + Host + '/SignalR/connect' +
     '?transport=webSockets' +
@@ -281,11 +281,11 @@ begin
     '&connectionToken=' + NegotiationResponse.ConnectionToken +
     '&connectionId=' + NegotiationResponse.ConnectionId);
 
-  CustomHeaders := TStringList.Create;
+  CustomHeaders := Shared.Make(TStringList.Create);
 
   FWebSocketClient.Start(
     Url,
-    CustomHeaders.Value,
+    CustomHeaders,
     OnReceivedMessage,
     OnError);
 end;

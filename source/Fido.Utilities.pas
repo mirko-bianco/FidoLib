@@ -70,15 +70,15 @@ class function Utilities.CalculateHMACSHA512(
   const Value: string;
   const Salt: string): string;
 var
-  HMAC: Shared<TIdHMACSHA512>;
+  HMAC: IShared<TIdHMACSHA512>;
   Hash: TIdBytes;
 begin
   LoadOpenSSLLibrary;
   if not TIdHashSHA512.IsAvailable then
     raise Exception.Create('SHA256 hashing is not available!');
-  HMAC := TIdHMACSHA512.Create;
-  HMAC.Value.Key := IndyTextEncoding_UTF8.GetBytes(Salt);
-  Hash := HMAC.Value.HashValue(IndyTextEncoding_UTF8.GetBytes(Value));
+  HMAC := Shared.Make(TIdHMACSHA512.Create);
+  HMAC.Key := IndyTextEncoding_UTF8.GetBytes(Salt);
+  Hash := HMAC.HashValue(IndyTextEncoding_UTF8.GetBytes(Value));
   Result := ToHex(Hash).ToUpper;
 end;
 

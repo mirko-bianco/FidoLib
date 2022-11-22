@@ -125,10 +125,10 @@ end;
 
 function TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.GetWebSocketSignature(const Key: string): string;
 var
-  Hash: Shared<TIdHashSHA1>;
+  Hash: IShared<TIdHashSHA1>;
 begin
-  Hash := TIdHashSHA1.Create;
-  Result := TNetEncoding.Base64.EncodeBytesToString(Hash.Value.HashString(Key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'));
+  Hash := Shared.Make(TIdHashSHA1.Create);
+  Result := TNetEncoding.Base64.EncodeBytesToString(Hash.HashString(Key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'));
 end;
 
 function TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.RawHeaders: TStrings;

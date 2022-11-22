@@ -58,13 +58,13 @@ function TJWTManager.VerifyToken(
   const CompactToken: string;
   const Secret: TJOSEBytes): TJWT;
 var
-  Key: Shared<TJWK>;
+  Key: IShared<TJWK>;
   Token: TJWT;
 begin
   Result := nil;
-  Key := TJWK.Create(Secret);
+  Key := Shared.Make(TJWK.Create(Secret));
   try
-    Token := TJOSE.Verify(Key.Value, CompactToken);
+    Token := TJOSE.Verify(Key, CompactToken);
     if Token.Verified then
       Result := Token;
   except
@@ -88,24 +88,24 @@ function TJWTManager.SignTokenAndReturn(
   const SigningSecret: TJOSEBytes;
   const VerificationSecret: TJOSEBytes): string;
 var
-  Signer: Shared<TJWS>;
-  SigningKey: Shared<TJWK>;
-  VerificationKey: Shared<TJWK>;
+  Signer: IShared<TJWS>;
+  SigningKey: IShared<TJWK>;
+  VerificationKey: IShared<TJWK>;
 begin
-  Signer := TJWS.Create(Token);
-  SigningKey := TJWK.Create(SigningSecret);
+  Signer := Shared.Make(TJWS.Create(Token));
+  SigningKey := Shared.Make(TJWK.Create(SigningSecret));
 
-  Signer.Value.SkipKeyValidation := False;
-  Signer.Value.Sign(SigningKey, Algorithm);
+  Signer.SkipKeyValidation := False;
+  Signer.Sign(SigningKey, Algorithm);
 
   if VerificationSecret <> '' then
-    VerificationKey := TJWK.Create(VerificationSecret)
+    VerificationKey := Shared.Make(TJWK.Create(VerificationSecret))
   else
-    VerificationKey := TJWK.Create(SigningSecret);
+    VerificationKey := Shared.Make(TJWK.Create(SigningSecret));
 
-  Signer.Value.VerifySignature(VerificationKey, Signer.Value.CompactToken);
+  Signer.VerifySignature(VerificationKey, Signer.CompactToken);
 
-  Result := Signer.Value.CompactToken;
+  Result := Signer.CompactToken;
 end;
 
 end.
