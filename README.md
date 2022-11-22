@@ -36,7 +36,7 @@ If you are willing to play by the rules then let's have fun togheter.
 
 The Fido library depends on the following open source libraries:
 
-[Spring4D](https://bitbucket.org/sglienke/spring4d/src/master/)
+[Spring4D](https://bitbucket.org/sglienke/spring4d/src/master/) (develop branch)
 
 [Delphi JOSE and JWT Library](https://github.com/paolo-rossi/delphi-jose-jwt)
 
