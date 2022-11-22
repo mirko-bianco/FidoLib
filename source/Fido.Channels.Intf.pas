@@ -71,7 +71,7 @@ type
 
   TryReceiveFunc = reference to function(out Value: TValue): Boolean;
 
-   ISelect = interface
+  ISelect = interface
     ['{4ABED8E1-1683-47C5-B245-6B2452D2C543}']
 
     procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: TAction<TValue>); overload;
