@@ -310,14 +310,14 @@ end;
 
 procedure TChannelsTests.ChannelTrySendReturnsTrueIfChannelIsNotFull;
 begin
-  var Channel := Channels.Make<string>;
+  var Channel := Channels.Make<string>(2);
   var Value: string;
 
   Channel.Send('test');
 
-  Assert.IsFalse(Channel.TrySend('another test'));
+  Assert.IsTrue(Channel.TrySend('another test'));
   Assert.AreEqual('test', Channel.Receive);
-  Assert.IsFalse(Channel.TryReceive(Value));
+  Assert.IsTrue(Channel.TryReceive(Value));
 end;
 
 procedure TChannelsTests.SelectRunBlocksUntilAllChannelsAreReceivedWithFeedback;
