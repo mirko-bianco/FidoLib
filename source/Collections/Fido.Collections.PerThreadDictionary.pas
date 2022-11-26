@@ -49,11 +49,11 @@ type
     TThreadId = Int64;
   strict private
     FLock: TLightweightMREW;
-    FFactoryFunc: TFunc<T>;
+    FFactoryFunc: Func<T>;
   protected
     FItems: IDictionary<TThreadId, T>;
   public
-    constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: TFunc<T>); reintroduce;
+    constructor Create(const Ownership: TDictionaryOwnerships; const FactoryFunc: Func<T>); reintroduce;
     destructor Destroy; override;
 
     function GetCurrent: T;
@@ -68,11 +68,11 @@ implementation
 
 constructor TPerThreadDictionary<T>.Create(
   const Ownership: TDictionaryOwnerships;
-  const FactoryFunc: TFunc<T>);
+  const FactoryFunc: Func<T>);
 begin
   inherited Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<TThreadId, T>(Ownership);
-  FFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<T>>(FactoryFunc, 'FFactoryFunc');
+  FFactoryFunc := Utilities.CheckNotNullAndSet<Func<T>>(FactoryFunc, 'FFactoryFunc');
 end;
 
 destructor TPerThreadDictionary<T>.Destroy;

@@ -199,8 +199,8 @@ begin
   inherited Create(DoInvoke);
 
   FExecutor := Utilities.CheckNotNullAndSet(StatementExecutor, 'StatementExecutor');
-  FParams := TCollections.CreateDictionary<string, TParamDescriptor>([doOwnsValues]);
-  FMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([doOwnsValues]);
+  FParams := TCollections.CreateDictionary<string, TParamDescriptor>([Spring.Collections.doOwnsValues]);
+  FMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([Spring.Collections.doOwnsValues]);
 
   ProcessAllAttributes;
   ValidateStatement;

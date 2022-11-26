@@ -36,6 +36,7 @@ type
   TDatasetFieldAttributes = class(TInterfacedObject, IDatasetFieldAttributes)
   strict private
     FMap: IDictionary<string, TDatasetFieldAttribute>;
+    FList: IList<string>;
   public
     constructor Create;
 
@@ -56,12 +57,13 @@ end;
 
 constructor TDatasetFieldAttributes.Create;
 begin
-  FMap := TCollections.CreateOrderedDictionary<string, TDatasetFieldAttribute>(TIStringComparer.Ordinal);
+  FMap := TCollections.CreateDictionary<string, TDatasetFieldAttribute>(TIStringComparer.Ordinal);
+  FList := TCollections.CreateList<string>(TIStringComparer.Ordinal)
 end;
 
 function TDatasetFieldAttributes.GetFieldNamesEnumerator: IEnumerator<string>;
 begin
-  Result := FMap.Keys.GetEnumerator;
+  Result := FList.GetEnumerator;
 end;
 
 procedure TDatasetFieldAttributes.SetAttribute(
@@ -73,6 +75,9 @@ procedure TDatasetFieldAttributes.SetAttribute(
   const Visible: Boolean;
   const Precision: Integer = 0);
 begin
+  if not FList.Contains(FieldName) then
+    FList.Add(FieldName);
+
   FMap[FieldName] :=
     TDatasetFieldAttribute.Create(
       Width,

@@ -332,7 +332,7 @@ begin
   Headers := ParseIOHandlerHeaders(Buffer);
   Topic := ParseIOHandlerTopic(Buffer);
 
-  FHandshakesMap.AddOrSetValue(Context.Connection.IOHandler, Topic);
+  FHandshakesMap[Context.Connection.IOHandler] := Topic;
   FClients.Add(Context, Topic);
 
   if Headers.ContainsKey('Upgrade') and Headers.ContainsKey('Sec-WebSocket-Key') and

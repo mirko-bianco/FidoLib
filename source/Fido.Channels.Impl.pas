@@ -62,13 +62,13 @@ type
   TSelect = class(TInterfacedObject, ISelect)
   private
     FGetters: TArray<TFunc<TValue>>;
-    FActions: TArray<TAction<TValue>>;
+    FActions: TArray<Action<TValue>>;
     FTryGetters: TArray<TryReceiveFunc>;
 
     procedure NoAction(const Value: TValue);
     procedure NoFailAction;
   public
-    procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: TAction<TValue>); overload;
+    procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: Action<TValue>); overload;
     procedure &Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc) overload;
 
     // Blocking, waiting for all the cases to happen
@@ -190,7 +190,7 @@ end;
 
 { TSelect }
 
-procedure TSelect.&Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: TAction<TValue>);
+procedure TSelect.&Case(const Getter: TFunc<TValue>; const TryGetter: TryReceiveFunc; const Action: Action<TValue>);
 begin
   SetLength(FGetters, Length(FGetters) + 1);
   FGetters[High(FGetters)] := Getter;

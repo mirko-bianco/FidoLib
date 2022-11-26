@@ -38,13 +38,14 @@ type
 
   TryOut<T> = record
   private
-    FFunctorFunc: TFunc<T>;
-    FMonadFunc: TFunc<Context<T>>;
+    FFunctorFunc: Func<T>;
+    FMonadFunc: Func<Context<T>>;
 
     function Resolve: T;
   public
-    constructor New(const FunctorFunc: TFunc<T>); overload;
-    constructor New(const MonadFunc: TFunc<Context<T>>); overload;
+    constructor New(const FunctorFunc: Func<T>); overload;
+    constructor New(const MonadFunc: Func<Context<T>>); overload;
+    constructor New(const Context: Context<T>); overload;
 
     function Match(const OnFailure: OnFailureEvent<T>; const OnFinally: TProc = nil): Context<T>; overload;
     function Match(const ExceptionClass: TExceptionClass; const ErrorMessage: string = ''; const OnFinally: TProc = nil): Context<T>; overload;
@@ -322,7 +323,7 @@ begin
   end;
 end;
 
-constructor TryOut<T>.New(const MonadFunc: TFunc<Context<T>>);
+constructor TryOut<T>.New(const MonadFunc: Func<Context<T>>);
 begin
   FFunctorFunc := nil;
   FMonadFunc := MonadFunc;
@@ -336,9 +337,15 @@ begin
     Result := FMonadFunc();
 end;
 
-constructor TryOut<T>.New(const FunctorFunc: TFunc<T>);
+constructor TryOut<T>.New(const FunctorFunc: Func<T>);
 begin
   FFunctorFunc := FunctorFunc;
+  FMonadFunc := nil;
+end;
+
+constructor TryOut<T>.New(const Context: Context<T>);
+begin
+  FFunctorFunc := Context;
   FMonadFunc := nil;
 end;
 {$ENDREGION}

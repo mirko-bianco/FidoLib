@@ -1276,8 +1276,6 @@ begin
 end;
 ```
 
-You can also set up a typed client, that adds typed functionalities to `IWebSocketClient`. 
-
 ### Consul and Fabio support
 
 Unit: `Fido.Api.Server.Consul`.
@@ -1925,7 +1923,7 @@ begin
 end;
   
 begin
-  Result := Writeln(Curry.Cook<Integer, Integer, Integer>(Add)(1)(2)); //This will return 3
+  Result := Curry.Cook<Integer, Integer, Integer>(Add)(1)(2); //This will return 3
 end;
 ```
 

@@ -111,7 +111,7 @@ procedure TClients.Add(
 begin
   FLock.BeginWrite;
   try
-    FMap.AddOrSetValue(Integer(@Context.Connection.IOHandler), TWebSocketClient.Create(Context, Topic));
+    FMap[Integer(@Context.Connection.IOHandler)] := TWebSocketClient.Create(Context, Topic);
   finally
     FLock.EndWrite;
   end;

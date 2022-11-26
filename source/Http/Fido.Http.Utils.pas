@@ -82,7 +82,7 @@ begin
   begin
     LineTokens := Line.Split([': ']);
     if (Length(LineTokens) > 1) then
-      Result.AddOrSetValue(Trim(LineTokens[0]), Trim(LineTokens[1]));
+      Result[Trim(LineTokens[0])] := Trim(LineTokens[1]);
   end;
 end;
 

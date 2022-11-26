@@ -9,6 +9,8 @@ uses
 
   DUnitX.TestFramework,
 
+  Spring,
+
   Fido.Exceptions,
   Fido.DesignPatterns.Retries,
   Fido.Functional,
@@ -243,7 +245,7 @@ end;
 procedure TFunctionalTests.ImplicitToFunc;
 var
   Ctx: Context<Integer>;
-  Func: TFunc<Integer>;
+  Func: Func<Integer>;
 begin
   Ctx := Context<Integer>.New(100);
 

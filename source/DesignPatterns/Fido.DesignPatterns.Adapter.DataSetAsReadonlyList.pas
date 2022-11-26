@@ -51,7 +51,7 @@ begin
     begin
       Result := DataSet.RecordCount;
     end,
-    function(Index: Integer): T
+    function(const Index: Integer): T
     begin
       Dataset.MoveBy(Index - FCurrentPos);
       FcurrentPos := Index;

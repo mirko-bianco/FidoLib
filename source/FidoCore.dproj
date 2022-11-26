@@ -85,8 +85,6 @@
         <VerInfo_Locale>8192</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;CFBundleName=</VerInfo_Keys>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;dxEMF.DataProvider;Winapi;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_DcpOutput>..\built\$(Platform)\$(Config)\Dcp</DCC_DcpOutput>
-        <DCC_BplOutput>..\built\$(Platform)\$(Config)\Bpl</DCC_BplOutput>
         <DCC_DcuOutput>..\built\$(Platform)\$(Config)\Dcu</DCC_DcuOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
