@@ -34,20 +34,33 @@ type
 
     [Test]
     procedure JWTManagerDoesNotVerifyAnInvalidToken;
+
+    [Test]
+    procedure JWTManagerDeserializesAValidTokenCorrectly;
+
+    [Test]
+    procedure JWTManagerDoesNotDeserializeAnInvalidToken;
   end;
 
 implementation
 
 { TJWTManagerTests }
 
+procedure TJWTManagerTests.JWTManagerDoesNotDeserializeAnInvalidToken;
+var
+  Manager: Shared<TJWTManager>;
+  Token: TJWT;
+begin
+  Token := Manager.Value.DeserializeToken(MockUtils.SomeString);
+
+  Assert.IsNull(Token);
+end;
+
 procedure TJWTManagerTests.JWTManagerDoesNotVerifyAnInvalidToken;
 var
   Manager: Shared<TJWTManager>;
-  Issuer: string;
   VerifiedToken: TJWT;
 begin
-  Issuer := MockUtils.SomeString;
-
   VerifiedToken := Manager.Value.VerifyToken(MockUtils.SomeString, MockUtils.SomeString);
 
   Assert.IsNull(VerifiedToken);
@@ -143,6 +156,35 @@ begin
 
   finally
     VerifiedToken.Free;
+  end;
+end;
+
+procedure TJWTManagerTests.JWTManagerDeserializesAValidTokenCorrectly;
+var
+  Manager: Shared<TJWTManager>;
+  Token: Shared<TJWT>;
+  Duration: Integer;
+  Issuer: string;
+  SignedToken: string;
+  DeserializedToken: TJWT;
+  Secret: string;
+begin
+  Duration := MockUtils.SomeInteger;
+  Issuer := MockUtils.SomeString;
+  Manager := TJWTManager.Create;
+
+  Token := Manager.Value.GenerateToken(Issuer, Duration);
+  Secret := MockUtils.SomeString;
+  SignedToken := Manager.Value.SignTokenAndReturn(Token, TJOSEAlgorithmId.HS256, Secret, Secret);
+
+  DeserializedToken := Manager.Value.DeserializeToken(SignedToken);
+  try
+
+    Assert.IsNotNull(DeserializedToken);
+    Assert.AreEqual(Token.Value.Claims.JSON.ToJSON, DeserializedToken.Claims.JSON.ToJSON);
+
+  finally
+    DeserializedToken.Free;
   end;
 end;
 

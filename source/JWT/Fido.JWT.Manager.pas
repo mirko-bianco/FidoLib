@@ -45,6 +45,8 @@ type
   public
     function VerifyToken(const CompactToken: string; const Secret: TJOSEBytes): TJWT;
 
+    function DeserializeToken(const CompactToken: string): TJWT;
+
     function GenerateToken(const Issuer: string; const DefaultValidityInSecs: Extended = System.Math.Infinity): TJWT;
 
     function SignTokenAndReturn(const Token: TJWT; const Algorithm: TJOSEAlgorithmId; const SigningSecret: TJOSEBytes; const VerificationSecret: TJOSEBytes): string;
@@ -67,6 +69,15 @@ begin
     Token := TJOSE.Verify(Key, CompactToken);
     if Token.Verified then
       Result := Token;
+  except
+  end;
+end;
+
+function TJWTManager.DeserializeToken(const CompactToken: string): TJWT;
+begin
+  Result := nil;
+  try
+    Result := TJOSE.DeserializeOnly(CompactToken);
   except
   end;
 end;
