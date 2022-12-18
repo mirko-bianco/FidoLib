@@ -20,45 +20,27 @@
  * SOFTWARE.
  *)
 
-unit Fido.EventsDriven.Listener.Intf;
+unit Fido.EventsDriven;
 
 interface
 
 uses
-  Fido.EventsDriven;
+  Spring;
 
 type
-  TConsumerData = record
-  private
-    FConsumer: TObject;
-    FMethodName: string;
-  public
-    constructor Create(const Consumer: TObject; const MethodName: string);
+  {$M+}
+  TEventDrivenGlobalMiddlewareProc = reference to procedure(const ConsumerMethod: Action; const ClassName: string; const MethodName: string);
+  {$M-}
 
-    property Consumer: TObject read FConsumer;
-    property MethodName: string read FMethodName;
-  end;
-
-
-  IEventsDrivenListener = interface(IInvokable)
-  ['{E99B154A-8854-4C17-9357-B0E13C3DE909}']
-
-    procedure RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
-
-    procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
-    procedure UnsubscribeFrom(const Channel: string; const EventName: string);
-
-    procedure Stop;
-  end;
+var
+  DefaultGlobalMiddlewareProc: TEventDrivenGlobalMiddlewareProc;
 
 implementation
 
-{ TResponderData }
-
-constructor TConsumerData.Create(const Consumer: TObject; const MethodName: string);
-begin
-  FConsumer := Consumer;
-  FMethodName := MethodName;
-end;
+initialization
+  DefaultGlobalMiddlewareProc := procedure(const ConsumerMethod: Action; const ClassName: string; const MethodName: string)
+    begin
+      ConsumerMethod();
+    end;
 
 end.

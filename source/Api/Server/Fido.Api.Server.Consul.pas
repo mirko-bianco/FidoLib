@@ -55,11 +55,11 @@ type
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
-    procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
-    procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
-    procedure RegisterGlobalMiddleware(const MiddlewareProc: TGlobalMiddlewareProc);
-    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TFormatExceptionToResponseProc);
+    procedure RegisterRequestMiddleware(const Name: string; const Step: TApiRequestMiddlewareFunc);
+    procedure RegisterResponseMiddleware(const Name: string; const Step: TApiResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const MiddlewareProc: TApiExceptionMiddlewareProc);
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TApiGlobalMiddlewareProc);
+    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TApiFormatExceptionToResponseProc);
   end;
 
 implementation
@@ -96,24 +96,24 @@ begin
   Result := FApiServer.Port;
 end;
 
-procedure TConsulAwareApiServer.RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
+procedure TConsulAwareApiServer.RegisterExceptionMiddleware(const MiddlewareProc: TApiExceptionMiddlewareProc);
 begin
   FApiServer.RegisterExceptionMiddleware(MiddlewareProc)
 end;
 
-procedure TConsulAwareApiServer.RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TFormatExceptionToResponseProc);
+procedure TConsulAwareApiServer.RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TApiFormatExceptionToResponseProc);
 begin
   FApiServer.RegisterFormatExceptionToResponse(FormatExceptionToResponseProc)
 end;
 
-procedure TConsulAwareApiServer.RegisterGlobalMiddleware(const MiddlewareProc: TGlobalMiddlewareProc);
+procedure TConsulAwareApiServer.RegisterGlobalMiddleware(const MiddlewareProc: TApiGlobalMiddlewareProc);
 begin
   FApiServer.RegisterGlobalMiddleware(MiddlewareProc);
 end;
 
 procedure TConsulAwareApiServer.RegisterRequestMiddleware(
   const Name: string;
-  const Step: TRequestMiddlewareFunc);
+  const Step: TApiRequestMiddlewareFunc);
 begin
   FApiServer.RegisterRequestMiddleware(Name, Step);
 end;
@@ -160,7 +160,7 @@ end;
 
 procedure TConsulAwareApiServer.RegisterResponseMiddleware(
   const Name: string;
-  const Step: TResponseMiddlewareProc);
+  const Step: TApiResponseMiddlewareProc);
 begin
   FApiServer.RegisterResponseMiddleware(Name, Step);
 end;

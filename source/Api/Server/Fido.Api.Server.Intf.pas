@@ -38,15 +38,15 @@ uses
 
 type
   {$M+}
-  TGlobalMiddlewareProc = reference to procedure(const EndpointMethod: Action; const ClassName: string; const MethodName: string);
+  TApiGlobalMiddlewareProc = reference to procedure(const EndpointMethod: Action; const ClassName: string; const MethodName: string);
 
-  TRequestMiddlewareFunc = reference to function(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
+  TApiRequestMiddlewareFunc = reference to function(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
 
-  TResponseMiddlewareProc = reference to procedure(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
+  TApiResponseMiddlewareProc = reference to procedure(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
 
-  TExceptionMiddlewareProc = reference to procedure(const E: Exception);
+  TApiExceptionMiddlewareProc = reference to procedure(const E: Exception);
 
-  TFormatExceptionToResponseProc = reference to procedure(const E: Exception; const ApiResponse: IHttpResponse);
+  TApiFormatExceptionToResponseProc = reference to procedure(const E: Exception; const ApiResponse: IHttpResponse);
   {$M-}
 
   IApiServer = interface(IInvokable)
@@ -56,17 +56,17 @@ type
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
-    procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
-    procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
-    procedure RegisterGlobalMiddleware(const MiddlewareProc: TGlobalMiddlewareProc);
-    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TFormatExceptionToResponseProc);
+    procedure RegisterRequestMiddleware(const Name: string; const Step: TApiRequestMiddlewareFunc);
+    procedure RegisterResponseMiddleware(const Name: string; const Step: TApiResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const MiddlewareProc: TApiExceptionMiddlewareProc);
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TApiGlobalMiddlewareProc);
+    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TApiFormatExceptionToResponseProc);
   end;
 
 var
-  DefaultExceptionMiddlewareProc: TExceptionMiddlewareProc;
-  DefaultGlobalMiddlewareProc: TGlobalMiddlewareProc;
-  DefaultFormatExceptionToResponseProc: TFormatExceptionToResponseProc;
+  DefaultExceptionMiddlewareProc: TApiExceptionMiddlewareProc;
+  DefaultGlobalMiddlewareProc: TApiGlobalMiddlewareProc;
+  DefaultFormatExceptionToResponseProc: TApiFormatExceptionToResponseProc;
 
 implementation
 

@@ -60,11 +60,11 @@ type
     FEndPoints: IDictionary<string, IDictionary<THttpMethod, TEndPoint>>;
     FApiServerRequestFactory: TApiServerRequestFactoryFunc;
     FApiServerResponseFactory: TApiServerResponseFactoryFunc;
-    FRequestMiddlewares: IDictionary<string, TRequestMiddlewareFunc>;
-    FResponseMiddlewares: IDictionary<string, TResponseMiddlewareProc>;
-    FExceptionMiddlewareProc: TExceptionMiddlewareProc;
-    FFormatExceptionToResponseProc: TFormatExceptionToResponseProc;
-    FGlobalMiddleware: TGlobalMiddlewareProc;
+    FRequestMiddlewares: IDictionary<string, TApiRequestMiddlewareFunc>;
+    FResponseMiddlewares: IDictionary<string, TApiResponseMiddlewareProc>;
+    FExceptionMiddlewareProc: TApiExceptionMiddlewareProc;
+    FFormatExceptionToResponseProc: TApiFormatExceptionToResponseProc;
+    FGlobalMiddleware: TApiGlobalMiddlewareProc;
     FLock: TLightweightMREW;
   private
     function TryGetEndPoint(const ApiRequest: IHttpRequest; out EndPoint: TEndPoint): Boolean;
@@ -97,11 +97,11 @@ type
     function IsActive: Boolean; virtual; abstract;
     procedure SetActive(const Value: Boolean); virtual; abstract;
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
-    procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
-    procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
-    procedure RegisterGlobalMiddleware(const MiddlewareProc: TGlobalMiddlewareProc);
-    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TFormatExceptionToResponseProc);
+    procedure RegisterRequestMiddleware(const Name: string; const Step: TApiRequestMiddlewareFunc);
+    procedure RegisterResponseMiddleware(const Name: string; const Step: TApiResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const MiddlewareProc: TApiExceptionMiddlewareProc);
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TApiGlobalMiddlewareProc);
+    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TApiFormatExceptionToResponseProc);
   end;
 
 implementation
@@ -170,8 +170,8 @@ begin
   FEndPoints := TCollections.CreateDictionary<string, IDictionary<THttpMethod, TEndPoint>>(TIStringComparer.Ordinal);
   FResources := TCollections.CreateObjectList<TObject>;
 
-  FRequestMiddlewares := TCollections.CreateDictionary<string, TRequestMiddlewareFunc>(TIStringComparer.Ordinal);
-  FResponseMiddlewares := TCollections.CreateDictionary<string, TResponseMiddlewareProc>(TIStringComparer.Ordinal);
+  FRequestMiddlewares := TCollections.CreateDictionary<string, TApiRequestMiddlewareFunc>(TIStringComparer.Ordinal);
+  FResponseMiddlewares := TCollections.CreateDictionary<string, TApiResponseMiddlewareProc>(TIStringComparer.Ordinal);
   FExceptionMiddlewareProc := DefaultExceptionMiddlewareProc;
   FGlobalMiddleware := DefaultGlobalMiddlewareProc;
   FFormatExceptionToResponseProc := DefaultFormatExceptionToResponseProc;
@@ -495,8 +495,8 @@ begin
           Params: TArray<TValue>;
           Param: TValue;
           Step: TPair<string, string>;
-          PApiepFunc: TRequestMiddlewareFunc;
-          PostStepProc: TResponseMiddlewareProc;
+          PApiepFunc: TApiRequestMiddlewareFunc;
+          PostStepProc: TApiResponseMiddlewareProc;
           ResponseCode: Integer;
           ResponseText: string;
           Result: TValue;
@@ -752,12 +752,12 @@ begin
   end;
 end;
 
-procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TFormatExceptionToResponseProc);
+procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TApiFormatExceptionToResponseProc);
 begin
 
 end;
 
-procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterGlobalMiddleware(const MiddlewareProc: TGlobalMiddlewareProc);
+procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterGlobalMiddleware(const MiddlewareProc: TApiGlobalMiddlewareProc);
 begin
   FLock.BeginWrite;
   try
@@ -769,14 +769,14 @@ end;
 
 procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterRequestMiddleware(
   const Name: string;
-  const Step: TRequestMiddlewareFunc);
+  const Step: TApiRequestMiddlewareFunc);
 begin
   FRequestMiddlewares.Add(Name, Step);
 end;
 
 procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterResponseMiddleware(
   const Name: string;
-  const Step: TResponseMiddlewareProc);
+  const Step: TApiResponseMiddlewareProc);
 begin
   FResponseMiddlewares.Add(Name, Step);
 end;
