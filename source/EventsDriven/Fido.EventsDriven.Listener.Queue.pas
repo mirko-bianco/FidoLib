@@ -122,7 +122,7 @@ begin
   TCollections.CreateList<TPair<string, TConsumerData>>(Items).ForEach(
     procedure(const Item: TPair<string, TConsumerData>)
     var
-      Value: Nullable<PayloadType>;
+      Res: Nullable<PayloadType>;
       Ctx: TRttiContext;
       RttiType: TRttiType;
       LItem: TPair<string, TConsumerData>;
@@ -132,8 +132,8 @@ begin
       LItem := Item;
       while Assigned(FActive) and FActive.Value and CanContinue do
       begin
-        Value := QueueConsumer.Pop(Item.Key);
-        CanContinue := Value.HasValue;
+        Res := QueueConsumer.Pop(Item.Key);
+        CanContinue := Res.HasValue;
         if not CanContinue then
           Break;
 
@@ -151,10 +151,11 @@ begin
             begin
               TryOut<Void>.New(function: Void
                 begin
-                  Method.Invoke(LItem.Value.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Value, Method));
-                end).Match(function(const E: TObject): Void
+                  Method.Invoke(LItem.Value.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Res, Method));
+                end).Match(function(const E: Exception): Nullable<Void>
                 begin
-                  QueueConsumer.PushBack(LItem.Key, Value).Value;
+                  QueueConsumer.PushBack(LItem.Key, Res).Value;
+                  Result := Void.Get;
                 end);
             end);
       end;
