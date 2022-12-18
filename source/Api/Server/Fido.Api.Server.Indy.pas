@@ -71,6 +71,7 @@ type
     procedure OnHTTPCommandEvent(Context: TIdContext; RequestInfo: TIdHTTPRequestInfo; ResponseInfo: TIdHTTPResponseInfo);
     function OnVerifyPeer(Certificate: TIdX509; AOk: Boolean; ADepth: integer; AError: Integer): Boolean;
     procedure OnQuerySSLPort(APort: Word; var VUseSSL: Boolean);
+    procedure OnCommandError(Context: TIdContext; RequestInfo: TIdHTTPRequestInfo; ResponseInfo: TIdHTTPResponseInfo; Exception: Exception);
   public
     constructor Create(const Port: Word; const MaxConnections: Integer; const WebServer: IWebServer; const SSLCertData: TSSLCertData; const ApiRequestFactory: TIndyApiServerRequestFactory = nil;
       const ApiResponseFactory: TIndyApiServerResponseFactory = nil);
@@ -128,6 +129,7 @@ begin
   FHttpServer.OnCommandGet := OnHTTPCommandEvent;
   FHttpServer.OnCommandOther := OnHTTPCommandEvent;
   FHttpServer.OnParseAuthentication := OnParseAuthentication;
+  FHttpServer.OnCommandError := OnCommandError;
   if UseSSL then
   begin
     FHttpServer.IOhandler := FSSLIOHandler;
@@ -178,6 +180,15 @@ end;
 function TIndyApiServer.IsActive: Boolean;
 begin
   Result := FHttpServer.Active;
+end;
+
+procedure TIndyApiServer.OnCommandError(
+  Context: TIdContext;
+  RequestInfo: TIdHTTPRequestInfo;
+  ResponseInfo: TIdHTTPResponseInfo;
+  Exception: Exception);
+begin
+  DoFormatExceptionToResponse(Exception, GetApiResponseFactory()(Context, RequestInfo, ResponseInfo));
 end;
 
 procedure TIndyApiServer.OnHTTPCommandEvent(

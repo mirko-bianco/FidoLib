@@ -58,6 +58,8 @@ type
     procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
     procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TGlobalMiddlewareProc);
+    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TFormatExceptionToResponseProc);
   end;
 
 implementation
@@ -97,6 +99,16 @@ end;
 procedure TConsulAwareApiServer.RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
 begin
   FApiServer.RegisterExceptionMiddleware(MiddlewareProc)
+end;
+
+procedure TConsulAwareApiServer.RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TFormatExceptionToResponseProc);
+begin
+  FApiServer.RegisterFormatExceptionToResponse(FormatExceptionToResponseProc)
+end;
+
+procedure TConsulAwareApiServer.RegisterGlobalMiddleware(const MiddlewareProc: TGlobalMiddlewareProc);
+begin
+  FApiServer.RegisterGlobalMiddleware(MiddlewareProc);
 end;
 
 procedure TConsulAwareApiServer.RegisterRequestMiddleware(

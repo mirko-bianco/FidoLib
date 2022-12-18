@@ -68,8 +68,7 @@ type
 
   EApiServer500 = class(EApiServer)
   public
-    constructor Create(const Msg: string); overload;
-    constructor Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string); overload;
+    constructor Create(const Msg: string);
   end; //Internal server error
 
   EApiServer503 = class(EApiServer)
@@ -84,26 +83,6 @@ type
 implementation
 
 { EApiServer500 }
-
-constructor EApiServer500.Create(
-  const Msg: string;
-  const Logger: ILogger;
-  const &Class: string;
-  const Method: string);
-var
-  LoggedData: IShared<TLoggedData>;
-begin
-  Create(Msg);
-
-  LoggedData := Shared.Make(TLoggedData.Create('Error', &Class, Method));
-
-  Logger.Log(TLogEvent.Create(
-    TLogLevel.Error,
-    TLogEventType.Text,
-    Msg,
-    nil,
-    TValue.From<TLoggedData>(LoggedData)));
-end;
 
 constructor EApiServer500.Create(const Msg: string);
 begin
