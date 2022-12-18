@@ -27,6 +27,7 @@ package FidoCore;
 {$ENDIF IMPLICITBUILDING}
 {$RUNONLY}
 {$IMPLICITBUILD ON}
+{$STRONGLINKTYPES ON}
 
 requires
   rtl,

@@ -64,7 +64,7 @@ begin
       Result := TJSONClientVirtualApi<Api, Configuration>.Create(Conf).GetSelf;
     end;
 
-  Container.RegisterType<Api>.DelegateTo(
+  Container.RegisterType<Api>(
     function: Api
     begin
       Result := GetFunc(Container.Resolve<Configuration>);
@@ -88,7 +88,7 @@ begin
       Result := RInterface;
     end);
   {$ELSE}
-  Container.RegisterType<T>.DelegateTo(
+  Container.RegisterType<T>(
     function: T
     begin
       Result := TVirtualQuery<TRecord, T>.GetInstance(Container, StatementExecutorServiceName).GetSelf;
@@ -112,7 +112,7 @@ begin
       Result := RInterface;
     end);
   {$ELSE}
-  Container.RegisterType<T>.DelegateTo(
+  Container.RegisterType<T>(
     function: T
     begin
       Result := TVirtualStatement<T>.GetInstance(Container, StatementExecutorServiceName).GetSelf;
