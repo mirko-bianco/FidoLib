@@ -518,12 +518,15 @@ begin
                   Exit;
                 end;
 
-              FGlobalMiddleware(procedure
-                begin
-                  Result := Method.Invoke(EndPoint.Instance, Params);
-                end,
-                EndPoint.Instance.AsObject.ClassName,
-                EndPoint.MethodName);
+              if Endpoint.ExcludeGlobalMiddleware then
+                Result := Method.Invoke(EndPoint.Instance, Params)
+              else
+                FGlobalMiddleware(procedure
+                  begin
+                    Result := Method.Invoke(EndPoint.Instance, Params);
+                  end,
+                  EndPoint.Instance.AsObject.ClassName,
+                  EndPoint.MethodName);
 
               for Step in Endpoint.PostProcessPipelineSteps do
               begin
@@ -603,6 +606,7 @@ begin
       Parameters: IList<TEndPointParameter>;
       PreProcessPipelineSteps: IList<TPair<string, string>>;
       PostProcessPipelineSteps: IList<TPair<string, string>>;
+      FlagExcludeGlobalMiddleware: Boolean;
     begin
       ResponseCode := 200;
       ResponseText := 'OK';
@@ -612,6 +616,7 @@ begin
       Parameters := TCollections.CreateList<TEndPointParameter>;
       PreProcessPipelineSteps := TCollections.CreateList<TPair<string, string>>;
       PostProcessPipelineSteps := TCollections.CreateList<TPair<string, string>>;
+      FlagExcludeGlobalMiddleware := False;
 
       TCollections.CreateList<TCustomAttribute>(Method.GetAttributes).ForEach(
         procedure(const Attribute: TCustomAttribute)
@@ -629,7 +634,9 @@ begin
           else if Attribute is RequestMiddlewareAttribute then
             PreProcessPipelineSteps.Add(TPair<string, string>.Create((Attribute as RequestMiddlewareAttribute).StepName, (Attribute as RequestMiddlewareAttribute).CommaSeparatedParams))
           else if Attribute is ResponseMiddlewareAttribute then
-            PostProcessPipelineSteps.Add(TPair<string, string>.Create((Attribute as ResponseMiddlewareAttribute).StepName, (Attribute as ResponseMiddlewareAttribute).CommaSeparatedParams));
+            PostProcessPipelineSteps.Add(TPair<string, string>.Create((Attribute as ResponseMiddlewareAttribute).StepName, (Attribute as ResponseMiddlewareAttribute).CommaSeparatedParams))
+          else if Attribute is ExcludeGlobalMiddlewareAttribute then
+            FlagExcludeGlobalMiddleware := True;
         end);
 
       if (MethodPath.IsEmpty) and
@@ -729,12 +736,13 @@ begin
             ResponseCode,
             ResponseText,
             PreProcessPipelineSteps,
-            PostProcessPipelineSteps);
+            PostProcessPipelineSteps,
+            FlagExcludeGlobalMiddleware);
       end;
     end);
 end;
 
-procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
+procedure TAbstractApiServer<TApiServerRequestFactoryFunc, TApiServerResponseFactoryFunc>.RegisterExceptionMiddleware(const MiddlewareProc: TApiExceptionMiddlewareProc);
 begin
   FLock.BeginWrite;
   try

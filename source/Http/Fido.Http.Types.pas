@@ -81,10 +81,11 @@ type
     FResponseText: string;
     FPreProcessPipelineSteps: IList<TPair<string, string>>;
     FPostProcessPipelineSteps: IList<TPair<string, string>>;
+    FExcludeGlobalMiddleware: Boolean;
   public
     constructor Create(const Instance: TValue; const MethodName: string; const Path: string; const HttpMethod: THttpMethod; const Parameters: IList<TEndPointParameter>;
       const Consumes: TArray<TMimeType>; const Produces: TArray<TMimeType>; const ResponseCode: Integer; const ResponseText: string; const PreProcessPipelineSteps: IList<TPair<string, string>>;
-      const PostProcessPipelineSteps: IList<TPair<string, string>>);
+      const PostProcessPipelineSteps: IList<TPair<string, string>>; const ExcludeGlobalMiddleware: Boolean);
 
     property Instance: TValue read FInstance;
     property MethodName: string read FMethodName;
@@ -97,6 +98,7 @@ type
     property ResponseText: string read FResponseText;
     property PreProcessPipelineSteps: IList<TPair<string, string>> read FPreProcessPipelineSteps;
     property PostProcessPipelineSteps: IList<TPair<string, string>> read FPostProcessPipelineSteps;
+    property ExcludeGlobalMiddleware: Boolean read FExcludeGlobalMiddleware;
   end;
 
   TSSLVersion = (SSLv2, SSLv23, SSLv3, TLSv1, TLSv1_1, TLSv1_2);
@@ -181,7 +183,8 @@ constructor TEndPoint.Create(
   const ResponseCode: Integer;
   const ResponseText: string;
   const PreProcessPipelineSteps: IList<TPair<string, string>>;
-  const PostProcessPipelineSteps: IList<TPair<string, string>>);
+  const PostProcessPipelineSteps: IList<TPair<string, string>>;
+  const ExcludeGlobalMiddleware: Boolean);
 begin
   FInstance := Utilities.CheckNotNullAndSet(Instance, 'Instance');
 
@@ -195,6 +198,7 @@ begin
   FREsponseText := ResponseText;
   FPreProcessPipelineSteps := PreProcessPipelineSteps;
   FPostProcessPipelineSteps := PostProcessPipelineSteps;
+  FExcludeGlobalMiddleware := ExcludeGlobalMiddleware;
 end;
 
 { TSSLCertData }
