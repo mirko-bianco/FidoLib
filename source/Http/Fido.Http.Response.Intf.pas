@@ -42,8 +42,6 @@ type
     function HeaderParams: IDictionary<string, string>;
     function MimeType: TMimeType;
     procedure SetMimeType(const MimeType: TMimeType);
-    procedure ServeFile(const FilenamePath: string);
-    procedure WriteHeader;
   end;
 
 implementation

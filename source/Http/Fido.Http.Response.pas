@@ -65,18 +65,11 @@ type
     function HeaderParams: IDictionary<string, string>;
     function MimeType: TMimeType;
     procedure SetMimeType(const MimeType: TMimeType);
-    procedure ServeFile(const FilenamePath: string);
-    procedure WriteHeader;
   end;
 
 implementation
 
 { THttpResponse }
-
-procedure THttpResponse.ServeFile(const FilenamePath: string);
-begin
-  FResponseInfo.SmartServeFile(FilenamePath);
-end;
 
 procedure THttpResponse.SetBody(const Body: string);
 begin
@@ -118,11 +111,6 @@ begin
     Dictionary[Strings.Names[I]] := Strings.ValueFromIndex[I];
 end;
 
-procedure THttpResponse.WriteHeader;
-begin
-  FResponseInfo.WriteHeader;
-end;
-
 constructor THttpResponse.Create(
   const RequestInfo: IHTTPRequestInfo;
   const ResponseInfo: IHTTPResponseInfo);
@@ -134,17 +122,6 @@ var
   StringMimeType: string;
   I: Integer;
   Found: Boolean;
-
-  function ConvertToRestCommand(const Item: string): THttpMethod;
-  var
-    I: Integer;
-  begin
-    Result := rmUnknown;
-
-    for I := 0 to Integer(High(SHttpMethod)) do
-      if UpperCase(SHttpMethod[THttpMethod(I)]) = UpperCase(Item) then
-        Exit(THttpMethod(I));
-  end;
 begin
   FRequestInfo := Utilities.CheckNotNullAndSet(RequestInfo, 'RequestInfo');
   FResponseInfo := Utilities.CheckNotNullAndSet(ResponseInfo, 'ResponseInfo');

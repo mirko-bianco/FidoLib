@@ -38,19 +38,14 @@ type
     ['{251F6A9A-11DC-4487-8F3B-9389F41455A4}']
 
     procedure SetContentStream(const Stream: TStream);
-    function SmartServeFile(const FilenamePath: string): Int64;
     procedure SetResponseCode(const ResponseCode: Integer);
     function ResponseCode: Integer;
-    procedure SetLastModified(const LastModified: TDateTime);
-    procedure SetDate(const ADate: TDateTime);
     procedure SetContentType(const ContentType: string);
     function EncodeString(const AString: string): string;
-    procedure WriteHeader;
     procedure SetResponseText(const Text: string);
     procedure SetContentText(const Text: string);
     procedure SetCustomHeaders(const Headers: IDictionary<string, string>);
     function RawHeaders: TStrings;
-    function TransferFileEnabled: Boolean;
   end;
 
 implementation

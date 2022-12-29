@@ -109,8 +109,9 @@ type
     FSSLCertFilePath: string;
     FSSLKeyFilePath: string;
     FSSLVersion: TSSLVersion;
+    FPassword: string;
   public
-    constructor Create(const SSLRootCertFilePath: string; const SSLCertFilePath: string; const SSLKeyFilePath: string; const SSLVersion: TSSLVersion);
+    constructor Create(const SSLRootCertFilePath: string; const SSLCertFilePath: string; const SSLKeyFilePath: string; const SSLVersion: TSSLVersion; const Password: string);
     class function CreateEmpty: TSSLCertData; static;
 
     function IsValid: Boolean;
@@ -118,6 +119,7 @@ type
     function SSLCertFilePath: string;
     function SSLKeyFilePath: string;
     function SSLVersion: TSSLVersion;
+    function Password: string;
   end;
 
 const
@@ -207,17 +209,19 @@ constructor TSSLCertData.Create(
   const SSLRootCertFilePath: string;
   const SSLCertFilePath: string;
   const SSLKeyFilePath: string;
-  const SSLVersion: TSSLVersion);
+  const SSLVersion: TSSLVersion;
+  const Password: string);
 begin
   FSSLRootCertFilePath := SSLRootCertFilePath;
   FSSLCertFilePath := SSLCertFilePath;
   FSSLKeyFilePath := SSLKeyFilePath;
   FSSLVersion := SSLVersion;
+  FPassword := Password;
 end;
 
 class function TSSLCertData.CreateEmpty: TSSLCertData;
 begin
-  Result.Create('', '', '', TLSv1_2);
+  Result.Create('', '', '', TLSv1_2, '');
 end;
 
 function TSSLCertData.IsValid: Boolean;
@@ -227,6 +231,11 @@ begin
 
   if Result then
     Result := FileExists(SSLRootCertFilePath) or (FileExists(SSLCertFilePath) and FileExists(SSLKeyFilePath));
+end;
+
+function TSSLCertData.Password: string;
+begin
+  Result := FPassword;
 end;
 
 function TSSLCertData.SSLCertFilePath: string;

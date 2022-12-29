@@ -51,7 +51,7 @@ type
     constructor Create(const ApiServer: IApiServer; const ConsulService: IConsulService; const ServiceName: string; const Timeout: Cardinal);
     destructor Destroy; override;
 
-    Function Port: Word;
+    function Port: Word;
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
     procedure RegisterResource(const Resource: TObject);
