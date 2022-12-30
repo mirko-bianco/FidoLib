@@ -719,7 +719,12 @@ end;
 
 procedure TAbstractApiServer.RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TApiFormatExceptionToResponseProc);
 begin
-
+  FLock.BeginWrite;
+  try
+    FFormatExceptionToResponseProc := FormatExceptionToResponseProc;
+  finally
+    FLock.EndWrite;
+  end;
 end;
 
 procedure TAbstractApiServer.RegisterGlobalMiddleware(const MiddlewareProc: TApiGlobalMiddlewareProc);

@@ -279,9 +279,9 @@ begin
       on E: Exception do
       begin
         Value := LOnFailure(E);
-        if not vALUE.HasValue then
+        if not Value.HasValue then
           raise;
-        rESULT := Value.Value;
+        Result := Value.Value;
       end;
     end;
   finally

@@ -74,13 +74,13 @@ initialization
   DefaultExceptionMiddlewareProc := procedure(const E: Exception)
     begin
       if E.InheritsFrom(EJSONUnmarshaller) then
-        raise EApiServer400.Create((E as Exception).Message);
+        raise EApiServer400.Create(E.Message);
       if E.InheritsFrom(EJSONMarshaller) then
-        raise EApiServer400.Create((E as Exception).Message);
+        raise EApiServer400.Create(E.Message);
       if E.InheritsFrom(EJSONVirtualDto) then
-        raise EApiServer400.Create((E as Exception).Message);
+        raise EApiServer400.Create(E.Message);
 
-      raise EApiServer500.Create((E as Exception).Message);
+      raise EApiServer500.Create(E.Message);
     end;
 
   DefaultGlobalMiddlewareProc := procedure(const EndpointMethod: Action; const ClassName: string; const MethodName: string)
