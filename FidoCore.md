@@ -862,7 +862,7 @@ Virtual Apis servers classes allow you to create Api servers quickly.
 
 #### Servers
 
-A server is the engine that will respond to incoming requests. Fido library provides already and Indy implementation, but feel free to implement your own, as long as it implements the `IApiServer` interface:
+A server is the engine that will respond to incoming requests. Fido library provides already an Indy and a Brook implementation, but feel free to implement your own, as long as it implements the `IApiServer` interface:
 
 ```pascal
   IApiServer = interface(IInvokable)
