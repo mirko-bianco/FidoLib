@@ -2,7 +2,7 @@
 
 # Fido Library documentation
 
-The Fido library has been created to make the life of a Delphi developer easier by following the "**describe behaviour instead of coding it, whenever is possible**" design principle.
+The Fido library has been created to make the life of a Delphi developer easier by following the "**describe behavior instead of coding it, whenever is possible**" design principle.
 
 The Fido library is highly opinionated but it won't force you to adopt it entirely, you can just use the virtual database, or the virtual client API or the JSON marshalling/unmarshalling, if you feel like.
 
@@ -11,6 +11,10 @@ The Fido library is mostly based on composition and attributes, hence it won't f
 The Fido library maintainers believe in constant improvement. For this reason, when confronted with the choice between “preserve backward compatibility” and “add a new feature”, we will move forward. Sorry, people who’re still using Delphi 7.
 
 The Fido library supports Delphi version 10.4.1 and higher. 
+
+[Fido Demo App](https://github.com/mirko-bianco/FidoDemoApp) is a forever-work-in-progress showcase of the functionalities of this library.
+
+[FidoBittrex](https://github.com/mirko-bianco/FidoBittrex) shows how powerful is the Client API feature and how easy is to support a full blown 3rd party API (both REST and websockets). 
 
 ## Acknowledgements
 

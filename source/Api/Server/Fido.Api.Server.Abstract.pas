@@ -503,7 +503,10 @@ begin
               UpdateResponse(Method, Result, ApiResponse, EndPoint, Params);
             except
               on E: Exception do
+            begin
                 FExceptionMiddlewareProc(E);
+              raise;
+            end;
             end;
           finally
             if Result.IsObject then
