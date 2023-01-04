@@ -39,6 +39,7 @@ uses
   Fido.Boxes,
   Fido.JSON.Marshalling,
 
+  Fido.EventsDriven,
   Fido.EventsDriven.Utils,
   Fido.EventsDriven.Listener.Intf,
   Fido.EventsDriven.Consumer.PubSub.Intf;
@@ -47,8 +48,11 @@ type
   TPubSubEventsDrivenListener<PayloadType> = class (TInterfacedObject, IEventsDrivenListener)
   private var
     FPubSubConsumer: IPubSubEventsDrivenConsumer<PayloadType>;
+    FGlobalMiddlewareProc: TEventDrivenGlobalMiddlewareProc;
   public
     constructor Create(const PubSubConsumer: IPubSubEventsDrivenConsumer<PayloadType>);
+
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
 
     procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
     procedure UnsubscribeFrom(const Channel: string; const EventName: string);
@@ -65,6 +69,12 @@ begin
   inherited Create;
 
   FPubSubConsumer := Utilities.CheckNotNullAndSet(PubSubConsumer, 'PubSubConsumer');
+  FGlobalMiddlewareProc := DefaultGlobalMiddlewareProc;
+end;
+
+procedure TPubSubEventsDrivenListener<PayloadType>.RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
+begin
+  FGlobalMiddlewareProc := FGlobalMiddlewareProc;
 end;
 
 procedure TPubSubEventsDrivenListener<PayloadType>.Stop;
@@ -100,7 +110,12 @@ begin
         ForEach(
           procedure(const Method: TRttiMethod)
           begin
-            Method.Invoke(LConsumerData.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Payload, Method));
+            FGlobalMiddlewareProc(procedure
+              begin
+                Method.Invoke(LConsumerData.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Payload, Method));
+              end,
+              Method.ClassName,
+              Method.Name);
           end);
     end);
 end;

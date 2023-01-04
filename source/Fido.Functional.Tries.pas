@@ -135,7 +135,7 @@ begin
     Result := True;
   except
     on E: Exception do
-      Result :=  False;
+      Result := False;
   end;
 end;
 
@@ -208,14 +208,14 @@ var
   LOnFailure: OnFailureEvent<T>;
   LOnFinally: TProc;
   LCalculatedValue: T;
+  Value: Nullable<T>;
 begin
   LOnFailure := OnFailure;
   LOnFinally := OnFinally;
 
   if not Assigned(LOnFailure) then
-    LOnFailure := function(const Exc: TObject): T
+    LOnFailure := function(const E: Exception): Nullable<T>
       begin
-        raise Exc;
       end;
   if not Assigned(LOnFinally) then
     LOnFinally := procedure
@@ -228,7 +228,12 @@ begin
       Result := LCalculatedValue;
     except
       on E: Exception do
-        Result :=  LOnFailure(E);
+      begin
+        Value := LOnFailure(E);
+        if not Value.HasValue then
+          raise;
+        Result := Value.Value;
+      end;
     end;
   finally
     LOnFinally();
@@ -253,14 +258,14 @@ function TryOut<T>.Match(
 var
   LOnFailure: OnFailureEvent<T>;
   LOnFinally: TProc;
+  Value: Nullable<T>;
 begin
   LOnFailure := OnFailure;
   LOnFinally := OnFinally;
 
   if not Assigned(LOnFailure) then
-    LOnFailure := function(const Exc: TObject): T
+    LOnFailure := function(const E: Exception): Nullable<T>
       begin
-        raise Exc;
       end;
   if not Assigned(LOnFinally) then
     LOnFinally := procedure
@@ -272,7 +277,12 @@ begin
       Result := Resolve;
     except
       on E: Exception do
-        Result := LOnFailure(E);
+      begin
+        Value := LOnFailure(E);
+        if not Value.HasValue then
+          raise;
+        Result := Value.Value;
+      end;
     end;
   finally
     LOnFinally();

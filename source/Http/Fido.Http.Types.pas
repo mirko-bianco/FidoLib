@@ -81,10 +81,11 @@ type
     FResponseText: string;
     FPreProcessPipelineSteps: IList<TPair<string, string>>;
     FPostProcessPipelineSteps: IList<TPair<string, string>>;
+    FExcludeGlobalMiddleware: Boolean;
   public
     constructor Create(const Instance: TValue; const MethodName: string; const Path: string; const HttpMethod: THttpMethod; const Parameters: IList<TEndPointParameter>;
       const Consumes: TArray<TMimeType>; const Produces: TArray<TMimeType>; const ResponseCode: Integer; const ResponseText: string; const PreProcessPipelineSteps: IList<TPair<string, string>>;
-      const PostProcessPipelineSteps: IList<TPair<string, string>>);
+      const PostProcessPipelineSteps: IList<TPair<string, string>>; const ExcludeGlobalMiddleware: Boolean);
 
     property Instance: TValue read FInstance;
     property MethodName: string read FMethodName;
@@ -97,6 +98,7 @@ type
     property ResponseText: string read FResponseText;
     property PreProcessPipelineSteps: IList<TPair<string, string>> read FPreProcessPipelineSteps;
     property PostProcessPipelineSteps: IList<TPair<string, string>> read FPostProcessPipelineSteps;
+    property ExcludeGlobalMiddleware: Boolean read FExcludeGlobalMiddleware;
   end;
 
   TSSLVersion = (SSLv2, SSLv23, SSLv3, TLSv1, TLSv1_1, TLSv1_2);
@@ -107,8 +109,9 @@ type
     FSSLCertFilePath: string;
     FSSLKeyFilePath: string;
     FSSLVersion: TSSLVersion;
+    FPassword: string;
   public
-    constructor Create(const SSLRootCertFilePath: string; const SSLCertFilePath: string; const SSLKeyFilePath: string; const SSLVersion: TSSLVersion);
+    constructor Create(const SSLRootCertFilePath: string; const SSLCertFilePath: string; const SSLKeyFilePath: string; const SSLVersion: TSSLVersion; const Password: string);
     class function CreateEmpty: TSSLCertData; static;
 
     function IsValid: Boolean;
@@ -116,6 +119,7 @@ type
     function SSLCertFilePath: string;
     function SSLKeyFilePath: string;
     function SSLVersion: TSSLVersion;
+    function Password: string;
   end;
 
 const
@@ -181,7 +185,8 @@ constructor TEndPoint.Create(
   const ResponseCode: Integer;
   const ResponseText: string;
   const PreProcessPipelineSteps: IList<TPair<string, string>>;
-  const PostProcessPipelineSteps: IList<TPair<string, string>>);
+  const PostProcessPipelineSteps: IList<TPair<string, string>>;
+  const ExcludeGlobalMiddleware: Boolean);
 begin
   FInstance := Utilities.CheckNotNullAndSet(Instance, 'Instance');
 
@@ -195,6 +200,7 @@ begin
   FREsponseText := ResponseText;
   FPreProcessPipelineSteps := PreProcessPipelineSteps;
   FPostProcessPipelineSteps := PostProcessPipelineSteps;
+  FExcludeGlobalMiddleware := ExcludeGlobalMiddleware;
 end;
 
 { TSSLCertData }
@@ -203,17 +209,19 @@ constructor TSSLCertData.Create(
   const SSLRootCertFilePath: string;
   const SSLCertFilePath: string;
   const SSLKeyFilePath: string;
-  const SSLVersion: TSSLVersion);
+  const SSLVersion: TSSLVersion;
+  const Password: string);
 begin
   FSSLRootCertFilePath := SSLRootCertFilePath;
   FSSLCertFilePath := SSLCertFilePath;
   FSSLKeyFilePath := SSLKeyFilePath;
   FSSLVersion := SSLVersion;
+  FPassword := Password;
 end;
 
 class function TSSLCertData.CreateEmpty: TSSLCertData;
 begin
-  Result.Create('', '', '', TLSv1_2);
+  Result.Create('', '', '', TLSv1_2, '');
 end;
 
 function TSSLCertData.IsValid: Boolean;
@@ -223,6 +231,11 @@ begin
 
   if Result then
     Result := FileExists(SSLRootCertFilePath) or (FileExists(SSLCertFilePath) and FileExists(SSLKeyFilePath));
+end;
+
+function TSSLCertData.Password: string;
+begin
+  Result := FPassword;
 end;
 
 function TSSLCertData.SSLCertFilePath: string;

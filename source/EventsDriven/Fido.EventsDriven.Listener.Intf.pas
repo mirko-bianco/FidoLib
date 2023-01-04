@@ -24,6 +24,9 @@ unit Fido.EventsDriven.Listener.Intf;
 
 interface
 
+uses
+  Fido.EventsDriven;
+
 type
   TConsumerData = record
   private
@@ -39,6 +42,8 @@ type
 
   IEventsDrivenListener = interface(IInvokable)
   ['{E99B154A-8854-4C17-9357-B0E13C3DE909}']
+
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
 
     procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
     procedure UnsubscribeFrom(const Channel: string; const EventName: string);

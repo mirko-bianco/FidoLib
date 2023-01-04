@@ -30,7 +30,7 @@ But remember that this library was born because I couldn't find anything around 
 - Use composition as much as possible and avoid class hierarchies. Anyone should be able to start with the library without the need to change and rewrite their own codebase.
 - Think (as a library designer) about your user (the developer). Clear and elegant interfaces and, if possible, one single way to achieve a result.
 
-If you are willing to play by the rules then let's have fun togheter. 
+If you are willing to play by the rules then let's have fun together. 
 
 ## Dependencies
 
@@ -42,7 +42,9 @@ The Fido library depends on the following open source libraries:
 
 [DUnitX](https://github.com/VSoftTechnologies/DUnitX)
 
-[Delphi Redis client](https://github.com/danieleteti/delphiredisclient)
+[Delphi Redis client](https://github.com/danieleteti/delphiredisclient) (Optional)
+
+[Brook framework](https://github.com/risoflora/brookframework) (Optional)
 
 ## Installation
 
@@ -68,5 +70,4 @@ The Fido Library is made of 4 main packages
 
 - **FidoRedis** - Contains the [Redis](https://redis.io/) implementations for the `IKVStore`, `IDistribuitedEventsQueueProducer` and `IDistribuitedEventsQueueConsumer` interfaces. 
 
-  
-
+- **FidoBrook** - Contains the [Brook](https://github.com/risoflora/brookframework) implementations for the `IApiServer`interface. As mentioned on their page: Brook [...] core has been developed using the [Sagui library](https://risoflora.github.io/libsagui), that's why it is so fast, compact and useful to run on embedded systems. Please refer on their page to get access to their external libraries.

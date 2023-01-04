@@ -28,7 +28,9 @@ uses
   System.SysUtils,
 
   Spring,
+  Spring.Logging,
 
+  Fido.Http.Types,
   Fido.Http.Request.Intf,
   Fido.Http.Response.Intf,
   Fido.JSON.Marshalling,
@@ -36,11 +38,15 @@ uses
 
 type
   {$M+}
-  TRequestMiddlewareFunc = reference to function(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
+  TApiGlobalMiddlewareProc = reference to procedure(const EndpointMethod: Action; const ClassName: string; const MethodName: string);
 
-  TResponseMiddlewareProc = reference to procedure(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
+  TApiRequestMiddlewareFunc = reference to function(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; out ResponseCode: Integer; out ResponseText: string): Boolean;
 
-  TExceptionMiddlewareProc = reference to procedure(const E: TObject);
+  TApiResponseMiddlewareProc = reference to procedure(const CommaSeparaterParams: string; const ApiRequest: IHttpRequest; const ApiResponse: IHttpResponse);
+
+  TApiExceptionMiddlewareProc = reference to procedure(const E: Exception);
+
+  TApiFormatExceptionToResponseProc = reference to procedure(const E: Exception; const ApiResponse: IHttpResponse);
   {$M-}
 
   IApiServer = interface(IInvokable)
@@ -50,28 +56,55 @@ type
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
-    procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
-    procedure RegisterExceptionMiddleware(const MiddlewareProc: TExceptionMiddlewareProc);
+    procedure RegisterRequestMiddleware(const Name: string; const Step: TApiRequestMiddlewareFunc);
+    procedure RegisterResponseMiddleware(const Name: string; const Step: TApiResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const MiddlewareProc: TApiExceptionMiddlewareProc);
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TApiGlobalMiddlewareProc);
+    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TApiFormatExceptionToResponseProc);
   end;
 
 var
-  DefaultExceptionMiddlewareProc: TExceptionMiddlewareProc;
+  DefaultExceptionMiddlewareProc: TApiExceptionMiddlewareProc;
+  DefaultGlobalMiddlewareProc: TApiGlobalMiddlewareProc;
+  DefaultFormatExceptionToResponseProc: TApiFormatExceptionToResponseProc;
 
 implementation
 
 initialization
-  DefaultExceptionMiddlewareProc := procedure(const E: TObject)
+  DefaultExceptionMiddlewareProc := procedure(const E: Exception)
     begin
       if E.InheritsFrom(EJSONUnmarshaller) then
-        raise EApiServer400.Create((E as Exception).Message);
+        raise EApiServer400.Create(E.Message);
       if E.InheritsFrom(EJSONMarshaller) then
-        raise EApiServer400.Create((E as Exception).Message);
+        raise EApiServer400.Create(E.Message);
       if E.InheritsFrom(EJSONVirtualDto) then
-        raise EApiServer400.Create((E as Exception).Message);
+        raise EApiServer400.Create(E.Message);
 
-      if not E.InheritsFrom(EApiServer) then
-        raise EApiServer500.Create((E as Exception).Message);
+      raise EApiServer500.Create(E.Message);
     end;
 
+  DefaultGlobalMiddlewareProc := procedure(const EndpointMethod: Action; const ClassName: string; const MethodName: string)
+    begin
+      EndpointMethod();
+    end;
+
+  DefaultFormatExceptionToResponseProc := procedure(const E: Exception; const ApiResponse: IHttpResponse)
+    var
+      Code: Integer;
+      Text: string;
+    begin
+      if E.InheritsFrom(EApiServer) then
+      begin
+        Code := (E as EApiServer).Code;
+        Text := (E as EApiServer).ShortMsg;
+      end
+      else
+      begin
+        Code := 500;
+        Text := 'Internal server error';
+      end;
+      ApiResponse.SetMimeType(mtJson);
+      ApiResponse.SetBody(Format('{"Error": {"Code": %d, "Status": "%s", "Message": "%s"}}', [Code, Text, E.Message]));
+      ApiResponse.SetResponseCode(Code, Text);
+    end;
 end.

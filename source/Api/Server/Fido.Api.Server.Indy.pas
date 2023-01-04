@@ -58,19 +58,25 @@ type
 
   EIndyApiServer = class(EFidoApiException);
 
-  TIndyApiServer = class(TAbstractApiServer<TIndyApiServerRequestFactory, TIndyApiServerResponseFactory>, IApiServer)
+  TIndyApiServer = class(TAbstractApiServer, IApiServer)
   private
     FHttpServer: TIdHTTPServer;
     FSSLIOHandler: TIdServerIOHandlerSSLOpenSSL;
+    FApiServerRequestFactory: TIndyApiServerRequestFactory;
+    FApiServerResponseFactory: TIndyApiServerResponseFactory;
+    FCertPassword: string;
+    FUseSSL: Boolean;
 
     function ConvertSSLVersion(const SSLVersion: TSSLVersion): TIdSSLVersion;
   protected
-    function GetDefaultApiRequestFactory: TIndyApiServerRequestFactory; override;
-    function GetDefaultApiResponseFactory: TIndyApiServerResponseFactory; override;
+    function GetDefaultApiRequestFactory: TIndyApiServerRequestFactory;
+    function GetDefaultApiResponseFactory: TIndyApiServerResponseFactory;
     procedure OnParseAuthentication(Context: TIdContext; const AuthType: string; const AuthData: string; var Username: string; var Password: string; var Handled: Boolean);
     procedure OnHTTPCommandEvent(Context: TIdContext; RequestInfo: TIdHTTPRequestInfo; ResponseInfo: TIdHTTPResponseInfo);
     function OnVerifyPeer(Certificate: TIdX509; AOk: Boolean; ADepth: integer; AError: Integer): Boolean;
     procedure OnQuerySSLPort(APort: Word; var VUseSSL: Boolean);
+    procedure OnCommandError(Context: TIdContext; RequestInfo: TIdHTTPRequestInfo; ResponseInfo: TIdHTTPResponseInfo; Exception: Exception);
+    procedure OnGetPassword(var Password: string);
   public
     constructor Create(const Port: Word; const MaxConnections: Integer; const WebServer: IWebServer; const SSLCertData: TSSLCertData; const ApiRequestFactory: TIndyApiServerRequestFactory = nil;
       const ApiResponseFactory: TIndyApiServerResponseFactory = nil);
@@ -105,14 +111,19 @@ constructor TIndyApiServer.Create(
   const SSLCertData: TSSLCertData;
   const ApiRequestFactory: TIndyApiServerRequestFactory;
   const ApiResponseFactory: TIndyApiServerResponseFactory);
-var
-  UseSSL: Boolean;
 begin
-  inherited;
-  UseSSL := SSLCertData.IsValid;
+  inherited Create(Port, WebServer, SSLCertData);
 
-  FPort := Port;
-  if UseSSL then
+  FApiServerRequestFactory := ApiRequestFactory;
+  FApiServerResponseFactory := ApiResponseFactory;
+  if not Assigned(FApiServerRequestFactory) then
+    FApiServerRequestFactory := GetDefaultApiRequestFactory();
+  if not Assigned(FApiServerResponseFactory) then
+    FApiServerResponseFactory := GetDefaultApiResponseFactory();
+
+  FUseSSL := SSLCertData.IsValid;
+
+  if FUseSSL then
   begin
     FSSLIOHandler := TIdServerIOHandlerSSLOpenSSL.Create(nil);
     FSSLIOHandler.SSLOptions.RootCertFile := SSLCertData.SSLRootCertFilePath;
@@ -120,7 +131,11 @@ begin
     FSSLIOHandler.SSLOptions.KeyFile := SSLCertData.SSLKeyFilePath;
     FSSLIOHandler.SSLOptions.Method := ConvertSSLVersion(SSLCertData.SSLVersion);
     FSSLIOHandler.SSLOptions.Mode := sslmUnassigned;
-    FSSLIOHandler.OnGetPassword := nil;
+    FCertPassword := SSLCertData.Password;
+    if FCertPassword.IsEmpty then
+      FSSLIOHandler.OnGetPassword := nil
+    else
+      FSSLIOHandler.OnGetPassword := OnGetPassword;
     FSSLIOHandler.OnVerifyPeer := OnVerifyPeer;
   end;
 
@@ -128,14 +143,15 @@ begin
   FHttpServer.OnCommandGet := OnHTTPCommandEvent;
   FHttpServer.OnCommandOther := OnHTTPCommandEvent;
   FHttpServer.OnParseAuthentication := OnParseAuthentication;
-  if UseSSL then
+  FHttpServer.OnCommandError := OnCommandError;
+  if FUseSSL then
   begin
     FHttpServer.IOhandler := FSSLIOHandler;
     FHttpServer.OnQuerySSLPort := OnQuerySSLPort;
-    FHttpServer.DefaultPort := SSL_PORT;
+    FHttpServer.DefaultPort := Port;
   end
   else
-    FHttpServer.Bindings.Add.Port := FPort;
+    FHttpServer.Bindings.Add.Port := Port;
   FHttpServer.MaxConnections := MaxConnections;
   FHttpServer.Active := False;
 end;
@@ -180,6 +196,20 @@ begin
   Result := FHttpServer.Active;
 end;
 
+procedure TIndyApiServer.OnCommandError(
+  Context: TIdContext;
+  RequestInfo: TIdHTTPRequestInfo;
+  ResponseInfo: TIdHTTPResponseInfo;
+  Exception: Exception);
+begin
+  DoFormatExceptionToResponse(Exception, FApiServerResponseFactory(Context, RequestInfo, ResponseInfo));
+end;
+
+procedure TIndyApiServer.OnGetPassword(var Password: string);
+begin
+  Password := FCertPassword;
+end;
+
 procedure TIndyApiServer.OnHTTPCommandEvent(
   Context: TIdContext;
   RequestInfo: TIdHTTPRequestInfo;
@@ -191,8 +221,8 @@ begin
   if RequestInfo.URI.Equals('/favicon.ico') then
     Exit;
 
-  ApiRequest := GetApiRequestFactory()(RequestInfo);
-  ApiResponse := GetApiResponseFactory()(Context, RequestInfo, ResponseInfo);
+  ApiRequest := FApiServerRequestFactory(RequestInfo);
+  ApiResponse := FApiServerResponseFactory(Context, RequestInfo, ResponseInfo);
 
   ProcessCommand(ApiRequest, ApiResponse);
 end;
@@ -212,7 +242,7 @@ procedure TIndyApiServer.OnQuerySSLPort(
   APort: Word;
   var VUseSSL: Boolean);
 begin
-  VUseSSL := (APort = SSL_PORT);
+  VUseSSL := FUseSSL;
 end;
 
 function TIndyApiServer.OnVerifyPeer(

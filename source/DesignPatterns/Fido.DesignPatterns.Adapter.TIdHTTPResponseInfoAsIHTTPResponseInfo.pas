@@ -59,19 +59,14 @@ type
     destructor Destroy; override;
 
     procedure SetContentStream(const Stream: TStream);
-    function SmartServeFile(const FilenamePath: string): Int64;
     procedure SetResponseCode(const ResponseCode: Integer);
     function ResponseCode: Integer;
-    procedure SetLastModified(const LastModified: TDateTime);
-    procedure SetDate(const ADate: TDateTime);
     procedure SetContentType(const ContentType: string);
     function EncodeString(const AString: string): string;
-    procedure WriteHeader;
     procedure SetResponseText(const Text: string);
     procedure SetContentText(const Text: string);
     procedure SetCustomHeaders(const Headers: IDictionary<string, string>);
     function RawHeaders: TStrings;
-    function TransferFileEnabled: Boolean;
     procedure WriteBytesToWebSocket(const Buffer: TWSBytes);
     procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; const ByteCount: Integer; const Append: Boolean = True);
     procedure DisconnectWebSocket;
@@ -178,22 +173,10 @@ begin
       FResponseInfo.CustomHeaders.Values[Current] := Headers.Items[Current];
 end;
 
-procedure TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.SetDate(
-  const ADate: TDateTime);
-begin
-  FResponseInfo.Date := ADate;
-end;
-
 procedure TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.SetContentText(
   const Text: string);
 begin
   FResponseInfo.ContentText := Text;
-end;
-
-procedure TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.SetLastModified(
-  const LastModified: TDateTime);
-begin
-  FResponseInfo.LastModified := LastModified;
 end;
 
 procedure TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.SetResponseCode(
@@ -208,48 +191,10 @@ begin
   FResponseInfo.ResponseText := Text;
 end;
 
-function TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.SmartServeFile(
-  const FilenamePath: string): Int64;
-var
-  FileDate: TDateTime;
-  ReqDate: TDateTime;
-begin
-  FileDate := IndyFileAge(FilenamePath);
-  if (FileDate = 0.0) and (not FileExists(FilenamePath)) then
-  begin
-    SetResponseCode(404);
-    Result := 0;
-  end else
-  begin
-    ReqDate := GMTToLocalDateTime(FRequestInfo.RawHeaders.Values['If-Modified-Since']);
-
-    if (ReqDate <> 0) and (abs(ReqDate - FileDate) < 2 * (1 / (24 * 60 * 60))) then
-    begin
-      SetResponseCode(304);
-      Result := 0;
-    end else
-    begin
-      SetDate(Now);
-      SetLastModified(FileDate);
-      Result := FResponseInfo.ServeFile(FContext, FilenamePath);
-    end;
-  end;
-end;
-
-function TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.TransferFileEnabled: Boolean;
-begin
-  Result := not (FContext.Connection.IOHandler is TIdSSLIOHandlerSocketBase);
-end;
-
 procedure TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.WriteBytesToWebSocket(
   const Buffer: TWSBytes);
 begin
   FContext.Connection.IOHandler.Write(TIdBytes(Buffer));
-end;
-
-procedure TIdHTTPResponseInfoAsIHTTPResponseInfoDecorator.WriteHeader;
-begin
-  FResponseInfo.WriteHeader;
 end;
 
 end.

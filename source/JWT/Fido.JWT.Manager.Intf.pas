@@ -37,6 +37,8 @@ type
 
     function VerifyToken(const CompactToken: string; const Secret: TJOSEBytes): TJWT;
 
+    function DeserializeToken(const CompactToken: string): TJWT;
+
     function GenerateToken(const Issuer: string; const DefaultValidityInSecs: Extended = System.Math.Infinity): TJWT;
 
     function SignTokenAndReturn(const Token: TJWT; const Algorithm: TJOSEAlgorithmId; const SigningSecret: TJOSEBytes; const VerificationSecret: TJOSEBytes): string;

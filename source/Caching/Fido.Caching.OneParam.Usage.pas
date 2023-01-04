@@ -29,6 +29,7 @@ uses
 
   Spring,
   Spring.Collections,
+  Spring.Collections.LinkedLists,
 
   Fido.Caching.Intf;
 
@@ -38,7 +39,7 @@ type
     FSize: Int64;
     FLock: TLightweightMREW;
     FMap: IDictionary<P, R>;
-    FAgeList: IList<P>;
+    FAgeList: ILinkedList<P>;
   public
     constructor Create(const Size: Int64);
     function It(const AFunction: Func<P, R>; const Param: P): R;
@@ -54,7 +55,7 @@ begin
   inherited Create;
 
   FMap := TCollections.CreateDictionary<P, R>;
-  FAgeList := TCollections.CreateList<P>;
+  FAgeList := TLinkedList<P>.Create;
   FSize := Size;
   if FSize <= 0 then
     FSize := 1;
@@ -64,6 +65,7 @@ function TUsageOneParamCache<P, R>.ForceIt(const AFunction: Func<P, R>; const Pa
 var
   Exists: Boolean;
   Index: Integer;
+  Node: TLinkedListNode<P>;
 begin
   FLock.BeginWrite;
   try
@@ -73,15 +75,18 @@ begin
     if Exists then
       Exit;
 
-    Index := FAgeList.IndexOf(Param);
-    if Index > -1 then
-      FAgeList.Delete(Index);
-    FAgeList.Add(Param);
+    if FAgeList.IsEmpty then
+      FAgeList.Add(Param)
+    else
+    begin
+      FAgeList.Remove(Param);
+      FAgeList.AddLast(Param);
+    end;
 
     if FAgeList.Count > FSize then
     begin
-      FMap.Remove(FAgeList[0]);
-      FAgeList.Delete(0);
+      FMap.Remove(FAgeList.First.Value);
+      FAgeList.RemoveFirst;
     end;
   finally
     FLock.EndWrite;
@@ -91,22 +96,23 @@ end;
 function TUsageOneParamCache<P, R>.It(const AFunction: Func<P, R>; const Param: P): R;
 var
   Exists: Boolean;
+  Node: TLinkedListNode<P>;
 begin
   FLock.BeginWrite;
   try
     Exists := FMap.TryGetValue(Param, Result);
     if Exists then
-      FAgeList.Delete(FAgeList.IndexOf(Param))
+      FAgeList.Remove(Param)
     else
     begin
       Result := AFunction(Param);
       FMap[Param] := Result;
     end;
-    FAgeList.Add(Param);
+    FAgeList.AddLast(Param);
     if FAgeList.Count > FSize then
     begin
-      FMap.Remove(FAgeList[0]);
-      FAgeList.Delete(0);
+      FMap.Remove(FAgeList.First.Value);
+      FAgeList.RemoveFirst;
     end;
   finally
     FLock.EndWrite;

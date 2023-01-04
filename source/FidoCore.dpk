@@ -27,7 +27,6 @@ package FidoCore;
 {$ENDIF IMPLICITBUILDING}
 {$RUNONLY}
 {$IMPLICITBUILD ON}
-{$STRONGLINKTYPES ON}
 
 requires
   rtl,
@@ -239,6 +238,7 @@ contains
   Fido.Db.Transaction.Handler.FireDac in 'Db\Fido.Db.Transaction.Handler.FireDac.pas',
   Fido.Channels.Impl in 'Fido.Channels.Impl.pas',
   Fido.Channels.Intf in 'Fido.Channels.Intf.pas',
-  Fido.Channels in 'Fido.Channels.pas';
+  Fido.Channels in 'Fido.Channels.pas',
+  Fido.EventsDriven in 'EventsDriven\Fido.EventsDriven.pas';
 
 end.

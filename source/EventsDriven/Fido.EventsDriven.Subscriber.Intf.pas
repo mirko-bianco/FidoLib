@@ -25,13 +25,16 @@ unit Fido.EventsDriven.Subscriber.Intf;
 interface
 
 uses
-  Fido.Exceptions;
+  Fido.Exceptions,
+  Fido.EventsDriven;
 
 type
   EEventsDrivenSubscriber = class(EFidoException);
 
   IEventsDrivenSubscriber = interface(IInvokable)
     ['{61741298-0B16-4A49-B4E2-59C5B180A703}']
+
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
 
     procedure RegisterConsumer(const Consumer: TObject);
   end;

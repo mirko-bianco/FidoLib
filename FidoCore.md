@@ -862,7 +862,7 @@ Virtual Apis servers classes allow you to create Api servers quickly.
 
 #### Servers
 
-A server is the engine that will respond to incoming requests. Fido library provides already and Indy implementation, but feel free to implement your own, as long as it implements the `IApiServer` interface:
+A server is the engine that will respond to incoming requests. Fido library provides already an Indy and a Brook implementation, but feel free to implement your own, as long as it implements the `IApiServer` interface:
 
 ```pascal
   IApiServer = interface(IInvokable)
@@ -1755,7 +1755,7 @@ var
   Result: Context<Boolean>;
 begin
   //Try something and manage exceptions
-  &Try<string>.New('100s').Map<Integer>(StrToInt).Match(function(const E: TObject): Integer
+  &Try<string>.New('100s').Map<Integer>(StrToInt).Match(function(const E: Exception): Nullable<Integer>
     begin
       //Manage the exceptions
     end);
@@ -1770,7 +1770,7 @@ begin
     end);
   
   //Try something, manage exceptions and finally do something
-  &Try<string>.New('100s').Map<Integer>(StrToInt).Match(function(const E: TObject): Integer
+  &Try<string>.New('100s').Map<Integer>(StrToInt).Match(function(const E: Exception): Nullable<Integer>
     begin
       //Manage the exception
     end,
@@ -1786,7 +1786,7 @@ begin
   TryOut<Integer>.New(function: Integer
     begin
       // Get the value somehow
-    end).Match(function(const E: TObject): Integer
+    end).Match(function(const E: Exception): Nullable<Integer>
     begin
       //Manage the exceptions
     end);
@@ -1810,7 +1810,7 @@ begin
   TryOut<Integer>(function: Integer
     begin
       // Get the value somehow
-    end).Match(function(const E: TObject): Integer
+    end).Match(function(const E: Exception): Nullable<Integer>
     begin
       //Manage the exception
     end,
