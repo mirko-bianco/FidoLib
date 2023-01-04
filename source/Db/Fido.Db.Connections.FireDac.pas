@@ -32,6 +32,7 @@ uses
   FireDAC.Stan.Intf,
   FireDAC.Stan.Option,
 
+  Spring,
   Spring.Collections,
 
   Fido.Collections.PerXDictionary.Intf,
@@ -46,7 +47,7 @@ type
   private
     procedure OnAfterDisconnect(Sender: TObject);
   public
-    constructor Create(const Parameters: TStrings; const PerXDictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<TFDConnection>, IPerXDictionary<TFDConnection>>);
+    constructor Create(const Parameters: TStrings; const PerXDictionaryFactoryFunc: Func<TDictionaryOwnerships, Func<TFDConnection>, IPerXDictionary<TFDConnection>>);
     destructor Destroy; override;
 
     function GetCurrent: TFDConnection;
@@ -56,7 +57,7 @@ implementation
 
 constructor TFireDacConnections.Create(
   const Parameters: TStrings;
-  const PerXDictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<TFDConnection>, IPerXDictionary<TFDConnection>>);
+  const PerXDictionaryFactoryFunc: Func<TDictionaryOwnerships, Func<TFDConnection>, IPerXDictionary<TFDConnection>>);
 begin
   inherited Create;
   FFireDacConnections := TUpdateablePerXDictionary<TFDConnection, TStrings>.Create(
@@ -78,7 +79,7 @@ begin
       end;
       Result.AfterDisconnect := OnAfterDisconnect;
     end,
-    procedure(Connection: TFDConnection; Params: TStrings)
+    procedure(const Connection: TFDConnection; const Params: TStrings)
     begin
       Connection.Params.Clear;
       Connection.Params.AddStrings(Params);

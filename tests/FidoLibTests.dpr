@@ -57,8 +57,10 @@ uses
   Fido.Http.Utils.Test in 'Http\Fido.Http.Utils.Test.pas',
   Fido.Functional.Tests in 'Fido.Functional.Tests.pas',
   Fido.Web.Client.Websocket.Test in 'Web\Client\WebSocket\Fido.Web.Client.Websocket.Test.pas',
+  Tests.JSON.Mapping in 'Json\Tests.JSON.Mapping.pas',
   Fido.Currying.Test in 'Fido.Currying.Test.pas',
-  Fido.Caching.test in 'Fido.Caching.test.pas';
+  Fido.Caching.test in 'Fido.Caching.test.pas',
+  Fido.Channels.Test in 'Fido.Channels.Test.pas';
 
 {$IFNDEF TESTINSIGHT}
 var

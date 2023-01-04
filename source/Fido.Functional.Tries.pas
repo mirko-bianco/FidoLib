@@ -38,13 +38,14 @@ type
 
   TryOut<T> = record
   private
-    FFunctorFunc: TFunc<T>;
-    FMonadFunc: TFunc<Context<T>>;
+    FFunctorFunc: Func<T>;
+    FMonadFunc: Func<Context<T>>;
 
     function Resolve: T;
   public
-    constructor New(const FunctorFunc: TFunc<T>); overload;
-    constructor New(const MonadFunc: TFunc<Context<T>>); overload;
+    constructor New(const FunctorFunc: Func<T>); overload;
+    constructor New(const MonadFunc: Func<Context<T>>); overload;
+    constructor New(const Context: Context<T>); overload;
 
     function Match(const OnFailure: OnFailureEvent<T>; const OnFinally: TProc = nil): Context<T>; overload;
     function Match(const ExceptionClass: TExceptionClass; const ErrorMessage: string = ''; const OnFinally: TProc = nil): Context<T>; overload;
@@ -134,7 +135,7 @@ begin
     Result := True;
   except
     on E: Exception do
-      Result :=  False;
+      Result := False;
   end;
 end;
 
@@ -207,14 +208,14 @@ var
   LOnFailure: OnFailureEvent<T>;
   LOnFinally: TProc;
   LCalculatedValue: T;
+  Value: Nullable<T>;
 begin
   LOnFailure := OnFailure;
   LOnFinally := OnFinally;
 
   if not Assigned(LOnFailure) then
-    LOnFailure := function(const Exc: TObject): T
+    LOnFailure := function(const E: Exception): Nullable<T>
       begin
-        raise Exc;
       end;
   if not Assigned(LOnFinally) then
     LOnFinally := procedure
@@ -227,7 +228,12 @@ begin
       Result := LCalculatedValue;
     except
       on E: Exception do
-        Result :=  LOnFailure(E);
+      begin
+        Value := LOnFailure(E);
+        if not Value.HasValue then
+          raise;
+        Result := Value.Value;
+      end;
     end;
   finally
     LOnFinally();
@@ -250,17 +256,16 @@ function TryOut<T>.Match(
   const OnFailure: OnFailureEvent<T>;
   const OnFinally: TProc): Context<T>;
 var
-  ExceptionObject: Shared<TObject>;
   LOnFailure: OnFailureEvent<T>;
   LOnFinally: TProc;
+  Value: Nullable<T>;
 begin
   LOnFailure := OnFailure;
   LOnFinally := OnFinally;
 
   if not Assigned(LOnFailure) then
-    LOnFailure := function(const Exc: TObject): T
+    LOnFailure := function(const E: Exception): Nullable<T>
       begin
-        raise Exc;
       end;
   if not Assigned(LOnFinally) then
     LOnFinally := procedure
@@ -272,7 +277,12 @@ begin
       Result := Resolve;
     except
       on E: Exception do
-        Result := LOnFailure(E);
+      begin
+        Value := LOnFailure(E);
+        if not Value.HasValue then
+          raise;
+        Result := Value.Value;
+      end;
     end;
   finally
     LOnFinally();
@@ -281,7 +291,6 @@ end;
 
 function TryOut<T>.Match(const OnFinally: TProc): Context<T>;
 var
-  ExceptionObject: Shared<TObject>;
   LOnFinally: TProc;
 begin
   LOnFinally := OnFinally;
@@ -324,7 +333,7 @@ begin
   end;
 end;
 
-constructor TryOut<T>.New(const MonadFunc: TFunc<Context<T>>);
+constructor TryOut<T>.New(const MonadFunc: Func<Context<T>>);
 begin
   FFunctorFunc := nil;
   FMonadFunc := MonadFunc;
@@ -338,9 +347,15 @@ begin
     Result := FMonadFunc();
 end;
 
-constructor TryOut<T>.New(const FunctorFunc: TFunc<T>);
+constructor TryOut<T>.New(const FunctorFunc: Func<T>);
 begin
   FFunctorFunc := FunctorFunc;
+  FMonadFunc := nil;
+end;
+
+constructor TryOut<T>.New(const Context: Context<T>);
+begin
+  FFunctorFunc := Context;
   FMonadFunc := nil;
 end;
 {$ENDREGION}

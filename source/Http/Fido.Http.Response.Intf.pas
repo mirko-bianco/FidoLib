@@ -42,12 +42,6 @@ type
     function HeaderParams: IDictionary<string, string>;
     function MimeType: TMimeType;
     procedure SetMimeType(const MimeType: TMimeType);
-    procedure ServeFile(const FilenamePath: string);
-    procedure WriteHeader;
-    procedure WriteBytesToWebSocket(const Buffer: TWSBytes);
-    procedure ReadBytesFromWebSocket(var Buffer: TWSBytes; const ByteCount: Integer; const Append: Boolean = True);
-    procedure DisconnectWebSocket;
-    function GetWebSocketSignature(const Key: string): string;
   end;
 
 implementation

@@ -25,22 +25,22 @@ unit Fido.Caching.OneParam.Memoize;
 interface
 
 uses
-  System.SysUtils,
+  System.SyncObjs,
 
+  Spring,
   Spring.Collections,
 
-  Fido.Types,
   Fido.Caching.Intf;
 
 type
   TMemoizeOneParam<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FMap: IDictionary<P, R>;
   public
     constructor Create;
-    function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
-    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    function It(const AFunction: Func<P, R>; const Param: P): R;
+    function ForceIt(const AFunction: Func<P, R>; const Param: P): R;
   end;
 
 implementation
@@ -50,11 +50,10 @@ implementation
 constructor TMemoizeOneParam<P, R>.Create;
 begin
   inherited;
-  FLock := TMREWSync.Create;
   FMap := TCollections.CreateDictionary<P, R>;
 end;
 
-function TMemoizeOneParam<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TMemoizeOneParam<P, R>.ForceIt(const AFunction: Func<P, R>; const Param: P): R;
 begin
   FLock.BeginWrite;
   try
@@ -65,7 +64,7 @@ begin
   end;
 end;
 
-function TMemoizeOneParam<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TMemoizeOneParam<P, R>.It(const AFunction: Func<P, R>; const Param: P): R;
 begin
   FLock.BeginWrite;
   try

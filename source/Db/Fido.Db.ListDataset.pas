@@ -67,7 +67,7 @@ type
       FOriginalDataList: IList<T>;
       FFilteredDataList: IList<T>;
       FStringMaxLength: Integer;
-      FOnCheckItemVisibility: TPredicate<T>;
+      FOnCheckItemVisibility: Predicate<T>;
       FTraversedTypeInfoMap: IDictionary<PTypeInfo, Integer>;
       FDatasetFieldAttributes: IDatasetFieldAttributes;
 
@@ -79,7 +79,7 @@ type
     procedure InternalInitFieldDefsObjectClass(const TypInfo: PTypeInfo; const Prefix: string);
     procedure DoInitialize(const EntityFactoryFunc: TFunc<PTypeInfo, TValue>);
     function IsInRange(const Index: Integer): Boolean;
-    procedure SetOnCheckItemVisibility(const Value: TPredicate<T>);
+    procedure SetOnCheckItemVisibility(const Value: Predicate<T>);
     function GetCurrentEntity: T;
     function GetEntityFieldValue(const Entity: TValue; const Prefix: string; const FieldName: string; out Value: Variant): Boolean; overload;
     procedure RecordToEntity(const RecordNo: Integer); overload;
@@ -108,7 +108,7 @@ type
     property CurrentEntity: T read GetCurrentEntity;
     property DataList: IList<T> read FOriginalDataList write SetDataList;
     property StringMaxLength: Integer read FStringMaxLength write FStringMaxLength;
-    property OnCheckItemVisibility: TPredicate<T> read FOnCheckItemVisibility write SetOnCheckItemVisibility;
+    property OnCheckItemVisibility: Predicate<T> read FOnCheckItemVisibility write SetOnCheckItemVisibility;
   end;
 
   TListDataSetOfObservable<T: IObservable> = class(TListDataSet<T>)
@@ -380,7 +380,7 @@ begin
     caExtracted,
     caReplaced,
     caMoved,
-    caReseted: begin
+    caReset: begin
       FilterDataset;
       if Active then
         Refresh;
@@ -623,16 +623,16 @@ begin
     function(const Item: T): Boolean
     var
       CurrentValue: Variant;
-      Tokenizer: Shared<TStrings>;
+      Tokenizer: IShared<TStringList>;
       TokenIndex: Integer;
     begin
       if VarIsArray(LocalKeyValues) then
       begin
-        Tokenizer := TStringList.Create;
-        Tokenizer.Value.Text := StringReplace(KeyFields, ';', #13#10, [rfReplaceAll]);
-        SetLength(VarArray, Tokenizer.Value.Count);
-        for TokenIndex := 0 to Tokenizer.Value.Count - 1 do
-          if GetEntityFieldValue(TValue.From<T>(Item), '', Tokenizer.Value[TokenIndex], CurrentValue) then
+        Tokenizer := Shared.Make(TStringList.Create);
+        Tokenizer.Text := StringReplace(KeyFields, ';', #13#10, [rfReplaceAll]);
+        SetLength(VarArray, Tokenizer.Count);
+        for TokenIndex := 0 to Tokenizer.Count - 1 do
+          if GetEntityFieldValue(TValue.From<T>(Item), '', Tokenizer[TokenIndex], CurrentValue) then
           begin
             VarArray[TokenIndex] := Utilities.IfThen<Variant>(
               function: Boolean
@@ -675,7 +675,7 @@ procedure TListDataSet<T>._OnLookupValue(
 var
   Index: Integer;
   VarArray: TArray<variant>;
-  Tokenizer: Shared<TStrings>;
+  Tokenizer: IShared<TStringList>;
   TokenIndex: Integer;
   FieldValue: Variant;
   Item: T;
@@ -687,14 +687,14 @@ begin
 
   Item := InternalDataList[Index];
 
-  Tokenizer := TStringList.Create;
-  Tokenizer.Value.Text := StringReplace(ResultFields, ';', #13#10, [rfReplaceAll]);
-  SetLength(VarArray, Tokenizer.Value.Count);
-  for TokenIndex := 0 to Tokenizer.Value.Count - 1 do
-    if GetEntityFieldValue(TValue.From<T>(Item), '', Tokenizer.Value[TokenIndex], FieldValue) then
+  Tokenizer := Shared.Make(TStringList.Create);
+  Tokenizer.Text := StringReplace(ResultFields, ';', #13#10, [rfReplaceAll]);
+  SetLength(VarArray, Tokenizer.Count);
+  for TokenIndex := 0 to Tokenizer.Count - 1 do
+    if GetEntityFieldValue(TValue.From<T>(Item), '', Tokenizer[TokenIndex], FieldValue) then
       VarArray[TokenIndex] := FieldValue;
 
-  if Tokenizer.Value.Count = 1 then
+  if Tokenizer.Count = 1 then
     Value := VarArray[0]
   else
     Value := VarArray;
@@ -788,7 +788,7 @@ begin
   FilterDataSet;
 end;
 
-procedure TListDataSet<T>.SetOnCheckItemVisibility(const Value: TPredicate<T>);
+procedure TListDataSet<T>.SetOnCheckItemVisibility(const Value: Predicate<T>);
 begin
   FOnCheckItemVisibility := Value;
   FilterDataSet;

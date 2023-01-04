@@ -72,7 +72,7 @@ var
 begin
   Url := IniFile.ReadString('Consul', 'URL', 'http://127.0.0.1:8500');
   Token := IniFile.ReadString('Consul', 'Token', '');
-  Container.RegisterType<IConsulClientVirtualApiConfiguration>.DelegateTo(
+  Container.RegisterType<IConsulClientVirtualApiConfiguration>(
     function: IConsulClientVirtualApiConfiguration
     begin
       Result := TConsulClientVirtualApiConfiguration.Create(Url, Token, True, True);
@@ -92,7 +92,7 @@ begin
   Container.RegisterType<IConsulKVStoreDeleteKeyUseCase, TConsulKVStoreDeleteKeyUseCase>;
 
   Container.RegisterType<IKVStore, TConsulKVStore>;
-  Container.RegisterType<IConsulService>.DelegateTo(
+  Container.RegisterType<IConsulService>(
     function: IConsulService
     begin
       Result := TConsulService.Create(

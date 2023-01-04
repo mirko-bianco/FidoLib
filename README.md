@@ -8,7 +8,9 @@ The Fido library is highly opinionated but it won't force you to adopt it entire
 
 The Fido library is mostly based on composition and attributes, hence it won't force you to revolutionize your current base hierarchy structure.
 
-The Fido library supports Delphi version 10.4 and higher. 
+The Fido library maintainers believe in constant improvement. For this reason, when confronted with the choice between “preserve backward compatibility” and “add a new feature”, we will move forward. Sorry, people who’re still using Delphi 7.
+
+The Fido library supports Delphi version 10.4.1 and higher. 
 
 [Fido Demo App](https://github.com/mirko-bianco/FidoDemoApp) is a forever-work-in-progress showcase of the functionalities of this library.
 
@@ -38,13 +40,15 @@ If you are willing to play by the rules then let's have fun together.
 
 The Fido library depends on the following open source libraries:
 
-[Spring4D](https://bitbucket.org/sglienke/spring4d/src/master/)
+[Spring4D](https://bitbucket.org/sglienke/spring4d/src/master/) (develop branch)
 
 [Delphi JOSE and JWT Library](https://github.com/paolo-rossi/delphi-jose-jwt)
 
 [DUnitX](https://github.com/VSoftTechnologies/DUnitX)
 
-[Delphi Redis client](https://github.com/danieleteti/delphiredisclient)
+[Delphi Redis client](https://github.com/danieleteti/delphiredisclient) (Optional)
+
+[Brook framework](https://github.com/risoflora/brookframework) (Optional)
 
 ## Installation
 
@@ -70,5 +74,4 @@ The Fido Library is made of 4 main packages
 
 - **FidoRedis** - Contains the [Redis](https://redis.io/) implementations for the `IKVStore`, `IDistribuitedEventsQueueProducer` and `IDistribuitedEventsQueueConsumer` interfaces. 
 
-  
-
+- **FidoBrook** - Contains the [Brook](https://github.com/risoflora/brookframework) implementations for the `IApiServer`interface. As mentioned on their page: Brook [...] core has been developed using the [Sagui library](https://risoflora.github.io/libsagui), that's why it is so fast, compact and useful to run on embedded systems. Please refer on their page to get access to their external libraries.

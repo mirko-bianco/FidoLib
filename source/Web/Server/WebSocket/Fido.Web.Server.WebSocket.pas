@@ -319,7 +319,7 @@ var
   Buffer: string;
   Topic: string;
   Headers: IDictionary<string, string>;
-  Hash: Shared<TIdHashSHA1>;
+  Hash: IShared<TIdHashSHA1>;
 begin
   Context.Connection.IOHandler.CheckForDataOnSource(10);
 
@@ -332,20 +332,20 @@ begin
   Headers := ParseIOHandlerHeaders(Buffer);
   Topic := ParseIOHandlerTopic(Buffer);
 
-  FHandshakesMap.AddOrSetValue(Context.Connection.IOHandler, Topic);
+  FHandshakesMap[Context.Connection.IOHandler] := Topic;
   FClients.Add(Context, Topic);
 
   if Headers.ContainsKey('Upgrade') and Headers.ContainsKey('Sec-WebSocket-Key') and
      Headers['Upgrade'].ToLower.Equals('websocket') then
   begin
     try
-      Hash := TIdHashSHA1.Create;
+      Hash := Shared.Make(TIdHashSHA1.Create);
       Context.Connection.IOHandler.Write(
         Format(
           'HTTP/1.1 101 Switching Protocols'#13#10 +
           'Upgrade: websocket'#13#10 +
           'Connection: Upgrade'#13#10 +
-          'Sec-WebSocket-Accept: %s'#13#10#13#10, [TIdEncoderMIME.EncodeBytes(Hash.Value.HashString(Headers['Sec-WebSocket-Key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'))]),
+          'Sec-WebSocket-Accept: %s'#13#10#13#10, [TIdEncoderMIME.EncodeBytes(Hash.HashString(Headers['Sec-WebSocket-Key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'))]),
         IndyTextEncoding_UTF8);
     except
       on E: Exception do

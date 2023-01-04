@@ -76,7 +76,7 @@ var
   FoundMigrations: IList<string>;
   ToRunMigrations: IList<string>;
   FileName: string;
-  Script: Shared<TStringList>;
+  Script: IShared<TStringList>;
 begin
   AlreadyRunMigrations := FDatabaseMigrationsRepository.GetOldDBMigrations;
   FoundMigrations := TCollections.CreateList<string>(TStringComparer.OrdinalIgnoreCase);
@@ -92,8 +92,8 @@ begin
 
   ToRunMigrations.ForEach(procedure(const Migration: string)
     begin
-      Script := TStringList.Create;
-      Script.Value.LoadFromFile(Migration);
+      Script := Shared.Make(TStringList.Create);
+      Script.LoadFromFile(Migration);
       FScriptRunner.Execute(Script);
       FDatabaseMigrationsRepository.SaveDBMigration(ExtractFileName(Migration));
     end);

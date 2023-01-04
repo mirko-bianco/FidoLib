@@ -32,6 +32,7 @@ uses
   Fido.Exceptions;
 
 type
+  {$M+}
   EApiServer = class(EFidoException)
   private
     FCode: Integer;
@@ -39,10 +40,11 @@ type
   public
     constructor Create(const Code: Integer; const ShortMsg: string; const Msg: string); overload;
     constructor Create(const Code: Integer; const ShortMsg: string; const Msg: string; const Logger: ILogger; const &Class: string; const Method: string); overload;
-
+  published
     function Code: Integer;
     function ShortMsg: string;
   end;
+  {$M-}
 
   EApiServer400 = class(EApiServer)
     constructor Create(const Msg: string);
@@ -65,8 +67,8 @@ type
   end; //Conflict
 
   EApiServer500 = class(EApiServer)
-    constructor Create(const Msg: string); overload;
-    constructor Create(const Msg: string; const Logger: ILogger; const &Class: string; const Method: string); overload;
+  public
+    constructor Create(const Msg: string);
   end; //Internal server error
 
   EApiServer503 = class(EApiServer)
@@ -81,26 +83,6 @@ type
 implementation
 
 { EApiServer500 }
-
-constructor EApiServer500.Create(
-  const Msg: string;
-  const Logger: ILogger;
-  const &Class: string;
-  const Method: string);
-var
-  LoggedData: Shared<TLoggedData>;
-begin
-  Create(Msg);
-
-  LoggedData := TLoggedData.Create('Error', &Class, Method);
-
-  Logger.Log(TLogEvent.Create(
-    TLogLevel.Error,
-    TLogEventType.Text,
-    Msg,
-    nil,
-    TValue.From<TLoggedData>(LoggedData.Value)));
-end;
 
 constructor EApiServer500.Create(const Msg: string);
 begin
@@ -123,18 +105,18 @@ end;
 
 constructor EApiServer.Create(const Code: Integer; const ShortMsg: string; const Msg: string; const Logger: ILogger; const &Class, Method: string);
 var
-  LoggedData: Shared<TLoggedData>;
+  LoggedData: IShared<TLoggedData>;
 begin
   Create(Code, ShortMsg, Msg);
 
-  LoggedData := TLoggedData.Create('Error', &Class, Method);
+  LoggedData := Shared.Make(TLoggedData.Create('Error', &Class, Method));
 
   Logger.Log(TLogEvent.Create(
     TLogLevel.Error,
     TLogEventType.Text,
     Msg,
     nil,
-    TValue.From<TLoggedData>(LoggedData.Value)));
+    TValue.From<TLoggedData>(LoggedData)));
 end;
 
 function EApiServer.ShortMsg: string;

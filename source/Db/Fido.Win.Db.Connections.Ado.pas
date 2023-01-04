@@ -30,6 +30,7 @@ uses
   Data.Win.ADODB,
   System.Generics.Collections,
 
+  Spring,
   Spring.Collections,
 
   Fido.Win.Db.Connection.NestedTransactions.Ado,
@@ -44,7 +45,7 @@ type
     FAdoConnections: TFidoAdoConnections;
   public
     constructor Create(const ConnectionString: string;
-      const PerXDictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<TADONestedTransactionsConnection>, IPerXDictionary<TADONestedTransactionsConnection>>);
+      const PerXDictionaryFactoryFunc: Func<TDictionaryOwnerships, Func<TADONestedTransactionsConnection>, IPerXDictionary<TADONestedTransactionsConnection>>);
     destructor Destroy; override;
 
     function GetCurrent: TADONestedTransactionsConnection;
@@ -54,7 +55,7 @@ implementation
 
 constructor TAdoConnections.Create(
   const ConnectionString: string;
-  const PerXDictionaryFactoryFunc: TFunc<TDictionaryOwnerships, TFunc<TADONestedTransactionsConnection>, IPerXDictionary<TADONestedTransactionsConnection>>);
+  const PerXDictionaryFactoryFunc: Func<TDictionaryOwnerships, Func<TADONestedTransactionsConnection>, IPerXDictionary<TADONestedTransactionsConnection>>);
 begin
   inherited Create;
 
@@ -74,7 +75,7 @@ begin
       Result.Mode := cmReadWrite;
       Result.Provider := 'OraOLEDB.Oracle.1';
     end,
-    procedure(Connection: TADONestedTransactionsConnection; ConnectionString: string)
+    procedure(const Connection: TADONestedTransactionsConnection; const ConnectionString: string)
     begin
       Connection.ConnectionString := ConnectionString;
     end);

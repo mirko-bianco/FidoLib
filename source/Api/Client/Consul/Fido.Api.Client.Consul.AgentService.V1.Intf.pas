@@ -94,7 +94,7 @@ begin
   FServiceName := ServiceName;
   FAddress := Address;
   FPort := Port;
-  FTags := TCollections.CreateList<string>(Tags).AsReadOnlyList;
+  FTags := TCollections.CreateList<string>(Tags).AsReadOnly;
   FCheck := Check;
 end;
 

@@ -110,11 +110,11 @@ end;
 
 function TConsulService.GetIps: TArray<string>;
 begin
-  GStack.IncUsage;
+  TIdStack.IncUsage;
   Result := &Try<Void>.New(Void.Get).Map<TArray<string>>(DoGetLocalAddresses()).Match(
     procedure
     begin
-      GStack.DecUsage;
+      TIdStack.DecUsage;
     end);
 end;
 

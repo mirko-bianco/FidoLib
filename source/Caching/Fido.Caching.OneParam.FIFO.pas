@@ -26,23 +26,24 @@ interface
 
 uses
   System.SysUtils,
+  System.SyncObjs,
 
+  Spring,
   Spring.Collections,
 
-  Fido.Types,
   Fido.Caching.Intf;
 
 type
   TFIFOOneParamCache<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
     FSize: Int64;
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FMap: IDictionary<P, R>;
     FQueue: IQueue<P>;
   public
     constructor Create(const Size: Int64);
-    function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
-    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    function It(const AFunction: Func<P, R>; const Param: P): R;
+    function ForceIt(const AFunction: Func<P, R>; const Param: P): R;
   end;
 
 implementation
@@ -52,7 +53,6 @@ implementation
 constructor TFIFOOneParamCache<P, R>.Create(const Size: Int64);
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FMap := TCollections.CreateDictionary<P, R>;
   FQueue := TCollections.CreateQueue<P>;
   FSize := Size;
@@ -60,7 +60,7 @@ begin
     FSize := 1;
 end;
 
-function TFIFOOneParamCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TFIFOOneParamCache<P, R>.ForceIt(const AFunction: Func<P, R>; const Param: P): R;
 var
   Exists: Boolean;
 begin
@@ -80,7 +80,7 @@ begin
   end;
 end;
 
-function TFIFOOneParamCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TFIFOOneParamCache<P, R>.It(const AFunction: Func<P, R>; const Param: P): R;
 begin
   FLock.BeginWrite;
   try

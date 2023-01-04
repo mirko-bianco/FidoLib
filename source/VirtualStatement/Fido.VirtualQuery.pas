@@ -154,8 +154,8 @@ begin
   inherited Create(DoInvoke);
 
   FExecutor := Utilities.CheckNotNullAndSet(StatementExecutor, 'StatementExecutor');
-  FParams := TCollections.CreateDictionary<string, TParamDescriptor>([doOwnsValues]);
-  FMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([doOwnsValues]);
+  FParams := TCollections.CreateDictionary<string, TParamDescriptor>([Spring.Collections.doOwnsValues]);
+  FMethods := TCollections.CreateDictionary<string, TMethodDescriptor>([Spring.Collections.doOwnsValues]);
 
   ProcessAllAttributes;
   ValidateStatement;
@@ -528,7 +528,7 @@ begin
   TestDatasetOpen('SetEnumeratorValue');
   LiveList := TDataSetAsReadonlyList<TRecord>.Create(FDataset);
 
-  FList := TCollections.CreateList<TRecord>(LiveList.ToArray).AsReadOnlyList;
+  FList := TCollections.CreateList<TRecord>(LiveList.ToArray).AsReadOnly();
   Result := TValue.From<IReadOnlyList<TRecord>>(FList.Target);
 end;
 

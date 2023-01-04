@@ -49,7 +49,6 @@ uses
 type
   TRedisQueuePubSubEventsDrivenConsumer = class(TInterfacedObject, IPubSubEventsDrivenConsumer<string>)
   private
-    FLock: IReadWriteSync;
     FRedisClientFactoryFunc: TFunc<IFidoRedisClient>;
     FTasks: IDictionary<string, ITask>;
     FClosing: Boolean;
@@ -109,7 +108,6 @@ begin
 
   FRedisClientFactoryFunc := Utilities.CheckNotNullAndSet<TFunc<IFidoRedisClient>>(RedisClientFactoryFunc, 'RedisClientFactoryFunc');
 
-  FLock := TMREWSync.Create;
   FTasks := TCollections.CreateDictionary<string, ITask>;
   FClosing := False;
 end;

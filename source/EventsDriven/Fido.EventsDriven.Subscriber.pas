@@ -32,6 +32,7 @@ uses
   Spring.Collections,
 
   Fido.Utilities,
+  Fido.EventsDriven,
   Fido.EventsDriven.Attributes,
   Fido.EventsDriven.Subscriber.Intf,
   Fido.EventsDriven.Listener.Intf;
@@ -49,6 +50,8 @@ type
   public
     constructor Create(const Listener: IEventsDrivenListener);
     destructor Destroy; override;
+
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
 
     procedure RegisterConsumer(const Consumer: TObject);
   end;
@@ -140,6 +143,11 @@ begin
 
   if not Registered then
     Consumer.Free;
+end;
+
+procedure TEventsDrivenSubscriber.RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
+begin
+  FListener.RegisterGlobalMiddleware(MiddlewareProc);
 end;
 
 end.

@@ -9,6 +9,8 @@ uses
 
   DUnitX.TestFramework,
 
+  Spring,
+
   Fido.Exceptions,
   Fido.DesignPatterns.Retries,
   Fido.Functional,
@@ -213,6 +215,9 @@ type
 
     [Test]
     procedure TryMatchItWorks;
+
+    [Test]
+    procedure TryAsyncFunctorRaiseExceptionWhenItFails;
   end;
 
 implementation
@@ -243,7 +248,7 @@ end;
 procedure TFunctionalTests.ImplicitToFunc;
 var
   Ctx: Context<Integer>;
-  Func: TFunc<Integer>;
+  Func: Func<Integer>;
 begin
   Ctx := Context<Integer>.New(100);
 
@@ -465,6 +470,21 @@ begin
 
   Assert.AreEqual(100, Result);
   Assert.AreEqual(True, Flag);
+end;
+
+procedure TFunctionalTests.TryAsyncFunctorRaiseExceptionWhenItFails;
+var
+  Result: Integer;
+begin
+  Assert.WillRaise(procedure
+    begin
+      Result := &Try<string>.New('100e').MapAsync<Integer>(StrToInt, 100).Match(function(const E: Exception): Nullable<Integer>
+        begin
+        end);
+    end,
+    EConvertError);
+
+  Assert.AreEqual(0, Result);
 end;
 
 procedure TFunctionalTests.TryAsyncFunctorRaisesAnExceptionWhenItDoesNotWork;

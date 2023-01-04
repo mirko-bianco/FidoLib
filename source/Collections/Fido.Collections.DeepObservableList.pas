@@ -54,11 +54,11 @@ type
     procedure Pause;
     procedure Resume(const AndBroadcast: string = '');
   public
-    constructor Create; override;
+    constructor Create; overload;
 
-    function Remove(const Item: T): Boolean; override;
-    function Extract(const Item: T): T; override;
-    procedure Insert(Index: Integer; const Item: T); override;
+    function Remove(const Item: T): Boolean;
+    function Extract(const Item: T): T;
+    procedure Insert(Index: Integer; const Item: T);
   end;
 
 implementation

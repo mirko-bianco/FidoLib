@@ -29,6 +29,7 @@ uses
   System.Classes,
   System.Rtti,
   System.SysUtils,
+  System.SyncObjs,
   System.NetEncoding,
   System.Threading,
   System.Generics.Collections,
@@ -40,6 +41,7 @@ uses
   Fido.Functional.Tries,
   Fido.Boxes,
   Fido.JSON.Marshalling,
+  Fido.EventsDriven,
 
   Fido.EventsDriven.Utils,
   Fido.EventsDriven.Listener.Intf,
@@ -49,15 +51,18 @@ type
   TQueueEventsDrivenListener<PayloadType> = class (TInterfacedObject, IEventsDrivenListener)
   private var
     FActive: IBox<Boolean>;
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FSubscriptions: IDictionary<string, TConsumerData>;
     FSubscriptionsTask: ITask;
     FPollingIntervalMSec: Integer;
+    FGlobalMiddlewareProc: TEventDrivenGlobalMiddlewareProc;
   private
     procedure PerformEventPolling(const QueueConsumer: IQueueEventsDrivenConsumer<PayloadType>);
   public
     constructor Create(const QueueConsumerFactoryFunc: TFunc<IQueueEventsDrivenConsumer<PayloadType>>);
     destructor Destroy; override;
+
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
 
     procedure SubscribeTo(const Channel: string; const EventName: string; const ConsumerData: TConsumerData);
     procedure UnsubscribeFrom(const Channel: string; const EventName: string);
@@ -75,9 +80,9 @@ begin
 
   Guard.CheckTrue(Assigned(QueueConsumerFactoryFunc), 'QueueConsumerFactoryFunc is not assigned');
 
+  FGlobalMiddlewareProc := DefaultGlobalMiddlewareProc;
   FSubscriptions := TCollections.CreateDictionary<string, TConsumerData>;
   FPollingIntervalMSec := 250;
-  FLock := TMREWSync.Create;
 
   FActive := Box<Boolean>.Setup(True);
 
@@ -106,9 +111,6 @@ procedure TQueueEventsDrivenListener<PayloadType>.PerformEventPolling(const Queu
 var
   Items: TArray<TPair<string, TConsumerData>>;
 begin
-  if not Assigned(FLock) then
-    Exit;
-
   FLock.BeginRead;
 
   Items := &Try<Void>.New(Void.Get).Map<TArray<TPair<string, TConsumerData>>>(Void.MapFunc<TArray<TPair<string, TConsumerData>>>(function: TArray<TPair<string, TConsumerData>>
@@ -125,7 +127,7 @@ begin
   TCollections.CreateList<TPair<string, TConsumerData>>(Items).ForEach(
     procedure(const Item: TPair<string, TConsumerData>)
     var
-      Value: Nullable<PayloadType>;
+      Res: Nullable<PayloadType>;
       Ctx: TRttiContext;
       RttiType: TRttiType;
       LItem: TPair<string, TConsumerData>;
@@ -135,8 +137,8 @@ begin
       LItem := Item;
       while Assigned(FActive) and FActive.Value and CanContinue do
       begin
-        Value := QueueConsumer.Pop(Item.Key);
-        CanContinue := Value.HasValue;
+        Res := QueueConsumer.Pop(Item.Key);
+        CanContinue := Res.HasValue;
         if not CanContinue then
           Break;
 
@@ -154,14 +156,25 @@ begin
             begin
               TryOut<Void>.New(function: Void
                 begin
-                  Method.Invoke(LItem.Value.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Value, Method));
-                end).Match(function(const E: TObject): Void
+                  FGlobalMiddlewareProc(procedure
+                    begin
+                      Method.Invoke(LItem.Value.Consumer, TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(Res, Method));
+                    end,
+                    Method.ClassName,
+                    Method.Name);
+                end).Match(function(const E: Exception): Nullable<Void>
                 begin
-                  QueueConsumer.PushBack(LItem.Key, Value).Value;
+                  QueueConsumer.PushBack(LItem.Key, Res).Value;
+                  Result := Void.Get;
                 end);
             end);
       end;
     end);
+end;
+
+procedure TQueueEventsDrivenListener<PayloadType>.RegisterGlobalMiddleware(const MiddlewareProc: TEventDrivenGlobalMiddlewareProc);
+begin
+  FGlobalMiddlewareProc := MiddlewareProc;
 end;
 
 destructor TQueueEventsDrivenListener<PayloadType>.Destroy;

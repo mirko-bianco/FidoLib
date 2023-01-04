@@ -25,24 +25,25 @@ unit Fido.Caching.OneParam.Usage;
 interface
 
 uses
-  System.SysUtils,
+  System.SyncObjs,
 
+  Spring,
   Spring.Collections,
+  Spring.Collections.LinkedLists,
 
-  Fido.Types,
   Fido.Caching.Intf;
 
 type
   TUsageOneParamCache<P, R> = class(TInterfacedObject, IOneParamCache<P, R>)
   private var
     FSize: Int64;
-    FLock: IReadWriteSync;
+    FLock: TLightweightMREW;
     FMap: IDictionary<P, R>;
-    FAgeList: IList<P>;
+    FAgeList: ILinkedList<P>;
   public
     constructor Create(const Size: Int64);
-    function It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
-    function ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+    function It(const AFunction: Func<P, R>; const Param: P): R;
+    function ForceIt(const AFunction: Func<P, R>; const Param: P): R;
   end;
 
 implementation
@@ -53,18 +54,18 @@ constructor TUsageOneParamCache<P, R>.Create(const Size: Int64);
 begin
   inherited Create;
 
-  FLock := TMREWSync.Create;
   FMap := TCollections.CreateDictionary<P, R>;
-  FAgeList := TCollections.CreateList<P>;
+  FAgeList := TLinkedList<P>.Create;
   FSize := Size;
   if FSize <= 0 then
     FSize := 1;
 end;
 
-function TUsageOneParamCache<P, R>.ForceIt(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TUsageOneParamCache<P, R>.ForceIt(const AFunction: Func<P, R>; const Param: P): R;
 var
   Exists: Boolean;
   Index: Integer;
+  Node: TLinkedListNode<P>;
 begin
   FLock.BeginWrite;
   try
@@ -74,40 +75,44 @@ begin
     if Exists then
       Exit;
 
-    Index := FAgeList.IndexOf(Param);
-    if Index > -1 then
-      FAgeList.Delete(Index);
-    FAgeList.Add(Param);
+    if FAgeList.IsEmpty then
+      FAgeList.Add(Param)
+    else
+    begin
+      FAgeList.Remove(Param);
+      FAgeList.AddLast(Param);
+    end;
 
     if FAgeList.Count > FSize then
     begin
-      FMap.Remove(FAgeList[0]);
-      FAgeList.Delete(0);
+      FMap.Remove(FAgeList.First.Value);
+      FAgeList.RemoveFirst;
     end;
   finally
     FLock.EndWrite;
   end;
 end;
 
-function TUsageOneParamCache<P, R>.It(const AFunction: TOneParamFunction<P, R>; const Param: P): R;
+function TUsageOneParamCache<P, R>.It(const AFunction: Func<P, R>; const Param: P): R;
 var
   Exists: Boolean;
+  Node: TLinkedListNode<P>;
 begin
   FLock.BeginWrite;
   try
     Exists := FMap.TryGetValue(Param, Result);
     if Exists then
-      FAgeList.Delete(FAgeList.IndexOf(Param))
+      FAgeList.Remove(Param)
     else
     begin
       Result := AFunction(Param);
       FMap[Param] := Result;
     end;
-    FAgeList.Add(Param);
+    FAgeList.AddLast(Param);
     if FAgeList.Count > FSize then
     begin
-      FMap.Remove(FAgeList[0]);
-      FAgeList.Delete(0);
+      FMap.Remove(FAgeList.First.Value);
+      FAgeList.RemoveFirst;
     end;
   finally
     FLock.EndWrite;

@@ -25,13 +25,22 @@ unit Fido.Http.Utils;
 interface
 
 uses
+  System.Classes,
   System.SysUtils,
   System.RegularExpressions,
 
   IdIOHandler,
   IdGlobal,
 
-  Spring.Collections;
+  Spring.Collections,
+
+  Fido.Http.Types;
+
+procedure StringsToDictionary(const Strings: TStrings; const Dictionary: IDictionary<string, string>);
+
+function ContentTypeToMimeType(const ContentType: string): TMimeType;
+
+function ConvertToRestCommand(const Item: string): THttpMethod;
 
 function TranslatePathToRegEx(Path: string): string;
 
@@ -42,6 +51,45 @@ function ParseIOHandlerHeaders(const Buffer: string): IDictionary<string, string
 function ParseIOHandlerTopic(const Buffer: string): string;
 
 implementation
+
+procedure StringsToDictionary(
+  const Strings: TStrings;
+  const Dictionary: IDictionary<string, string>);
+var
+  I: Integer;
+begin
+  for I := 0 to Strings.Count - 1 do
+    Dictionary[Strings.Names[I]] := Strings.ValueFromIndex[I];
+end;
+
+function ContentTypeToMimeType(const ContentType: string): TMimeType;
+var
+  LContentType: string;
+  MimeTypeIndex: Integer;
+begin
+  LContentType := ContentType;
+  MimeTypeIndex := -1;
+  if LContentType.IsEmpty then
+    LContentType := DEFAULTMIME;
+  for var StringMimeType in SMimeType do
+  begin
+    Inc(MimeTypeIndex);
+    if LContentType.ToUpper = StringMimeType.ToUpper then
+      Break;
+  end;
+  Result := TMimeType(MimeTypeIndex);
+end;
+
+function ConvertToRestCommand(const Item: string): THttpMethod;
+var
+  I: Integer;
+begin
+  Result := rmUnknown;
+
+  for I := 0 to Integer(High(SHttpMethod)) do
+    if UpperCase(SHttpMethod[THttpMethod(I)]) = UpperCase(Item) then
+      Exit(THttpMethod(I));
+end;
 
 function TranslatePathToRegEx(Path: string): string;
 begin
@@ -82,7 +130,7 @@ begin
   begin
     LineTokens := Line.Split([': ']);
     if (Length(LineTokens) > 1) then
-      Result.AddOrSetValue(Trim(LineTokens[0]), Trim(LineTokens[1]));
+      Result[Trim(LineTokens[0])] := Trim(LineTokens[1]);
   end;
 end;
 

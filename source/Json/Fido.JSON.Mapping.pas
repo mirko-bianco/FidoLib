@@ -31,6 +31,7 @@ uses
   {$ifdef POSIX}
   Posix.Pthread,
   {$endif}
+  System.SyncObjs,
   System.Rtti,
   System.TypInfo,
   System.SysUtils,
@@ -51,7 +52,7 @@ type
   TJSONUnmarhallingToFunc = reference to function(const Value: string; const TypInfo: pTypeInfo): TValue;
 
   TJSONConvertingFromFunc<T> = reference to function(const Value: T): string;
-  TJSONConvertingToFunc<T> = reference to function(const Value: string): T;
+  TJSONConvertingToFunc<T> = reference to function(const Value: string; const TypInfo: pTypeInfo): T;
 
   MappingsUtilities = class
   public type
@@ -69,8 +70,10 @@ type
   private type
     TJsonTypeMappingsDictionary = class
     strict private
-      FLock: IReadWriteSync;
+      FLock: TLightweightMREW;
       FItems: IDictionary<string, IDictionary<pTypeInfo, TJSONMarshallingMapping>>;
+    private
+      function TryGetCurrentOrParent(const Mappings: IDictionary<pTypeInfo, TJSONMarshallingMapping>; const TInfo: pTypeInfo; out Mapping: TJSONMarshallingMapping): Boolean;
     public
       constructor Create;
 
@@ -80,7 +83,7 @@ type
 
     TJsonEnumerativeMappingsDictionary = class
     strict private
-      FLock: IReadWriteSync;
+      FLock: TLightweightMREW;
       FItems: IDictionary<string, TJSONMarshallingMapping>;
     public
       constructor Create;
@@ -115,8 +118,18 @@ var
 constructor MappingsUtilities.TJsonTypeMappingsDictionary.Create;
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<string, IDictionary<pTypeInfo, TJSONMarshallingMapping>>(Comparer);
+end;
+
+function MappingsUtilities.TJsonTypeMappingsDictionary.TryGetCurrentOrParent(
+  const Mappings: IDictionary<pTypeInfo, TJSONMarshallingMapping>;
+  const TInfo: pTypeInfo;
+  out Mapping: TJSONMarshallingMapping): Boolean;
+begin
+  Result := Mappings.TryGetValue(TInfo, Mapping);
+
+  if not Result and (TInfo.Kind = tkClass) and (TInfo.Name <> 'TObject') then
+    Result := TryGetCurrentOrParent(Mappings, TInfo.RttiType.BaseType.Handle, Mapping);
 end;
 
 function MappingsUtilities.TJsonTypeMappingsDictionary.TryGet(
@@ -138,7 +151,7 @@ begin
 
   FLock.BeginRead;
   try
-     Result := Mappings.TryGetValue(TInfo, Mapping);
+    Result := TryGetCurrentOrParent(Mappings, TInfo, Mapping);
   finally
     FLock.EndRead;
   end;
@@ -196,7 +209,6 @@ end;
 constructor MappingsUtilities.TJsonEnumerativeMappingsDictionary.Create;
 begin
   inherited Create;
-  FLock := TMREWSync.Create;
   FItems := Spring.Collections.TCollections.CreateDictionary<string, TJSONMarshallingMapping>(Comparer);
 end;
 
@@ -267,14 +279,14 @@ begin
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TValue
     var
-      JSONNull: Shared<TJSONNull>;
+      JSONNull: IShared<TJSONNull>;
     begin
-      JSONNull := TJSONNull.Create;
+      JSONNull := Shared.Make(TJSONNull.Create);
 
-      if Value.IsEmpty or Value.ToLower.Equals(JSONNull.Value.ToJSON.ToLower) then
+      if Value.IsEmpty or Value.ToLower.Equals(JSONNull.ToJSON.ToLower) then
         Result := TValue.From<Nullable<T>>(nil)
       else
-        Result := TValue.From<Nullable<T>>(Nullable<T>.Create(JSONUnmarhallingToFunc(Value)));
+        Result := TValue.From<Nullable<T>>(Nullable<T>.Create(JSONUnmarhallingToFunc(Value, TypInfo)));
     end,
     ConfigurationName);
 end;
@@ -307,7 +319,7 @@ begin
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TValue
     begin
-      Result := TValue.From<T>(JSONUnmarhallingToFunc(Value));
+      Result := TValue.From<T>(JSONUnmarhallingToFunc(Value, TypInfo));
     end,
     Config);
 end;
@@ -341,10 +353,10 @@ initialization
   MappingsUtilities.RegisterEnumeratives(
     function(const Value: TValue): Nullable<string>
     var
-      JSONNumber: Shared<TJSONNumber>;
+      JSONNumber: IShared<TJSONNumber>;
     begin
-      JSONNumber := TJSONNumber.Create(Integer(Value.AsVariant));
-      Result := JSONNumber.Value.ToJSON;
+      JSONNumber := Shared.Make(TJSONNumber.Create(Integer(Value.AsVariant)));
+      Result := JSONNumber.ToJSON;
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TValue
     begin
@@ -357,7 +369,7 @@ initialization
     begin
       Result := Value;
     end,
-    function(const Value: string): string
+    function(const Value: string; const TypInfo: pTypeInfo): string
     begin
       Result := Value.DeQuotedString('"');
     end);
@@ -367,7 +379,7 @@ initialization
     begin
       Result := IntToStr(Value)
     end,
-    function(const Value: string): Int64
+    function(const Value: string; const TypInfo: pTypeInfo): Int64
     var
       Int64Value: Int64;
     begin
@@ -381,7 +393,7 @@ initialization
     begin
       Result := IntToStr(Value)
     end,
-    function(const Value: string): Integer
+    function(const Value: string; const TypInfo: pTypeInfo): Integer
     var
       IntegerValue: Integer;
     begin
@@ -395,7 +407,7 @@ initialization
     begin
       Result := IntToStr(Value);
     end,
-    function(const Value: string): Smallint
+    function(const Value: string; const TypInfo: pTypeInfo): Smallint
     var
       SmallintValue: Integer;
     begin
@@ -409,7 +421,7 @@ initialization
     begin
       Result := DateToISO8601(Value);
     end,
-    function(const Value: string): TDateTime
+    function(const Value: string; const TypInfo: pTypeInfo): TDateTime
     var
       DateTimeValue: TDateTime;
     begin
@@ -429,7 +441,7 @@ initialization
 
       Result := FloatToStr(Value, FormatSettings);
     end,
-    function(const Value: string): Extended
+    function(const Value: string; const TypInfo: pTypeInfo): Extended
     var
       ExtendedValue: Extended;
       FormatSettings: TFormatSettings;
@@ -453,7 +465,7 @@ initialization
 
       Result := FloatToStr(Value, FormatSettings);
     end,
-    function(const Value: string): Double
+    function(const Value: string; const TypInfo: pTypeInfo): Double
     var
       DoubleValue: Double;
       FormatSettings: TFormatSettings;
@@ -477,7 +489,7 @@ initialization
 
       Result := CurrToStr(Value, FormatSettings);
     end,
-    function(const Value: string): Currency
+    function(const Value: string; const TypInfo: pTypeInfo): Currency
     var
       CurrencyValue: Currency;
       FormatSettings: TFormatSettings;
@@ -493,19 +505,19 @@ initialization
   MappingsUtilities.RegisterPrimitive<Boolean>(
     function(const Value: Boolean): string
     var
-      JSONBool: Shared<TJSONBool>;
+      JSONBool: IShared<TJSONBool>;
     begin
-      JSONBool := TJSONBool.Create(Value);
-      Result := JSONBool.Value.ToJSON;
+      JSONBool := Shared.Make(TJSONBool.Create(Value));
+      Result := JSONBool.ToJSON;
     end,
-    function(const Value: string): Boolean
+    function(const Value: string; const TypInfo: pTypeInfo): Boolean
     var
-      JSONTrue: Shared<TJSONTrue>;
+      JSONTrue: IShared<TJSONTrue>;
     begin
-      JSONTrue := TJSONTrue.Create;
+      JSONTrue := Shared.Make(TJSONTrue.Create);
 
       Result := False;
-      if SameText(Value, JSONTrue.Value.ToJSON) then
+      if SameText(Value, JSONTrue.ToJSON) then
         Result := True;
     end);
 
@@ -514,7 +526,7 @@ initialization
     begin
       Result := StringReplace(StringReplace(GUIDToString(Value), '{', '', []), '}', '', [])
     end,
-    function(const Value: string): TGuid
+    function(const Value: string; const TypInfo: pTypeInfo): TGuid
     var
       GuidValue: TGuid;
     begin

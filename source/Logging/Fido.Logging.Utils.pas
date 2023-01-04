@@ -37,8 +37,8 @@ type
     class procedure LogData(const Logger: ILogger; const Value: TValue); overload; static;
     class procedure LogData(const Logger: ILogger; const LogLevel: TLogLevel; const Value: TValue); overload; static;
     class procedure LogData(const Logger: ILogger; const Msg: string; const Value: TValue); overload; static;
-    class procedure LogDuration(const Logger: ILogger; const ClassName: string; const Method: string; const Action: TProc); overload; static;
-    class function LogDuration<T>(const Logger: ILogger; const ClassName: string; const Method: string; const Action: TFunc<T>): T; overload; static;
+    class procedure LogDuration(const Logger: ILogger; const ClassName: string; const Method: string; const Proc: Action); overload; static;
+    class function LogDuration<T>(const Logger: ILogger; const ClassName: string; const Method: string; const Action: Func<T>): T; overload; static;
   end;
 
 implementation
@@ -72,17 +72,17 @@ class procedure Logging.LogDuration(
   const Logger: ILogger;
   const ClassName: string;
   const Method: string;
-  const Action: TProc);
+  const Proc: Action);
 var
-  DurationLogger: Shared<TDeadManSwitchDurationLogger>;
+  DurationLogger: IShared<TDeadManSwitchDurationLogger>;
 begin
-  DurationLogger := TDeadManSwitchDurationLogger.Create(Logger, ClassName, Method);
+  DurationLogger := Shared.Make(TDeadManSwitchDurationLogger.Create(Logger, ClassName, Method));
   try
-    Action();
+    Proc();
   except
     on E: Exception do
     begin
-      DurationLogger.Value.Cancel;
+      DurationLogger.Cancel;
       Logger.Log(TLogLevel.Error, E.Message, E);
       raise;
     end;
@@ -93,17 +93,17 @@ class function Logging.LogDuration<T>(
   const Logger: ILogger;
   const ClassName: string;
   const Method: string;
-  const Action: TFunc<T>): T;
+  const Action: Func<T>): T;
 var
-  DurationLogger: Shared<TDeadManSwitchDurationLogger>;
+  DurationLogger: IShared<TDeadManSwitchDurationLogger>;
 begin
-  DurationLogger := TDeadManSwitchDurationLogger.Create(Logger, ClassName, Method);
+  DurationLogger := Shared.Make(TDeadManSwitchDurationLogger.Create(Logger, ClassName, Method));
   try
     Result := Action();
   except
     on E: Exception do
     begin
-      DurationLogger.Value.Cancel;
+      DurationLogger.Cancel;
       Logger.Log(TLogLevel.Error, E.Message, E);
       raise;
     end;

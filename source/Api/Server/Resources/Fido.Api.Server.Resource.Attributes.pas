@@ -112,6 +112,7 @@ type
 
   RequestMiddlewareAttribute = class(MiddlewareAttribute);
   ResponseMiddlewareAttribute = class(MiddlewareAttribute);
+  ExcludeGlobalMiddlewareAttribute = class(WebAttribute);
 
 implementation
 

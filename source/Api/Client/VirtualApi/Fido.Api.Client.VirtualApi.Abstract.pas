@@ -468,14 +468,14 @@ end;
 
 procedure TAbstractClientVirtualApi<T, IConfiguration>.MapArgumentAndConfiguration(const Arguments: IDictionary<string, TPair<string, TValue>>);
 var
-  Context: Shared<TRttiContext>;
+  Context: TRttiContext;
   ConfigurationRttiType: TRttiType;
   MethodInstanceValue: TValue;
 begin
   // Map configuration settings to arguments
   Context := TRttiContext.Create;
   MethodInstanceValue := TValue.From<IConfiguration>(FConfiguration);
-  ConfigurationRttiType := Context.Value.GetType(TypeInfo(IConfiguration));
+  ConfigurationRttiType := Context.GetType(TypeInfo(IConfiguration));
   if Assigned(ConfigurationRttiType) then
     TCollections.CreateList<TRttiMethod>(ConfigurationRttiType.GetMethods)
       .Where(function(const RttiMethod: TRttiMethod): Boolean
@@ -516,7 +516,7 @@ var
   Path: string;
   Index: Integer;
   Param: TRttiParameter;
-  Call: Shared<TClientVirtualApiCall>;
+  Call: IShared<TClientVirtualApiCall>;
   ActiveConfig: IActiveClientVirtualApiConfiguration;
   HeaderName: string;
 begin
@@ -536,15 +536,15 @@ begin
   if not FEndPointInfo.TryGetValue(Method.Name, EndPointInfo) then
     EndPointInfo := InspectMethod(Method);
 
-  Call := TClientVirtualApiCall.Create(FShortApiName, Method.Name, EndPointInfo.Method);
+  Call := Shared.Make(TClientVirtualApiCall.Create(FShortApiName, Method.Name, EndPointInfo.Method));
 
   Path := '';
   Arguments := TCollections.CreateSortedDictionary<string, TPair<string, TValue>>(TIStringComparer.Ordinal);
 
   // content type
-  Call.Value.ContentType := CONTENT;
+  Call.ContentType := CONTENT;
   if not EndPointInfo.Content.IsEmpty then
-    Call.Value.ContentType := EndPointInfo.Content;
+    Call.ContentType := EndPointInfo.Content;
 
   // Map arguments and parameters
   MapArgumentsAndParameters(Method.GetParameters, Args, Arguments);
@@ -558,12 +558,12 @@ begin
   // Post body
   if (not EndPointinfo.RequestParam.IsEmpty) and
      Arguments.TryGetValue(EndPointinfo.RequestParam, ArgumentValue) then
-    Call.Value.PostBody := ConvertRequestDtoToString(ArgumentValue.Value);
+    Call.PostBody := ConvertRequestDtoToString(ArgumentValue.Value);
 
   // Post raw body
   if (not EndPointinfo.RawRequestParam.IsEmpty) and
      Arguments.TryGetValue(EndPointinfo.RawRequestParam, ArgumentValue) then
-    Call.Value.PostBody := ConvertRawRequestDtoToString(ArgumentValue.Value);
+    Call.PostBody := ConvertRawRequestDtoToString(ArgumentValue.Value);
 
   // parameters
   ParamNamesToParamNameValues(Arguments, EndPointInfo.QueryParams, pkQuery, Call);
@@ -571,20 +571,20 @@ begin
   ParamNamesToParamNameValues(Arguments, EndPointInfo.FormParams, pkForm, Call);
 
   // Api of data
-  Call.Value.Url := FConfiguration.BaseUrl + Path;
-  Call.Value.HandleRedirects := EndPointInfo.HandleRedirects;
+  Call.Url := FConfiguration.BaseUrl + Path;
+  Call.HandleRedirects := EndPointInfo.HandleRedirects;
 
   if Assigned(ActiveConfig) then
     ActiveConfig.CallBegins(Call);
-  Call.Value.Start;
+  Call.Start;
 
   CallApi(Call);
 
-  FLastStatusCode := Call.Value.ResponseCode;
+  FLastStatusCode := Call.ResponseCode;
 
-  if not Call.Value.IsOk then
+  if not Call.IsOk then
   begin
-    if EndPointInfo.ConvertResponseForErrorCodeInfo.HasValue and (EndPointInfo.ConvertResponseForErrorCodeInfo.Value.ErrorCode = Call.Value.ResponseCode) then
+    if EndPointInfo.ConvertResponseForErrorCodeInfo.HasValue and (EndPointInfo.ConvertResponseForErrorCodeInfo.Value.ErrorCode = Call.ResponseCode) then
       for Index := 0 to High(Method.GetParameters) do
       begin
         Param := Method.GetParameters[Index];
@@ -592,7 +592,7 @@ begin
         begin
           try
             Args[Index + 1] := ConvertResponseToDto(
-              Call.Value.ResponseContent, Param.ParamType.Handle);
+              Call.ResponseContent, Param.ParamType.Handle);
           except
             ; // silence conversion errors
           end;
@@ -600,30 +600,30 @@ begin
         end;
       end;
 
-    raise EFidoClientApiException.Create(Call.Value.ResponseCode, Call.Value.ResponseContent);
+    raise EFidoClientApiException.Create(Call.ResponseCode, Call.ResponseContent);
   end;
 
   // Sets out parameters that are linked to headers.
   for Index := 0 to High(Method.GetParameters) do
     if (pfOut in Method.GetParameters[Index].Flags) and EndPointInfo.HeaderParams.TryGetValue(Method.GetParameters[Index].Name, HeaderName) then
-      Args[Index + 1] := Call.Value.ResponseHeaders.Values[HeaderName];
+      Args[Index + 1] := Call.ResponseHeaders.Values[HeaderName];
 
-  if EndPointInfo.ResponseHeaderParamInfo.HasValue and (Call.Value.ResponseCode = EndPointInfo.ResponseHeaderParamInfo.Value.ResponseCode) then
+  if EndPointInfo.ResponseHeaderParamInfo.HasValue and (Call.ResponseCode = EndPointInfo.ResponseHeaderParamInfo.Value.ResponseCode) then
     for Index := 0 to High(Method.GetParameters) do
       if SameText(Method.GetParameters[Index].Name, EndPointInfo.ResponseHeaderParamInfo.Value.FParamName) then
       begin
-        Args[Index + 1] := Call.Value.ResponseHeaders.Values[EndPointInfo.ResponseHeaderParamInfo.Value.FHeaderParam];
+        Args[Index + 1] := Call.ResponseHeaders.Values[EndPointInfo.ResponseHeaderParamInfo.Value.FHeaderParam];
         Break;
       end;
 
   // Build the function result, if necessary
   if (Method.MethodKind = mkFunction) then
-    Result := ConvertResponseToDto(Call.Value.ResponseContent, Method.ReturnType.Handle);
+    Result := ConvertResponseToDto(Call.ResponseContent, Method.ReturnType.Handle);
 
   if Assigned(ActiveConfig) then
-    ActiveConfig.CallEnded(Call.Value);
+    ActiveConfig.CallEnded(Call);
 
-  UpdateConfiguration(Method, Call.Value.ResponseHeaders);
+  UpdateConfiguration(Method, Call.ResponseHeaders);
 end;
 
 class procedure TAbstractClientVirtualApi<T, IConfiguration>.SetApiVersion(const ApiInterface: TRttiType);

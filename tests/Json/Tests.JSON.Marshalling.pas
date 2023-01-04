@@ -258,7 +258,7 @@ var
 begin
   List := TCollections.CreateList<string>([]);
 
-  Assert.AreEqual('[]', JSONMarshaller.From<IReadOnlyList<string>>(List.AsReadOnlyList));
+  Assert.AreEqual('[]', JSONMarshaller.From<IReadOnlyList<string>>(List.AsReadOnly));
 end;
 
 procedure TJSONMarshallingTests.JSONMarshallingFromEnumeration;
@@ -272,7 +272,7 @@ var
 begin
   List := TCollections.CreateList<TTestEnum>([Enum1, Enum2]);
 
-  Assert.AreEqual('[0,1]', JSONMarshaller.From<IReadOnlyList<TTestEnum>>(List.AsReadOnlyList));
+  Assert.AreEqual('[0,1]', JSONMarshaller.From<IReadOnlyList<TTestEnum>>(List.AsReadOnly));
 end;
 
 procedure TJSONMarshallingTests.JSONMarshallingFromInt64;
@@ -292,11 +292,11 @@ var
 begin
   List := TCollections.CreateList<Integer>([1, 2, 3, 4]);
 
-  Assert.AreEqual('[1,2,3,4]', JSONMarshaller.From<IReadOnlyList<Integer>>(List.AsReadOnlyList));
+  Assert.AreEqual('[1,2,3,4]', JSONMarshaller.From<IReadOnlyList<Integer>>(List.AsReadOnly));
 
   List2 := TCollections.CreateList<string>(['1', '2', '3', '4']);
 
-  Assert.AreEqual('["1","2","3","4"]', JSONMarshaller.From<IReadOnlyList<string>>(List2.AsReadOnlyList));
+  Assert.AreEqual('["1","2","3","4"]', JSONMarshaller.From<IReadOnlyList<string>>(List2.AsReadOnly));
 end;
 
 procedure TJSONMarshallingTests.JSONMarshallingFromNullableInt64;
@@ -455,7 +455,7 @@ begin
     TTest.Create(1, 'name 1'),
     TTest.Create(2, 'name 2')]);
 
-  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"}]', JSONMarshaller.From<IReadOnlyList<ITest>>(List.AsReadOnlyList));
+  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"}]', JSONMarshaller.From<IReadOnlyList<ITest>>(List.AsReadOnly));
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToInterfaceReadonlyList;
@@ -591,7 +591,7 @@ begin
 
   List := TCollections.CreateObjectList<TMyObject>([Object1, Object2, Object3]);
 
-  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"},{"Id":3,"Name":null}]', JSONMarshaller.From<IReadOnlyList<TMyObject>>(List.AsReadOnlyList));
+  Assert.AreEqual('[{"Id":1,"Name":"name 1"},{"Id":2,"Name":"name 2"},{"Id":3,"Name":null}]', JSONMarshaller.From<IReadOnlyList<TMyObject>>(List.AsReadOnly));
 end;
 
 procedure TJSONMarshallingTests.JSONMarshallingFromRecord;
@@ -615,11 +615,11 @@ begin
   Object2.Id := 2;
   Object2.Name := 'Name 2';
   Object3.Id := 3;
-  Object3.AnArray := TCollections.CreateList<string>(['an item', 'another item']).AsReadOnlyList;
+  Object3.AnArray := TCollections.CreateList<string>(['an item', 'another item']).AsReadOnly;
 
   List := TCollections.CreateList<TMyRecord>([Object1, Object2, Object3]);
 
-  Assert.AreEqual('[{"Id":1,"Name":"name 1","AnArray":null},{"Id":2,"Name":"name 2","AnArray":null},{"Id":3,"Name":null,"AnArray":["an item","another item"]}]', JSONMarshaller.From<IReadOnlyList<TMyRecord>>(List.AsReadOnlyList));
+  Assert.AreEqual('[{"Id":1,"Name":"name 1","AnArray":null},{"Id":2,"Name":"name 2","AnArray":null},{"Id":3,"Name":null,"AnArray":["an item","another item"]}]', JSONMarshaller.From<IReadOnlyList<TMyRecord>>(List.AsReadOnly));
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToObject;
@@ -684,7 +684,7 @@ begin
     begin
       Result := Value.ToUpper;
     end,
-    function(const Value: string): string
+    function(const Value: string; const TypInfo: pTypeInfo): string
     begin
       Result := Value.ToLower;
     end,
@@ -704,7 +704,7 @@ begin
     begin
       Result := Format('{"name": "%s"}', [Value.Name.Value]);
     end,
-    function(const Value: string): TMyRecord
+    function(const Value: string; const TypInfo: pTypeInfo): TMyRecord
     begin
       Result.Id := 1;
       Result.Name := Value;

@@ -33,6 +33,7 @@ uses
   Spring.Collections,
 
   Fido.Http.Types,
+  Fido.Http.Utils,
   Fido.Http.RequestInfo.Intf,
   Fido.Http.Request.Intf;
 
@@ -46,8 +47,6 @@ type
     FQueryParams: IDictionary<string, string>;
     FHeaderParams: IDictionary<string, string>;
     FMimeType: TMimeType;
-
-    constructor StringsToDictionary(const Strings: TStrings; const Dictionary: IDictionary<string, string>);
   public
     constructor Create(const RequestInfo: IHttpRequestInfo);
 
@@ -64,19 +63,6 @@ implementation
 
 { THttpRequest }
 
-constructor THttpRequest.StringsToDictionary(
-  const Strings: TStrings;
-  const Dictionary: IDictionary<string, string>);
-var
-  I: Integer;
-begin
-  Guard.CheckNotNull(Strings, 'Strings');
-  Guard.CheckNotNull(Dictionary, 'Dictionary');
-
-  for I := 0 to Strings.Count - 1 do
-    Dictionary[Strings.Names[I]] := Strings.ValueFromIndex[I];
-end;
-
 function THttpRequest.URI: string;
 begin
   Result := FURI;
@@ -84,21 +70,7 @@ end;
 
 constructor THttpRequest.Create(const RequestInfo: IHttpRequestInfo);
 var
-  TempBodyParams: Shared<TStringList>;
-  StringMimeType: string;
-  MimeTypeIndex: Integer;
-  ContentType: string;
-
-  function ConvertToRestCommand(const Item: string): THttpMethod;
-  var
-    I: Integer;
-  begin
-    Result := rmUnknown;
-
-    for I := 0 to Integer(High(SHttpMethod)) do
-      if UpperCase(SHttpMethod[THttpMethod(I)]) = UpperCase(Item) then
-        Exit(THttpMethod(I));
-  end;
+  TempBodyParams: IShared<TStringList>;
 begin
   Guard.CheckNotNull(RequestInfo, 'RequestInfo');
 
@@ -108,26 +80,16 @@ begin
   FQueryParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
   FHeaderParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
 
-  MimeTypeIndex := -1;
-  ContentType := RequestInfo.ContentType.ToUpper;
-  if ContentType.IsEmpty then
-    ContentType := DEFAULTMIME;
-  for StringMimeType in SMimeType do
-  begin
-    Inc(MimeTypeIndex);
-    if ContentType.ToUpper = StringMimeType.ToUpper then
-      Break;
-  end;
-  FMimeType := TMimeType(MimeTypeIndex);
+  FMimeType := ContentTypeToMimeType(RequestInfo.ContentType.ToUpper);
 
-  TempBodyParams := TStringList.Create;
+  TempBodyParams := Shared.Make(TStringList.Create);
 
   if Assigned(RequestInfo.PostStream) then
-    TempBodyParams.Value.LoadFromStream(RequestInfo.PostStream);
+    TempBodyParams.LoadFromStream(RequestInfo.PostStream);
 
   FBody := RequestInfo.UnparsedParams;
   if FBody.IsEmpty then
-    FBody := TempBodyParams.Value.Text;
+    FBody := TempBodyParams.Text;
 
   StringsToDictionary(RequestInfo.FormParams, FFormParams);
   StringsToDictionary(RequestInfo.QueryParams, FQueryParams);

@@ -41,7 +41,7 @@ begin
     begin
       Result := FormatDateTime(DateTimeFormat, Value);
     end,
-    function(const Value: string): TDateTime
+    function(const Value: string; const TypInfo: pTypeInfo): TDateTime
     begin
       Result := 0;
     end,
@@ -87,21 +87,21 @@ initialization
         'Entering',
         'Leaving');
     var
-      JsonObject: Shared<TJSONObject>;
+      JsonObject: IShared<TJSONObject>;
     begin
-      JsonObject := TJSONObject.Create;
-      JsonObject.Value.AddPair('TimeStamp', TJSONValue.ParseJSONValue(JSONMarshaller.From<TDateTime>(Value.TimeStamp, 'Logging')));
-      JsonObject.Value.AddPair('Level', LEVEL[Value.Level]);
-      JsonObject.Value.AddPair('Type', EVENTTYPE[Value.EventType]);
-      JsonObject.Value.AddPair('Message', Value.Msg);
+      JsonObject := Shared.Make(TJSONObject.Create);
+      JsonObject.AddPair('TimeStamp', TJSONValue.ParseJSONValue(JSONMarshaller.From<TDateTime>(Value.TimeStamp, 'Logging')));
+      JsonObject.AddPair('Level', LEVEL[Value.Level]);
+      JsonObject.AddPair('Type', EVENTTYPE[Value.EventType]);
+      JsonObject.AddPair('Message', Value.Msg);
       if Assigned(Value.Exception) then
-        JsonObject.Value.AddPair('Exception', TJSONValue.ParseJSONValue(JSONMarshaller.From<Exception>(Value.Exception)));
+        JsonObject.AddPair('Exception', TJSONValue.ParseJSONValue(JSONMarshaller.From<Exception>(Value.Exception)));
       if not Value.Data.IsEmpty then
-        JsonObject.Value.AddPair('Data', TJSONValue.ParseJSONValue(JSONMarshaller.From(Value.Data, Value.Data.TypeInfo)));
-      JsonObject.Value.AddPair('Tag', Value.Tag);
-      Result := JsonObject.Value.ToJSON;
+        JsonObject.AddPair('Data', TJSONValue.ParseJSONValue(JSONMarshaller.From(Value.Data, Value.Data.TypeInfo)));
+      JsonObject.AddPair('Tag', Value.Tag);
+      Result := JsonObject.ToJSON;
     end,
-    function(const Value: string): TLogEvent
+    function(const Value: string; const TypInfo: pTypeInfo): TLogEvent
     begin
     end);
 

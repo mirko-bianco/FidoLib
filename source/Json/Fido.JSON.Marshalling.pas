@@ -161,13 +161,13 @@ procedure TJSONVirtualDto.CacheColumns(
   const JSONObject: TJSONObject;
   const ConfigurationName: string);
 var
-  LJSONObject: Shared<TJSONObject>;
+  LJSONObject: IShared<TJSONObject>;
 begin
-  LJSONObject := TJSONObject.Create;
+  LJSONObject := Shared.Make(TJSONObject.Create);
   with JSONObject.GetEnumerator do
   begin
     while MoveNext do
-      LJSONObject.Value.AddPair(GetCurrent.JsonString.Value.ToUpper, TJSONObject.ParseJSONValue(GetCurrent.JsonValue.ToJSON));
+      LJSONObject.AddPair(GetCurrent.JsonString.Value.ToUpper, TJSONObject.ParseJSONValue(GetCurrent.JsonValue.ToJSON));
     Free;
   end;
 
@@ -176,7 +176,7 @@ begin
     var
       ObjectValue: TJsonValue;
     begin
-      ObjectValue := LJSONObject.Value.GetValue(Value.MappedName);
+      ObjectValue := LJSONObject.GetValue(Value.MappedName);
       if not Assigned(ObjectValue) then
         Exit;
 
@@ -199,13 +199,13 @@ constructor TJSONVirtualDto.Create(
   const Json: string;
   const ConfigurationName: string);
 var
-  JSONObject: Shared<TJSONObject>;
+  JSONObject: IShared<TJSONObject>;
 begin
   inherited Create(PIID, DoInvoke);
 
   FRecordMethods := TCollections.CreateDictionary<string, TJSONDTOMethodDescriptor>([doOwnsValues]);
   ProcessDtoAttributes(PIID);
-  JSONObject := TJSonObject.ParseJSONValue(Json) as TJSONObject;
+  JSONObject := Shared.Make(TJSonObject.ParseJSONValue(Json) as TJSONObject);
   CacheColumns(JSONObject, ConfigurationName);
 end;
 
@@ -378,18 +378,18 @@ class function JSONUnmarshaller.ToReadonlyListOfEnums(
   const TypInfo: PTypeInfo;
   const ConfigurationName: string): TValue;
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   ValuesArray: TArray<string>;
   Index: Integer;
   IntList: IReadOnlyList<Integer>;
 begin
   if not JSONString.IsEmpty then
   begin
-    JsonArray := TJSONObject.ParseJSONValue(JSONString) as TJSONArray;
+    JsonArray := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONArray);
 
-    SetLength(ValuesArray, JsonArray.Value.Count);
-    for Index := 0 to JsonArray.Value.Count - 1 do
-      ValuesArray[Index] := JsonArray.Value.Items[Index].GetValue<string>;
+    SetLength(ValuesArray, JsonArray.Count);
+    for Index := 0 to JsonArray.Count - 1 do
+      ValuesArray[Index] := JsonArray.Items[Index].GetValue<string>;
   end;
 
   IntList := CreateReadonlyListAsValue(TypeInfo(Integer), ValuesArray, ConfigurationName).AsType<IReadonlyList<Integer>>;
@@ -401,12 +401,12 @@ class function JSONUnmarshaller.ToReadonlyListOfInterfaces(
   const TypeInfo: PTypeInfo;
   const ElementTypeInfo: PTypeInfo): TValue;
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   IntfList: IReadOnlyList<IInterface>;
 begin
-  JsonArray := TJSONObject.ParseJSONValue(JSONString) as TJSONArray;
+  JsonArray := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONArray);
 
-  IntfList := TJsonArrayAsReadonlyInterfaceList<IInterface>.Create(JSONArray.Value, ElementTypeInfo);
+  IntfList := TJsonArrayAsReadonlyInterfaceList<IInterface>.Create(JSONArray, ElementTypeInfo);
   TValue.Make(@IntfList, TypeInfo, Result);
 end;
 
@@ -415,12 +415,12 @@ class function JSONUnmarshaller.ToReadonlyListOfObjects(
   const TypeInfo: PTypeInfo;
   const ElementTypeInfo: PTypeInfo): TValue;
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   ObjList: IReadOnlyList<TObject>;
 begin
-  JsonArray := TJSONObject.ParseJSONValue(JSONString) as TJSONArray;
+  JsonArray := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONArray);
 
-  ObjList := TJsonArrayAsReadonlyObjectList<TObject>.Create(JSONArray.Value, ElementTypeInfo);
+  ObjList := TJsonArrayAsReadonlyObjectList<TObject>.Create(JSONArray, ElementTypeInfo);
   TValue.Make(@ObjList, TypeInfo, Result);
 end;
 
@@ -429,17 +429,17 @@ class function JSONUnmarshaller.ToReadonlyListOfPrimitives(
   const ElementTypeInfo: PTypeInfo;
   const ConfigurationName: string): TValue;
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   ValuesArray: TArray<string>;
   Index: Integer;
 begin
   if not JSONString.IsEmpty then
   begin
-    JsonArray := TJSONObject.ParseJSONValue(JSONString) as TJSONArray;
+    JsonArray := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONArray);
 
-    SetLength(ValuesArray, JsonArray.Value.Count);
-    for Index := 0 to JsonArray.Value.Count - 1 do
-      ValuesArray[Index] := JsonArray.Value.Items[Index].GetValue<string>;
+    SetLength(ValuesArray, JsonArray.Count);
+    for Index := 0 to JsonArray.Count - 1 do
+      ValuesArray[Index] := JsonArray.Items[Index].GetValue<string>;
   end;
 
   Result := CreateReadonlyListAsValue(ElementTypeInfo, ValuesArray, ConfigurationName);
@@ -456,7 +456,7 @@ var
   Method: TRttiMethod;
   Field: TRttiField;
   Param: TValue;
-  JSONObject: Shared<TJSONObject>;
+  JSONObject: IShared<TJSONObject>;
   Value: TValue;
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
@@ -466,12 +466,12 @@ begin
     Exit;
   end;
 
-  JSONObject := TJSONObject.ParseJSONValue(JSONString) as TJSONObject;
+  JSONObject := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONObject);
   TValue.Make(nil, TypeInfo, Value);
 
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypeInfo);
-  with JSONObject.Value.GetEnumerator do
+  with JSONObject.GetEnumerator do
   begin
     while MoveNext do
     begin
@@ -664,10 +664,10 @@ class function JSONUnmarshaller.ToInterface(
   const ConfigurationName: string): IInterface;
 var
   RInterface: IInterface;
-  JSONObject: Shared<TJSONObject>;
+  JSONObject: IShared<TJSONObject>;
 begin
-  JSONObject := TJSONObject.ParseJSONValue(JSONString) as TJSONObject;
-  Supports(TJSONVirtualDto.Create(TypeInfo, JSONObject.Value, ConfigurationName), GetTypeData(TypeInfo)^.Guid, RInterface);
+  JSONObject := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONObject);
+  Supports(TJSONVirtualDto.Create(TypeInfo, JSONObject, ConfigurationName), GetTypeData(TypeInfo)^.Guid, RInterface);
   Result := RInterface;
 end;
 
@@ -682,7 +682,7 @@ var
   Prop: TRttiProperty;
   Method: TRttiMethod;
   Param: TValue;
-  JSONObject: Shared<TJSONObject>;
+  JSONObject: IShared<TJSONObject>;
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
   if MappingsUtilities.TryGetType(TypeInfo, Mapping, ConfigurationName) then
@@ -693,10 +693,10 @@ begin
 
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypeInfo);
-  JSONObject := TJSONObject.ParseJSONValue(JSONString) as TJSONObject;
+  JSONObject := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONObject);
   InstanceType := RttiType.AsInstance;
   Result := InstanceType.GetMethod('Create').Invoke(InstanceType.MetaclassType, []).Convert(TypeInfo);
-  with JSONObject.Value.GetEnumerator do
+  with JSONObject.GetEnumerator do
   begin
     while MoveNext do
     begin
@@ -759,13 +759,13 @@ class function JSONMarshaller.FromInterface(
 var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
-  JSONObject: Shared<TJSONObject>;
+  JSONObject: IShared<TJSONObject>;
   LValue: TValue;
 begin
   RttiContext := TRttiContext.Create;
   RttiType := RttiContext.GetType(TypInfo);
 
-  JSONObject := TJSONObject.Create;
+  JSONObject := Shared.Make(TJSONObject.Create);
 
   LValue := Value;
 
@@ -784,9 +784,9 @@ begin
 
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
-            JSONObject.Value.AddPair(Method.Name, MarshalledValue)
+            JSONObject.AddPair(Method.Name, MarshalledValue)
           else
-            JSONObject.Value.AddPair(Method.Name, TJSONNull.Create);
+            JSONObject.AddPair(Method.Name, TJSONNull.Create);
         except
         end;
       end);
@@ -806,14 +806,14 @@ begin
 
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
-            JSONObject.Value.AddPair(Prop.Name, MarshalledValue)
+            JSONObject.AddPair(Prop.Name, MarshalledValue)
           else
-            JSONObject.Value.AddPair(Prop.Name, TJSONNull.Create);
+            JSONObject.AddPair(Prop.Name, TJSONNull.Create);
         except
         end;
       end);
 
-  Result := JSONObject.Value.ToJson;
+  Result := JSONObject.ToJson;
 end;
 
 class function JSONMarshaller.FromObject(
@@ -823,7 +823,7 @@ class function JSONMarshaller.FromObject(
 var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
-  JSONObject: Shared<TJSONObject>;
+  JSONObject: IShared<TJSONObject>;
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
   RttiContext := TRttiContext.Create;
@@ -835,7 +835,7 @@ begin
     Exit;
   end;
 
-  JSONObject := TJSONObject.Create;
+  JSONObject := Shared.Make(TJSONObject.Create);
 
   TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
     .Where(function(const Method: TRttiMethod): Boolean
@@ -851,9 +851,9 @@ begin
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
-            JSONObject.Value.AddPair(Method.Name, MarshalledValue)
+            JSONObject.AddPair(Method.Name, MarshalledValue)
           else
-            JSONObject.Value.AddPair(Method.Name, TJSONNull.Create);
+            JSONObject.AddPair(Method.Name, TJSONNull.Create);
         except
         end;
       end);
@@ -872,14 +872,14 @@ begin
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
-            JSONObject.Value.AddPair(Prop.Name, MarshalledValue)
+            JSONObject.AddPair(Prop.Name, MarshalledValue)
           else
-            JSONObject.Value.AddPair(Prop.Name, TJSONNull.Create);
+            JSONObject.AddPair(Prop.Name, TJSONNull.Create);
         except
         end;
       end);
 
-  Result := JSONObject.Value.ToJson;
+  Result := JSONObject.ToJson;
 end;
 
 class function JSONMarshaller.FromPrimitive(
@@ -948,19 +948,19 @@ class function JSONMarshaller.FromReadonlyListOfEnums(
   end;
 
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   Enum: IEnumerable;
 begin
-  JsonArray := TJSONArray.Create;
+  JsonArray := Shared.Make(TJSONArray.Create);
 
   Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
   with Enum.GetEnumerator do
     while MoveNext do
     begin
-      JsonArray.Value.AddElement(Convert(Current));
+      JsonArray.AddElement(Convert(Current));
     end;
 
-  Result := JsonArray.Value.ToJSON;
+  Result := JsonArray.ToJSON;
 end;
 
 class function JSONMarshaller.FromReadonlyListOfInterfaces(
@@ -968,17 +968,17 @@ class function JSONMarshaller.FromReadonlyListOfInterfaces(
   const TypInfo, ElementTypeInfo: PTypeInfo;
   const ConfigurationName: string): string;
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   Enum: IEnumerable;
 begin
-  JsonArray := TJSONArray.Create;
+  JsonArray := Shared.Make(TJSONArray.Create);
 
   Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
   with Enum.GetEnumerator do
     while MoveNext do
-      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromInterface(Current, ElementTypeInfo, ConfigurationName)));
+      JsonArray.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.FromInterface(Current, ElementTypeInfo, ConfigurationName)));
 
-  Result := JsonArray.Value.ToJSON;
+  Result := JsonArray.ToJSON;
 end;
 
 class function JSONMarshaller.FromReadonlyListOfObjects(
@@ -987,17 +987,17 @@ class function JSONMarshaller.FromReadonlyListOfObjects(
   const ElementTypeInfo: PTypeInfo;
   const ConfigurationName: string): string;
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   Enum: IEnumerable;
 begin
-  JsonArray := TJSONArray.Create;
+  JsonArray := Shared.Make(TJSONArray.Create);
 
   Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
   with Enum.GetEnumerator do
     while MoveNext do
-      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.From(Current, ElementTypeInfo, ConfigurationName)));
+      JsonArray.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.From(Current, ElementTypeInfo, ConfigurationName)));
 
-  Result := JsonArray.Value.ToJSON;
+  Result := JsonArray.ToJSON;
 end;
 
 class function JSONMarshaller.FromReadonlyListOfPrimitives(
@@ -1030,10 +1030,10 @@ class function JSONMarshaller.FromReadonlyListOfPrimitives(
   end;
 
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   Enum: IEnumerable;
 begin
-  JsonArray := TJSONArray.Create;
+  JsonArray := Shared.Make(TJSONArray.Create);
 
   Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
   if Assigned(Enum) then
@@ -1041,9 +1041,9 @@ begin
     with Enum.GetEnumerator do
       while MoveNext do
       begin
-        JsonArray.Value.AddElement(Convert(Current));
+        JsonArray.AddElement(Convert(Current));
       end;
-    Result := JsonArray.Value.ToJSON;
+    Result := JsonArray.ToJSON;
   end;
 end;
 
@@ -1053,17 +1053,17 @@ class function JSONMarshaller.FromReadonlyListOfRecords(
   const ElementTypeInfo: PTypeInfo;
   const ConfigurationName: string): string;
 var
-  JsonArray: Shared<TJSONArray>;
+  JsonArray: IShared<TJSONArray>;
   Enum: IEnumerable;
 begin
-  JsonArray := TJSONArray.Create;
+  JsonArray := Shared.Make(TJSONArray.Create);
 
   Enum := (Value.Convert(TypInfo).AsInterface as IEnumerable);
   with Enum.GetEnumerator do
     while MoveNext do
-      JsonArray.Value.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.From(Current, ElementTypeInfo, ConfigurationName)));
+      JsonArray.AddElement(TJSONObject.ParseJSONValue(JSONMarshaller.From(Current, ElementTypeInfo, ConfigurationName)));
 
-  Result := JsonArray.Value.ToJSON;
+  Result := JsonArray.ToJSON;
 end;
 
 class function JSONMarshaller.FromRecord(
@@ -1073,7 +1073,7 @@ class function JSONMarshaller.FromRecord(
 var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
-  JSONObject: Shared<TJSONObject>;
+  JSONObject: IShared<TJSONObject>;
   LValue: TValue;
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
@@ -1086,7 +1086,7 @@ begin
     Exit;
   end;
 
-  JSONObject := TJSONObject.Create;
+  JSONObject := Shared.Make(TJSONObject.Create);
 
   LValue := Value;
 
@@ -1104,9 +1104,9 @@ begin
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Method.ReturnType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
-            JSONObject.Value.AddPair(Method.Name, MarshalledValue)
+            JSONObject.AddPair(Method.Name, MarshalledValue)
           else
-            JSONObject.Value.AddPair(Method.Name, TJSONNull.Create);
+            JSONObject.AddPair(Method.Name, TJSONNull.Create);
         except
         end;
       end);
@@ -1125,9 +1125,9 @@ begin
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Prop.PropertyType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
-            JSONObject.Value.AddPair(Prop.Name, MarshalledValue)
+            JSONObject.AddPair(Prop.Name, MarshalledValue)
           else
-            JSONObject.Value.AddPair(Prop.Name, TJSONNull.Create);
+            JSONObject.AddPair(Prop.Name, TJSONNull.Create);
         except
         end;
       end);
@@ -1146,14 +1146,14 @@ begin
         try
           MarshalledValue := JSONMarshaller.InternalFrom(ReturnValue, Field.FieldType.Handle, ConfigurationName);
           if Assigned(MarshalledValue) then
-            JSONObject.Value.AddPair(Field.Name, MarshalledValue)
+            JSONObject.AddPair(Field.Name, MarshalledValue)
           else
-            JSONObject.Value.AddPair(Field.Name, TJSONNull.Create);
+            JSONObject.AddPair(Field.Name, TJSONNull.Create);
         except
         end;
       end);
 
-  Result := JSONObject.Value.ToJson;
+  Result := JSONObject.ToJson;
 end;
 
 class function JSONMarshaller.InternalFrom(
