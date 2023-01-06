@@ -119,15 +119,15 @@ begin
  {$REGION ' OnReceivedWebsocketMessage '}
   FOnReceivedWebsocketMessage := procedure(const Message: string)
     var
-      JsonObject: Shared<TJSONObject>;
+      JsonObject: IShared<TJSONObject>;
       TryProcessMethodsResults: TTryProcessJson;
       TryReceivedData: TTryProcessJson;
     begin
       if Message = '{}' then
         Exit;
 
-      JsonObject := TJSONValue.ParseJSONValue(Message) as TJSONObject;
-      if not Assigned(JsonObject.Value) then
+      JsonObject := Shared.Make(TJSONValue.ParseJSONValue(Message) as TJSONObject);
+      if not Assigned(JsonObject) then
         Exit;
 
      {$REGION ' Manage methods callbacks '}
