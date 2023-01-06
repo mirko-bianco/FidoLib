@@ -32,6 +32,7 @@ uses
   IdIOHandler,
   IdGlobal,
 
+  Spring,
   Spring.Collections,
 
   Fido.Http.Types;
@@ -67,7 +68,14 @@ var
   LContentType: string;
   MimeTypeIndex: Integer;
 begin
-  LContentType := ContentType;
+  var Mimetypes: IShared<TStringList> := Shared.Make(TStringList.Create);
+  MimeTypes.Delimiter := ';';
+  MimeTypes.DelimitedText := ContentType;
+
+  LContentType := '';
+  if MimeTypes.Count > 0 then
+    LContentType := MimeTypes.Strings[0];
+
   MimeTypeIndex := -1;
   if LContentType.IsEmpty then
     LContentType := DEFAULTMIME;
