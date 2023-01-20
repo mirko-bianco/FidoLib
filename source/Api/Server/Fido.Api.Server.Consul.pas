@@ -33,9 +33,9 @@ uses
   Spring.Collections,
 
   Fido.Utilities,
-  Fido.Api.Server.Resource.Attributes,
   Fido.Api.Server.Intf,
-
+  Fido.Api.Server.Resource.Attributes,
+  Fido.Web.Server.Intf,
   Fido.Consul.Service.Intf,
   Fido.Api.Server.Consul.Resource.Attributes;
 
@@ -54,6 +54,7 @@ type
     function Port: Word;
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
+    procedure SetWebServer(const WebServer: IWebServer);
     procedure RegisterResource(const Resource: TObject);
     procedure RegisterRequestMiddleware(const Name: string; const Step: TApiRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TApiResponseMiddlewareProc);
@@ -172,6 +173,11 @@ begin
     True: FConsulService.Register(FServiceName, FApiServer.Port, FHealthEndpoint, FTimeout);
     False: FConsulService.Deregister(FTimeout);
   end;
+end;
+
+procedure TConsulAwareApiServer.SetWebServer(const WebServer: IWebServer);
+begin
+  FApiServer.SetWebServer(WebServer);
 end;
 
 end.

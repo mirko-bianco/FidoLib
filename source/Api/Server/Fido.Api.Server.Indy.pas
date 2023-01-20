@@ -78,7 +78,7 @@ type
     procedure OnCommandError(Context: TIdContext; RequestInfo: TIdHTTPRequestInfo; ResponseInfo: TIdHTTPResponseInfo; Exception: Exception);
     procedure OnGetPassword(var Password: string);
   public
-    constructor Create(const Port: Word; const MaxConnections: Integer; const WebServer: IWebServer; const SSLCertData: TSSLCertData; const ApiRequestFactory: TIndyApiServerRequestFactory = nil;
+    constructor Create(const Port: Word; const MaxConnections: Integer; const SSLCertData: TSSLCertData; const ApiRequestFactory: TIndyApiServerRequestFactory = nil;
       const ApiResponseFactory: TIndyApiServerResponseFactory = nil);
     destructor Destroy; override;
 
@@ -107,12 +107,11 @@ end;
 constructor TIndyApiServer.Create(
   const Port: Word;
   const MaxConnections: Integer;
-  const WebServer: IWebServer;
   const SSLCertData: TSSLCertData;
   const ApiRequestFactory: TIndyApiServerRequestFactory;
   const ApiResponseFactory: TIndyApiServerResponseFactory);
 begin
-  inherited Create(Port, WebServer, SSLCertData);
+  inherited Create(Port, SSLCertData);
 
   FApiServerRequestFactory := ApiRequestFactory;
   FApiServerResponseFactory := ApiResponseFactory;

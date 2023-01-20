@@ -258,7 +258,6 @@
         <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Configuration.pas"/>
         <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Intf.pas"/>
         <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.json.pas"/>
-        <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Request.pas"/>
         <DCCReference Include="Api\Server\Fido.Api.Server.Exceptions.pas"/>
         <DCCReference Include="Api\Server\Fido.Api.Server.Indy.pas"/>
         <DCCReference Include="Api\Server\Fido.Api.Server.Intf.pas"/>

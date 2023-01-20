@@ -48,7 +48,8 @@ uses
   Fido.Http.Response.Intf,
   Fido.Http.Types,
   Fido.Http.Utils,
-  Fido.Web.Server.Intf;
+  Fido.Web.Server.Intf,
+  Fido.Web.Server.Null;
 
 type
   EFidoApiException = class(EFidoException);
@@ -80,12 +81,13 @@ type
     function ConvertResponseDtoToString(const MimeType: TMimeType; const Value: TValue): string; virtual;
     procedure DoFormatExceptionToResponse(const E: Exception; const ApiResponse: IHttpResponse); virtual;
   public
-    constructor Create(const Port: Word; const WebServer: IWebServer; const SSLCertData: TSSLCertData);
+    constructor Create(const Port: Word; const SSLCertData: TSSLCertData);
     destructor Destroy; override;
 
     function Port: Word;
     function IsActive: Boolean; virtual; abstract;
     procedure SetActive(const Value: Boolean); virtual; abstract;
+    procedure SetWebServer(const WebServer: IWebServer);
     procedure RegisterResource(const Resource: TObject);
     procedure RegisterRequestMiddleware(const Name: string; const Step: TApiRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TApiResponseMiddlewareProc);
@@ -134,13 +136,12 @@ end;
 
 constructor TAbstractApiServer.Create(
   const Port: Word;
-  const WebServer: IWebServer;
   const SSLCertData: TSSLCertData);
 begin
   inherited Create;
 
   FPort := Port;
-  FWebServer := WebServer;
+  FWebServer := TNullWebServer.Create;
 
   FEndPoints := TCollections.CreateDictionary<string, IDictionary<THttpMethod, TEndPoint>>(TIStringComparer.Ordinal);
   FResources := TCollections.CreateObjectList<TObject>;
@@ -752,6 +753,13 @@ procedure TAbstractApiServer.RegisterResponseMiddleware(
   const Step: TApiResponseMiddlewareProc);
 begin
   FResponseMiddlewares.Add(Name, Step);
+end;
+
+procedure TAbstractApiServer.SetWebServer(const WebServer: IWebServer);
+begin
+  if IsActive then
+    raise EApiServer.Create('Cannot set the webserver when the Api server is active.');
+  FWebServer := Utilities.CheckNotNullAndSet(WebServer, 'Webserver');
 end;
 
 end.

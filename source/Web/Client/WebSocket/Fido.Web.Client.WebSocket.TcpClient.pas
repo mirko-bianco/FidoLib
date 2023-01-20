@@ -31,6 +31,7 @@ uses
   System.SyncObjs,
   System.Math,
   System.DateUtils,
+  System.Net.HttpClientComponent,
 
   idIOHandler,
   IdHTTP,

@@ -25,13 +25,12 @@ begin
     False,
     50,
     mtJson,
-    TFileWebServer.Create(
-      'public',
-      'index.html'
-      ),
     TSSLCertData.CreateEmpty);
   try
     try
+      RestServer.SetWebServer(TFileWebServer.Create(
+        'public',
+        'index.html'));
       RestServer.RegisterResource(TTestResource.Create);
       RestServer.SetActive(True);
 

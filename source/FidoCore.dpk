@@ -134,7 +134,6 @@ contains
   Fido.Api.Client.VirtualApi.Configuration in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Configuration.pas',
   Fido.Api.Client.VirtualApi.Intf in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Intf.pas',
   Fido.Api.Client.VirtualApi.json in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.json.pas',
-  Fido.Api.Client.VirtualApi.Request in 'Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Request.pas',
   Fido.Api.Server.Exceptions in 'Api\Server\Fido.Api.Server.Exceptions.pas',
   Fido.Api.Server.Indy in 'Api\Server\Fido.Api.Server.Indy.pas',
   Fido.Api.Server.Intf in 'Api\Server\Fido.Api.Server.Intf.pas',
