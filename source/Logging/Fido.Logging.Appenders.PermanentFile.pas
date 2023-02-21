@@ -90,14 +90,14 @@ initialization
       JsonObject: IShared<TJSONObject>;
     begin
       JsonObject := Shared.Make(TJSONObject.Create);
-      JsonObject.AddPair('TimeStamp', TJSONValue.ParseJSONValue(JSONMarshaller.From<TDateTime>(Value.TimeStamp, 'Logging')));
+      JsonObject.AddPair('TimeStamp', TJSONObject.ParseJSONValue(JSONMarshaller.From<TDateTime>(Value.TimeStamp, 'Logging')));
       JsonObject.AddPair('Level', LEVEL[Value.Level]);
       JsonObject.AddPair('Type', EVENTTYPE[Value.EventType]);
       JsonObject.AddPair('Message', Value.Msg);
       if Assigned(Value.Exception) then
-        JsonObject.AddPair('Exception', TJSONValue.ParseJSONValue(JSONMarshaller.From<Exception>(Value.Exception)));
+        JsonObject.AddPair('Exception', TJSONObject.ParseJSONValue(JSONMarshaller.From<Exception>(Value.Exception)));
       if not Value.Data.IsEmpty then
-        JsonObject.AddPair('Data', TJSONValue.ParseJSONValue(JSONMarshaller.From(Value.Data, Value.Data.TypeInfo)));
+        JsonObject.AddPair('Data', TJSONObject.ParseJSONValue(JSONMarshaller.From(Value.Data, Value.Data.TypeInfo)));
       JsonObject.AddPair('Tag', Value.Tag);
       Result := JsonObject.ToJSON;
     end,
