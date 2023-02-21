@@ -33,6 +33,7 @@ uses
   System.Generics.Collections,
   System.Net.UrlClient,
   System.Net.HttpClient,
+  System.NetConsts,
 
   Spring,
   Spring.Collections,

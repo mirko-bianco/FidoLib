@@ -62,7 +62,7 @@ class function JsonUtilities.TryStringToTGuid(
 begin
   Result := False;
   try
-    Guid := StringToGuid(Format('{%s}', [Input]));
+    Guid := StringToGuid(Format('{%s}', [Input.DeQuotedString('"')]));
     Result := True;
   except
   end;
