@@ -126,7 +126,7 @@ begin
       if Message = '{}' then
         Exit;
 
-      JsonObject := Shared.Make(TJSONValue.ParseJSONValue(Message) as TJSONObject);
+      JsonObject := Shared.Make(TJSONObject.ParseJSONValue(Message) as TJSONObject);
       if not Assigned(JsonObject) then
         Exit;
 
