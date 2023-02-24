@@ -98,7 +98,7 @@ initialization
         JsonObject.AddPair('Exception', TJSONObject.ParseJSONValue(JSONMarshaller.From<Exception>(Value.Exception)));
       if not Value.Data.IsEmpty then
         JsonObject.AddPair('Data', TJSONObject.ParseJSONValue(JSONMarshaller.From(Value.Data, Value.Data.TypeInfo)));
-      JsonObject.AddPair('Tag', Value.Tag);
+      JsonObject.AddPair('Tag', TJSONNumber.Create(Value.Tag));
       Result := JsonObject.ToJSON;
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TLogEvent

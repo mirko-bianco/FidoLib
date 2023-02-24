@@ -71,7 +71,7 @@ initialization
             try
               MarshalledValue := JSONMarshaller.From(ReturnValue, Method.ReturnType.Handle);
               if not MarshalledValue.IsEmpty then
-                JSONObject.AddPair(TJsonPair.Create(Method.Name, TJSONValue.ParseJSONValue(MarshalledValue)));
+                JSONObject.AddPair(TJsonPair.Create(Method.Name, TJSONObject.ParseJSONValue(MarshalledValue)));
             except
             end;
           end);
@@ -90,7 +90,7 @@ initialization
             try
               MarshalledValue := JSONMarshaller.From(ReturnValue, Prop.PropertyType.Handle);
               if not MarshalledValue.IsEmpty then
-                JSONObject.AddPair(TJsonPair.Create(Prop.Name, TJSONValue.ParseJSONValue(MarshalledValue)));
+                JSONObject.AddPair(TJsonPair.Create(Prop.Name, TJSONObject.ParseJSONValue(MarshalledValue)));
             except
             end;
           end);
