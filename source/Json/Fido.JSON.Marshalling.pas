@@ -40,6 +40,11 @@ uses
   Spring,
   Spring.Collections,
 
+  Fido.DesignPatterns.Observer.Intf,
+  Fido.DesignPatterns.Observer.Notification.Intf,
+  Fido.DesignPatterns.Observer.Notification,
+  Fido.DesignPatterns.Observable.Intf,
+  Fido.DesignPatterns.Observable.Delegated,
   Fido.Exceptions,
   Fido.Json.Utilities,
   Fido.Json.Mapping,
@@ -70,6 +75,7 @@ type
   strict private const
     GetterPrefix = 'GET';
   strict private
+    FObservable: IObservable;
     FRecordMethods: IDictionary<string, TJSONDTOMethodDescriptor>;
 
     function GetIsGetterName(const Name: string): boolean;
@@ -84,7 +90,15 @@ type
     constructor Create(const PIID: PTypeInfo; const Json: string; const ConfigurationName: string = ''); overload;
     destructor Destroy; override;
 
-    procedure AfterConstruction; override;
+    procedure RegisterObserver(const Observer: IObserver);
+    procedure UnregisterObserver(const Observer: IObserver);
+    function GetIdentity: string;
+    procedure Broadcast(const Notification: INotification); overload;
+    procedure Broadcast(const Description: string); overload;
+    procedure Broadcast(const Description: string; const Data: TNotificationData); overload;
+    function IsPaused: boolean;
+    procedure Pause;
+    procedure Resume(const AndBroadcast: string = '');
   end;
 
   EJSONUnmarshaller = class(EFidoException);
@@ -151,10 +165,20 @@ uses
 
 { TJSONVirtualDto }
 
-procedure TJSONVirtualDto.AfterConstruction;
+procedure TJSONVirtualDto.Broadcast(const Notification: INotification);
 begin
-  inherited;
+  FObservable.Broadcast(Notification);
+end;
 
+procedure TJSONVirtualDto.Broadcast(const Description: string);
+begin
+  FObservable.Broadcast(Description);
+end;
+
+procedure TJSONVirtualDto.Broadcast(const Description: string;
+  const Data: TNotificationData);
+begin
+  FObservable.Broadcast(Description, Data);
 end;
 
 procedure TJSONVirtualDto.CacheColumns(
@@ -207,6 +231,8 @@ begin
   ProcessDtoAttributes(PIID);
   JSONObject := Shared.Make(TJSonObject.ParseJSONValue(Json) as TJSONObject);
   CacheColumns(JSONObject, ConfigurationName);
+
+  FObservable := TDelegatedObservable.Create(nil);
 end;
 
 constructor TJSONVirtualDto.Create(
@@ -222,6 +248,7 @@ begin
 
   ProcessDtoAttributes(PIID);
   CacheColumns(JSONObject, ConfigurationName);
+  FObservable := TDelegatedObservable.Create(nil);
 end;
 
 destructor TJSONVirtualDto.Destroy;
@@ -249,6 +276,11 @@ begin
     Result := MethodDesc.Value;
 end;
 
+function TJSONVirtualDto.GetIdentity: string;
+begin
+  Result := FObservable.GetIdentity;
+end;
+
 function TJSONVirtualDto.GetIsGetterName(const Name: string): boolean;
 begin
   Result := Name.StartsWith(GetterPrefix, true);
@@ -262,6 +294,16 @@ begin
   // remove getter prefix; TODO setters?
   if GetIsGetterName(Result) then
     Delete(Result, 1, Length(GetterPrefix));
+end;
+
+function TJSONVirtualDto.IsPaused: boolean;
+begin
+  Result := FObservable.IsPaused;
+end;
+
+procedure TJSONVirtualDto.Pause;
+begin
+  FObservable.Pause;
 end;
 
 procedure TJSONVirtualDto.ProcessDtoAttributes(const PIID: PTypeInfo);
@@ -338,6 +380,21 @@ begin
       begin
         MethodDesc.MappedName := ColumnAttribute(Attribute).Line;
       end);
+end;
+
+procedure TJSONVirtualDto.RegisterObserver(const Observer: IObserver);
+begin
+  FObservable.RegisterObserver(Observer);
+end;
+
+procedure TJSONVirtualDto.Resume(const AndBroadcast: string);
+begin
+  FObservable.Resume(AndBroadcast);
+end;
+
+procedure TJSONVirtualDto.UnregisterObserver(const Observer: IObserver);
+begin
+  FObservable.UnregisterObserver(Observer);
 end;
 
 { JSONUnmarshaller }
