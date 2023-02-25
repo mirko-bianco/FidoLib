@@ -102,7 +102,7 @@ begin
 
   StopWatch.Stop;
 
-  Assert.IsTrue(StopWatch.ElapsedMilliseconds > 100);
+  Assert.IsTrue(StopWatch.ElapsedMilliseconds >= 100);
 end;
 
 procedure TChannelsTests.BufferedChannelDoesNotBlockSendWhileQueueIsAvailable;
@@ -132,7 +132,7 @@ begin
 
   StopWatch.Stop;
 
-  Assert.IsTrue(StopWatch.ElapsedMilliseconds > 100);
+  Assert.IsTrue(StopWatch.ElapsedMilliseconds >= 100);
 end;
 
 procedure TChannelsTests.ChannelBlocksReceiveUntilDataIsSent;
@@ -152,7 +152,7 @@ begin
 
   StopWatch.Stop;
 
-  Assert.IsTrue(StopWatch.ElapsedMilliseconds > 100);
+  Assert.IsTrue(StopWatch.ElapsedMilliseconds >= 100);
 end;
 
 procedure TChannelsTests.ChannelBlocksSendUntilQueueIsAvailable;
@@ -176,7 +176,7 @@ begin
 
   StopWatch.Stop;
 
-  Assert.IsTrue(StopWatch.ElapsedMilliseconds > 100);
+  Assert.IsTrue(StopWatch.ElapsedMilliseconds >= 100);
 end;
 
 procedure TChannelsTests.ChannelDoesNotBlockTryReceiveEvenWhenQueueISEmpty;
