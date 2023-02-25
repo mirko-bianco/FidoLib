@@ -28,8 +28,11 @@ uses
   System.TypInfo,
   System.SysUtils,
   System.Generics.Defaults,
+
+  Spring,
   Spring.Collections,
   Spring.Collections.Lists,
+
   Fido.DesignPatterns.Observable.Intf,
   Fido.DesignPatterns.Observable.Delegated,
   Fido.DesignPatterns.Observer.Intf,
@@ -56,9 +59,37 @@ type
   public
     constructor Create; overload;
 
-    function Remove(const Item: T): Boolean;
-    function Extract(const Item: T): T;
-    procedure Insert(Index: Integer; const Item: T);
+   {$REGION ' ICollection<T> '}
+    procedure AddRange(const values: array of T); overload;
+    procedure AddRange(const values: IEnumerable<T>); overload;
+
+    procedure Clear;
+
+    function Remove(const item: T): Boolean;
+
+    function RemoveAll(const predicate: Predicate<T>): Integer;
+
+    function RemoveRange(const values: array of T): Integer; overload;
+    function RemoveRange(const values: IEnumerable<T>): Integer; overload;
+
+    function Extract(const item: T): T;
+    function ExtractAll(const predicate: Predicate<T>): TArray<T>;
+    procedure ExtractRange(const values: array of T); overload;
+    procedure ExtractRange(const values: IEnumerable<T>); overload;
+   {$ENDREGION}
+
+   {$REGION ' IList<T> '}
+    function Add(const item: T): Integer; overload;
+    procedure Insert(index: Integer; const item: T);
+    procedure InsertRange(index: Integer; const values: array of T); overload;
+    procedure InsertRange(index: Integer; const values: IEnumerable<T>); overload;
+
+    procedure Delete(index: Integer);
+    procedure DeleteRange(index, count: Integer);
+
+    function ExtractAt(index: Integer): T;
+    function ExtractRange(index, count: Integer): TArray<T>; overload;
+   {$ENDREGION}
   end;
 
 implementation
@@ -75,6 +106,44 @@ begin
   FDelegatedObservable.Broadcast(Description);
 end;
 
+function TDeepObservableList<T>.Add(const item: T): Integer;
+var
+  Observable: IObservable;
+begin
+  inherited;
+  if Supports(Item, IObservable, Observable) then
+    Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Item added');
+end;
+
+procedure TDeepObservableList<T>.AddRange(const values: IEnumerable<T>);
+var
+  Observable: IObservable;
+begin
+  inherited;
+
+  with values.GetEnumerator do
+    while MoveNext do
+      if Supports(GetCurrent, IObservable, Observable) then
+        Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items added');
+end;
+
+procedure TDeepObservableList<T>.AddRange(const values: array of T);
+var
+  Observable: IObservable;
+begin
+  inherited;
+
+  for var Item in values do
+    if Supports(Item, IObservable, Observable) then
+       Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items added');
+end;
+
 procedure TDeepObservableList<T>.Broadcast(
   const Description: string;
   const Data: TNotificationData);
@@ -82,21 +151,113 @@ begin
   FDelegatedObservable.Broadcast(Description, Data);
 end;
 
+procedure TDeepObservableList<T>.Clear;
+var
+  Observable: IObservable;
+begin
+  for var Item in ToArray do
+    if Supports(Item, IObservable, Observable) then
+       Observable.UnregisterObserver(Self);
+
+  inherited;
+
+  FDelegatedObservable.Broadcast('Items cleared');
+end;
+
 constructor TDeepObservableList<T>.Create;
 begin
   inherited;
-  FDelegatedObservable := TDelegatedObservable.Create(nil);
+  FDelegatedObservable := TDelegatedObservable.Create(Self);
+end;
+
+procedure TDeepObservableList<T>.Delete(index: Integer);
+var
+  Observable: IObservable;
+begin
+  if Supports(Items[index], IObservable, Observable) then
+    Observable.UnregisterObserver(Self);
+  inherited;
+
+  FDelegatedObservable.Broadcast('Item deleted');
+end;
+
+procedure TDeepObservableList<T>.DeleteRange(index, count: Integer);
+var
+  Observable: IObservable;
+begin
+  for var Item in ToArray do
+    if Supports(Item, IObservable, Observable) then
+       Observable.UnregisterObserver(Self);
+
+  inherited;
+
+  for var Item in ToArray do
+    if Supports(Item, IObservable, Observable) then
+       Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items deleted');
 end;
 
 function TDeepObservableList<T>.Extract(const Item: T): T;
 var
   Observable: IObservable;
 begin
-  inherited;
-  if Supports(Item, IObservable, Observable) then
-    Observable.UnregisterObserver(Self as IObserver);
+  result := inherited;
+  if Supports(Result, IObservable, Observable) then
+    Observable.UnregisterObserver(Self);
 
   FDelegatedObservable.Broadcast('Item extracted');
+end;
+
+function TDeepObservableList<T>.ExtractAll(const predicate: Predicate<T>): TArray<T>;
+var
+  Observable: IObservable;
+begin
+  Result := inherited;
+
+  for var Item in Result do
+    if Supports(Item, IObservable, Observable) then
+       Observable.UnregisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items extracted');
+end;
+
+function TDeepObservableList<T>.ExtractAt(index: Integer): T;
+var
+  Observable: IObservable;
+begin
+  Result := inherited;
+
+  if Supports(Result, IObservable, Observable) then
+    Observable.UnregisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Item extracted');
+end;
+
+procedure TDeepObservableList<T>.ExtractRange(const values: array of T);
+var
+  Observable: IObservable;
+begin
+  inherited;
+
+  for var Item in Values do
+    if Supports(Item, IObservable, Observable) then
+       Observable.UnregisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items extracted');
+end;
+
+procedure TDeepObservableList<T>.ExtractRange(const values: IEnumerable<T>);
+var
+  Observable: IObservable;
+begin
+  inherited;
+
+  for var Item in Values do
+    if Supports(Item, IObservable, Observable) then
+       Observable.UnregisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items extracted');
 end;
 
 function TDeepObservableList<T>.GetIdentity: string;
@@ -109,12 +270,39 @@ procedure TDeepObservableList<T>.Insert(
   const Item: T);
 var
   Observable: IObservable;
+  Delegated: IObserver;
 begin
   inherited;
   if Supports(Item, IObservable, Observable) then
-    Observable.RegisterObserver(Self as IObserver);
+    Observable.RegisterObserver(Self);
 
   FDelegatedObservable.Broadcast('Item inserted');
+end;
+
+procedure TDeepObservableList<T>.InsertRange(index: Integer; const values: IEnumerable<T>);
+var
+  Observable: IObservable;
+begin
+  inherited;
+
+  for var Item in Values do
+    if Supports(Item, IObservable, Observable) then
+       Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items inserted');
+end;
+
+procedure TDeepObservableList<T>.InsertRange(index: Integer; const values: array of T);
+var
+  Observable: IObservable;
+begin
+  inherited;
+
+  for var Item in Values do
+    if Supports(Item, IObservable, Observable) then
+       Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items removed');
 end;
 
 function TDeepObservableList<T>.IsPaused: boolean;
@@ -149,9 +337,56 @@ var
 begin
   inherited;
   if Supports(Item, IObservable, Observable) then
-    Observable.UnregisterObserver(Self as IObserver);
+    Observable.UnregisterObserver(Self);
 
   FDelegatedObservable.Broadcast('Item removed');
+end;
+
+function TDeepObservableList<T>.RemoveAll(const predicate: Predicate<T>): Integer;
+var
+  Observable: IObservable;
+begin
+  for var Item in ToArray do
+    if Supports(Item, IObservable, Observable) then
+       Observable.UnregisterObserver(Self);
+
+  Result := inherited;
+
+  for var Item in ToArray do
+    if Supports(Item, IObservable, Observable) then
+       Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items removed');
+end;
+
+function TDeepObservableList<T>.RemoveRange(const values: array of T): Integer;
+var
+  Observable: IObservable;
+begin
+  for var Item in ToArray do
+    if Supports(Item, IObservable, Observable) then
+       Observable.UnregisterObserver(Self);
+
+  Result := inherited;
+
+  for var Item in ToArray do
+    if Supports(Item, IObservable, Observable) then
+       Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items removed');
+end;
+
+function TDeepObservableList<T>.RemoveRange(const values: IEnumerable<T>): Integer;
+var
+  Observable: IObservable;
+begin
+  for var Item in Values do
+    if Supports(Item, IObservable, Observable) then
+       Observable.UnregisterObserver(Self);
+
+  Result := inherited;
+
+  FDelegatedObservable.Broadcast('Items removed');
 end;
 
 procedure TDeepObservableList<T>.Resume(const AndBroadcast: string);
@@ -162,6 +397,19 @@ end;
 procedure TDeepObservableList<T>.UnregisterObserver(const Observer: IObserver);
 begin
   FDelegatedObservable.UnregisterObserver(Observer);
+end;
+
+function TDeepObservableList<T>.ExtractRange(index, count: Integer): TArray<T>;
+var
+  Observable: IObservable;
+begin
+  Result := inherited;
+
+  for var Item in Result do
+    if Supports(Item, IObservable, Observable) then
+       Observable.RegisterObserver(Self);
+
+  FDelegatedObservable.Broadcast('Items extracted');
 end;
 
 end.
