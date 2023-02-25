@@ -1,0 +1,132 @@
+object MainView: TMainView
+  Left = 0
+  Top = 0
+  Caption = 'Main View'
+  ClientHeight = 480
+  ClientWidth = 1020
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 0
+  object Grid1: TGrid
+    Align = Client
+    CanFocus = True
+    ClipChildren = True
+    ControlType = Platform
+    Size.Width = 1020.000000000000000000
+    Size.Height = 439.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    RowCount = 0
+    Options = [AlternatingRowBackground, Editing, AlwaysShowEditor, ColumnResize, ColumnMove, ColLines, RowLines, RowSelect, Tabs, Header, HeaderClick, CancelEditingByDefault, AutoDisplacement]
+    Images = ImageList
+    OnDrawColumnHeader = Grid1DrawColumnHeader
+    Viewport.Width = 1016.000000000000000000
+    Viewport.Height = 414.000000000000000000
+    object ColId: TStringColumn
+      Header = 'Id'
+      Size.Width = 300.000000000000000000
+    end
+    object ColFirstName: TStringColumn
+      Header = 'FirstName'
+      Size.Width = 150.000000000000000000
+    end
+    object ColLastName: TStringColumn
+      Header = 'LastName'
+      Size.Width = 150.000000000000000000
+    end
+  end
+  object Panel1: TPanel
+    Align = Top
+    Size.Width = 1020.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    object edtSearch: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Anchors = [akTop, akRight]
+      TabOrder = 0
+      Position.X = 756.000000000000000000
+      Position.Y = 11.000000000000000000
+      Size.Width = 256.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+    end
+    object Button1: TButton
+      Position.X = 16.000000000000000000
+      Position.Y = 11.000000000000000000
+      TabOrder = 4
+      Text = 'Edit'
+    end
+    object Button2: TButton
+      Position.X = 122.000000000000000000
+      Position.Y = 11.000000000000000000
+      TabOrder = 3
+      Text = 'Add'
+    end
+    object Button3: TButton
+      Position.X = 238.000000000000000000
+      Position.Y = 11.000000000000000000
+      TabOrder = 2
+      Text = 'Delete'
+    end
+  end
+  object ImageList: TImageList
+    Source = <
+      item
+        MultiResBitmap.TransparentColor = 16777215
+        MultiResBitmap = <
+          item
+            Width = 16
+            Height = 16
+            PNG = {
+              89504E470D0A1A0A0000000D49484452000000100000001008060000001FF3FF
+              61000000017352474200AECE1CE90000000467414D410000B18F0BFC61050000
+              007B49444154384F631805F8416262E27F4747C7FF502E56C004A5C906D437E0
+              C2850BFF0F1C3880E1EC070F1E6015C700919191FF393939FFEFD8B1E33F2C0C
+              40862A2A2AFEB7B4B4246CC08F1F3FFEC30CD1D4D4046B141414041BF4E1C307
+              C206C000C8762005C69E9E9EFF4106832548012043C8D63C62000303006D6544
+              8F1E37A9D20000000049454E44AE426082}
+            FileName = 
+              'C:\Users\Developer\Documents\Embarcadero\Studio\Projects\sort+do' +
+              'wn.png'
+          end>
+        Name = 'Down'
+      end
+      item
+        MultiResBitmap.TransparentColor = 16777215
+        MultiResBitmap = <
+          item
+            Width = 16
+            Height = 16
+            PNG = {
+              89504E470D0A1A0A0000000D49484452000000100000001008060000001FF3FF
+              61000000017352474200AECE1CE90000000467414D410000B18F0BFC61050000
+              007B49444154384F631805F8416262E27F4F4FCFFF3F7EFCF80F15221E803403
+              293026C91090C2C8C8C8FF9C9C9CFF353535FF2B2A2AFE171414FCEFE8E8F8FF
+              C3870F840D8169DEB163C77F902B401A2F5CB80036C8D2D292B00120C5070E1C
+              002B841900623F78F0002E4E34403600176082D264038A0D18050C0C00E85B48
+              7102F6F8380000000049454E44AE426082}
+            FileName = 
+              'C:\Users\Developer\Documents\Embarcadero\Studio\Projects\sort+up' +
+              '.png'
+          end>
+        Name = 'Up'
+      end>
+    Destination = <
+      item
+        Layers = <
+          item
+            Name = 'Down'
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'Up'
+          end>
+      end>
+    Left = 502
+    Top = 88
+  end
+end

@@ -23,3 +23,10 @@ The `MVVMExample` project shows how binding can be achieved, the main points are
     Guibinding.MethodsSetup<ISongViewModel, TSongView>(FSongViewModel, Self);
   ```
 
+The `GridViewModelExample` project shows how binding of a grid and a list can be achieved, the main points are:
+
+- Make use of  the `TDelegateObservable` as base for the entity that needs binding. 
+- Make use of  the `TAbstractReadonlyGridView<T>`or `TAbstractWriteableGridView<T>` as base for the grid view model that will consume the List.
+- Make use of  the `IFilteredGridViewModelHelper<T, FilterPayload>` helper if you need to filter the list through the view model.
+- Make use of  the `ISortedByColumnGridViewModelHelper<TT>` helper if you need to sort the list through the grid columns position and header click.
+- Decorate the grid with the `BindEvent` attribute you can find in `Fido.Gui.Binding.Attributes`, for the events `OnGetValue`, `OnSetValue`, `OnColumnMoved` or `OnHeaderClick`.

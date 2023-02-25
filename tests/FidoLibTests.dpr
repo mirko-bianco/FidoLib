@@ -60,7 +60,8 @@ uses
   Tests.JSON.Mapping in 'Json\Tests.JSON.Mapping.pas',
   Fido.Currying.Test in 'Fido.Currying.Test.pas',
   Fido.Caching.test in 'Fido.Caching.test.pas',
-  Fido.Channels.Test in 'Fido.Channels.Test.pas';
+  Fido.Channels.Test in 'Fido.Channels.Test.pas',
+  Fido.Gui.Fmx.Grid.ViewModel.Test in 'Gui\Fido.Gui.Fmx.Grid.ViewModel.Test.pas';
 
 {$IFNDEF TESTINSIGHT}
 var

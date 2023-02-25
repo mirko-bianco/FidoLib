@@ -45,6 +45,9 @@
         <Projects Include="examples\MVVMExample\MVVMExample.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="examples\GridViewModelExample\GridViewModelExample.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -179,14 +182,23 @@
     <Target Name="MVVMExample:Make">
         <MSBuild Projects="examples\MVVMExample\MVVMExample.dproj" Targets="Make"/>
     </Target>
+    <Target Name="GridViewModelExample">
+        <MSBuild Projects="examples\GridViewModelExample\GridViewModelExample.dproj"/>
+    </Target>
+    <Target Name="GridViewModelExample:Clean">
+        <MSBuild Projects="examples\GridViewModelExample\GridViewModelExample.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="GridViewModelExample:Make">
+        <MSBuild Projects="examples\GridViewModelExample\GridViewModelExample.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="FidoCore;FidoBrook;FidoRedis;FidoGui;FidoVCL;FidoFMX;FidoWin;FidoLibTests;ElasticSearchLogExample;FileRestServerExample;ResourceRestServerExample;WebSocketsServer;WebSocketsClient;MVVMExample"/>
+        <CallTarget Targets="FidoCore;FidoBrook;FidoRedis;FidoGui;FidoVCL;FidoFMX;FidoWin;FidoLibTests;ElasticSearchLogExample;FileRestServerExample;ResourceRestServerExample;WebSocketsServer;WebSocketsClient;MVVMExample;GridViewModelExample"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="FidoCore:Clean;FidoBrook:Clean;FidoRedis:Clean;FidoGui:Clean;FidoVCL:Clean;FidoFMX:Clean;FidoWin:Clean;FidoLibTests:Clean;ElasticSearchLogExample:Clean;FileRestServerExample:Clean;ResourceRestServerExample:Clean;WebSocketsServer:Clean;WebSocketsClient:Clean;MVVMExample:Clean"/>
+        <CallTarget Targets="FidoCore:Clean;FidoBrook:Clean;FidoRedis:Clean;FidoGui:Clean;FidoVCL:Clean;FidoFMX:Clean;FidoWin:Clean;FidoLibTests:Clean;ElasticSearchLogExample:Clean;FileRestServerExample:Clean;ResourceRestServerExample:Clean;WebSocketsServer:Clean;WebSocketsClient:Clean;MVVMExample:Clean;GridViewModelExample:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="FidoCore:Make;FidoBrook:Make;FidoRedis:Make;FidoGui:Make;FidoVCL:Make;FidoFMX:Make;FidoWin:Make;FidoLibTests:Make;ElasticSearchLogExample:Make;FileRestServerExample:Make;ResourceRestServerExample:Make;WebSocketsServer:Make;WebSocketsClient:Make;MVVMExample:Make"/>
+        <CallTarget Targets="FidoCore:Make;FidoBrook:Make;FidoRedis:Make;FidoGui:Make;FidoVCL:Make;FidoFMX:Make;FidoWin:Make;FidoLibTests:Make;ElasticSearchLogExample:Make;FileRestServerExample:Make;ResourceRestServerExample:Make;WebSocketsServer:Make;WebSocketsClient:Make;MVVMExample:Make;GridViewModelExample:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
