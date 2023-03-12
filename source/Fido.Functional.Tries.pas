@@ -105,10 +105,17 @@ var
   LValue: Context<T>;
 begin
   LValue := FValue;
-  Result := TryOut<TOut>.New(function: TOut
+//  Result := TryOut<TOut>.New(function: Context<TOut>
+//    begin
+//      Result := Context<TOut>.New(function: TOut
+//        begin
+//          Result := LValue.Map<TOut>(Func);
+//        end);
+//    end);
+  Result := TryOut<TOut>.New(Context<TOut>.New(function: TOut
     begin
-      Result :=  LValue.Map<TOut>(Func);
-    end);
+      Result := LValue.Map<TOut>(Func);
+    end));
 end;
 
 function &Try<T>.MapAsync<TOut>(
@@ -312,8 +319,12 @@ function TryOut<T>.Match(
   const ErrorMessage: string;
   const OnFinally: TProc): Context<T>;
 var
+  LSelf: TryOut<T>;
   LOnFinally: TProc;
+  lResolve: Func<T>;
 begin
+  LSelf := Self;
+
   LOnFinally := OnFinally;
 
   if not Assigned(LOnFinally) then
@@ -321,16 +332,19 @@ begin
       begin
       end;
 
-  try
-    try
-      Result := Resolve;
-    except
-      on E: Exception do
-        raise ExceptionClass.Create(Utilities.IfThen(ErrorMessage.IsEmpty, E.Message, Format(ErrorMessage, [E.Message])))
-    end;
-  finally
-    LOnFinally();
-  end;
+  Result := Context<T>.New(function: T
+    begin
+      try
+        try
+          Result := LSelf.Resolve;
+        except
+          on E: Exception do
+            raise ExceptionClass.Create(Utilities.IfThen(ErrorMessage.IsEmpty, E.Message, Format(ErrorMessage, [E.Message])))
+        end;
+      finally
+        LOnFinally();
+      end;
+    end);
 end;
 
 constructor TryOut<T>.New(const MonadFunc: Func<Context<T>>);

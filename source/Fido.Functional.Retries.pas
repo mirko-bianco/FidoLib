@@ -83,8 +83,16 @@ function Retry<T>.Map<TOut>(
   const RetryOnException: Predicate<Exception>;
   const MaxRetries: Integer;
   const RetryIntervalInMSec: Integer): Context<TOut>;
+var
+  LSelf: Retry<T>;
+  LValue: Context<T>;
 begin
-  Result := Retries.Run<TOut>(DoTry<TOut>(Func, FValue), RetryOnException, MaxRetries, RetryIntervalInMSec);
+  LSelf := Self;
+  LValue := FValue;
+  Result := Context<TOut>.New(function: TOut
+    begin
+      Result := Retries.Run<TOut>(LSelf.DoTry<TOut>(Func, LValue), RetryOnException, MaxRetries, RetryIntervalInMSec);
+    end);
 end;
 
 function Retry<T>.MapAsync<TOut>(
@@ -156,8 +164,16 @@ function Retry<T>.Map<TOut>(
   const RetryOnException: Predicate<Exception>;
   const MaxRetries: Integer;
   const RetryIntervalInMSec: Integer): Context<TOut>;
+var
+  LSelf: Retry<T>;
+  LValue: Context<T>;
 begin
-  Result := Retries.Run<TOut>(DoTry<TOut>(Func, FValue), RetryOnException, MaxRetries, RetryIntervalInMSec);
+  LSelf := Self;
+  LValue := FValue;
+  Result := Context<TOut>.New(function: TOut
+    begin
+      Result := Retries.Run<TOut>(LSelf.DoTry<TOut>(Func, LValue), RetryOnException, MaxRetries, RetryIntervalInMSec);
+    end);
 end;
 
 constructor Retry<T>.New(const Value: T);
