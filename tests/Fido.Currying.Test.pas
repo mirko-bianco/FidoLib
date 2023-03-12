@@ -15,6 +15,9 @@ type
   TCurryingTests = class
   public
     [Test]
+    procedure OneParamFuncCurryingWorks;
+
+    [Test]
     procedure TwoParamsFuncCurryingWorks;
 
     [Test]
@@ -22,6 +25,9 @@ type
 
     [Test]
     procedure FourParamsFuncCurryingWorks;
+
+    [Test]
+    procedure OneParamProcCurryingWorks;
 
     [Test]
     procedure TwoParamsProcCurryingWorks;
@@ -86,6 +92,35 @@ begin
   Curry.Cook<string, string, string, string>(TheProc)('AB')('CD')('EF')('GH');
 
   Assert.AreEqual<string>('ABCDEFGH', Result);
+end;
+
+procedure TCurryingTests.OneParamFuncCurryingWorks;
+var
+  TheFunc: Func<string, string>;
+begin
+  TheFunc := function(const P1: string): string
+    begin
+      Result := P1;
+    end;
+
+  Assert.AreEqual<string>('ABC', Curry.Cook<string, string>(TheFunc)('ABC')());
+end;
+
+procedure TCurryingTests.OneParamProcCurryingWorks;
+var
+  TheProc: Action<string>;
+  Result: string;
+begin
+  Result := '';
+
+  TheProc := procedure(const P1: string)
+    begin
+      Result := P1;
+    end;
+
+  Curry.Cook<string>(TheProc)('ABC')();
+
+  Assert.AreEqual<string>('ABC', Result);
 end;
 
 procedure TCurryingTests.ThreeParamsProcCurryingWorks;

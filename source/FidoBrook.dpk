@@ -37,8 +37,8 @@ requires
   IndyCore,
   RESTComponents,
   Spring.Base,
-  FidoCore,
-  BrookTardigrade;
+  FidoCore{$IFDEF MSWINDOWS},
+  BrookTardigrade{$ENDIF};
 
 contains
   Fido.Api.Server.Brook in 'Api\Server\Fido.Api.Server.Brook.pas',
