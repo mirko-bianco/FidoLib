@@ -82,8 +82,8 @@ begin
         Broker.Subscribe(Consumer, TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), OnNotify1);
         Broker.Subscribe(Consumer, TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), OnNotify2);
         Broker.Subscribe(Consumer, TEventsDrivenUtilities.FormatKey('Channel', 'Event3'), OnNotify3);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), Event1ExpectedPayload);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload);
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), Event1ExpectedPayload).Value;
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload).Value;
       end);
 
     Assert.AreEqual(Event1ExpectedPayload, Event1Payload);
@@ -148,11 +148,11 @@ begin
         Broker.Subscribe(Consumer, TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), OnNotify1);
         Broker.Subscribe(Consumer2, TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), OnNotify2);
         Broker.Subscribe(Consumer2, TEventsDrivenUtilities.FormatKey('Channel', 'Event3'), OnNotify3);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), Event1ExpectedPayload);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload);
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), Event1ExpectedPayload).Value;
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload).Value;
         Broker.Stop(Consumer2);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event3'), Event2ExpectedPayload);
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload).Value;
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event3'), Event2ExpectedPayload).Value;
       end);
 
     Assert.AreEqual(Event1ExpectedPayload, Event1Payload);
@@ -217,11 +217,11 @@ begin
         Broker.Subscribe(Consumer, TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), OnNotify1);
         Broker.Subscribe(Consumer2, TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), OnNotify2);
         Broker.Subscribe(Consumer2, TEventsDrivenUtilities.FormatKey('Channel', 'Event3'), OnNotify3);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), Event1ExpectedPayload);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload);
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event1'), Event1ExpectedPayload).Value;
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload).Value;
         Broker.Unsubscribe(Consumer2, TEventsDrivenUtilities.FormatKey('Channel', 'Event3'));
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload);
-        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event3'), Event2ExpectedPayload);
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event2'), Event2ExpectedPayload).Value;
+        Broker.Push(TEventsDrivenUtilities.FormatKey('Channel', 'Event3'), Event2ExpectedPayload).Value;
       end);
 
     Assert.AreEqual(Event1ExpectedPayload, Event1Payload);

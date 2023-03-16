@@ -48,29 +48,11 @@ type
     function Run(const Index: Integer): Context<Integer>;
   end;
 
-  TCallingClass = class
-  private
-    FCalled: Boolean;
-    FFinallyProcCalled: Boolean;
-  public
-    constructor Create;
-
-    function StrToInt(const S: string): Integer;
-
-    function DoNothingOnException(const E: Exception): Nullable<Integer>;
-    procedure OnFinally;
-
-    function Called: Boolean;
-    function FinallyProcCalled: Boolean;
-  end;
-
   EFunctionalTests = class(EFidoException);
   EFunctionalTestsUncaught = class(EFidoException);
 
   [TestFixture]
   TFunctionalTests = class
-  private
-    class function DoNothingOnException(const E: Exception): Nullable<Integer>;
   public
     [Test]
     Procedure TestSeveralClasses;
@@ -608,7 +590,9 @@ var
 begin
   ExceptionRaised := False;
   try
-    &Try<string>.New('100e').MapAsync<Integer>(StrToInt, 10000).Match(DoNothingOnException).Value;
+    &Try<string>.New('100e').MapAsync<Integer>(StrToInt, 10000).Match(function(const E: Exception): Nullable<Integer>
+      begin
+      end).Value;
   except
     on E: EConvertError do
       ExceptionRaised := True;
@@ -680,24 +664,29 @@ end;
 procedure TFunctionalTests.TryFunctorDoesNotRaiseAnyExceptionWhenItWorks;
 var
   Result: Context<Integer>;
-  CallingClass: TCallingClass;
+  FinallyCalled: Boolean;
   ExceptionRaised: Boolean;
+  Called: Boolean;
 begin
-  CallingClass := TCallingClass.Create;
+  FinallyCalled := False;
+  ExceptionRaised := False;
+  Called := False;
   try
-    ExceptionRaised := False;
-    try
-      Result := &Try<string>.New('100').Map<Integer>(CallingClass.StrToInt).Match(EFunctionalTests, '', CallingClass.OnFinally);
-    except
-      ExceptionRaised := True;
-    end;
-    Assert.IsFalse(CallingClass.Called);
-    Assert.AreEqual(100, Result.Value);
-    Assert.IsTrue(CallingClass.FinallyProcCalled);
-    Assert.IsFalse(ExceptionRaised);
-  finally
-    CallingClass.Free;
+    Result := &Try<string>.New('100').Map<Integer>(function(const Value: string): Integer
+      begin
+        Result := StrToInt(Value);
+        Called := True;
+      end).Match(EFunctionalTests, '', procedure
+      begin
+        FinallyCalled := True;
+      end);
+  except
+    ExceptionRaised := True;
   end;
+  Assert.IsFalse(Called);
+  Assert.AreEqual(100, Result.Value);
+  Assert.IsTrue(FinallyCalled);
+  Assert.IsFalse(ExceptionRaised);
 end;
 
 procedure TFunctionalTests.TryFunctorRaisesAnExceptionWhenItDoesNotWork;
@@ -971,11 +960,6 @@ begin
 
   Assert.IsFalse(Called);
   Assert.AreEqual(True, Result.Value);
-end;
-
-class function TFunctionalTests.DoNothingOnException(const E: Exception): Nullable<Integer>;
-begin
-
 end;
 
 procedure TFunctionalTests.IfThenFunctorWhenFalse;
@@ -1409,39 +1393,6 @@ end;
 function TRepo.Run(const Index: Integer): Context<Integer>;
 begin
   Result := Context<Integer>.New(Index).Map<Integer>(DoRun);
-end;
-
-{ TCallingClass }
-
-function TCallingClass.Called: Boolean;
-begin
-  Result := FCalled;
-end;
-
-constructor TCallingClass.Create;
-begin
-  FCalled := False;
-  FFinallyProcCalled := False;
-end;
-
-function TCallingClass.FinallyProcCalled: Boolean;
-begin
-  Result := FFinallyProcCalled;
-end;
-
-procedure TCallingClass.OnFinally;
-begin
-  FFinallyProcCalled := True;
-end;
-
-function TCallingClass.StrToInt(const S: string): Integer;
-begin
-  Result := System.SysUtils.StrToInt(S);
-  FCalled := True;
-end;
-
-function TCallingClass.DoNothingOnException(const E: Exception): Nullable<Integer>;
-begin
 end;
 
 initialization
