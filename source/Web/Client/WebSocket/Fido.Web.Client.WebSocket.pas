@@ -28,8 +28,6 @@ uses
   System.SysUtils,
   System.Classes,
 
-  IdGlobal,
-
   Fido.Exceptions,
   Fido.Utilities,
   Fido.JSON.Marshalling,
@@ -90,7 +88,7 @@ function TWebSocketClient.ConvertStringToDataEvent(const StringEvent: TWebSocket
 begin
   Result := procedure(const Data: TArray<Byte>)
     begin
-      StringEvent(IndyTextEncoding_UTF8.GetString(TIdBytes(Data)));
+      StringEvent(TEncoding.UTF8.GetString(Data));
     end;
 end;
 

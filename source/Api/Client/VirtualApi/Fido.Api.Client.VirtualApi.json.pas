@@ -31,8 +31,9 @@ uses
   System.Json,
   System.TypInfo,
   System.Generics.Collections,
-  IdHttp,
-  IdSSLOpenSSL,
+  System.Net.UrlClient,
+  System.Net.HttpClient,
+  System.NetConsts,
 
   Spring,
   Spring.Collections,
@@ -42,7 +43,6 @@ uses
   Fido.Api.Client.VirtualApi.Abstract,
   Fido.Api.Client.VirtualApi.Intf,
   Fido.Json.Marshalling,
-  Fido.Api.Client.VirtualApi.Request,
   Fido.Api.Client.VirtualApi.Configuration.Intf,
   Fido.Api.Client.VirtualApi.Call;
 
@@ -62,8 +62,7 @@ implementation
 
 procedure TJSONClientVirtualApi<T, IConfiguration>.CallApi(const Call: TClientVirtualApiCall);
 var
-  ApiClient: IShared<TidHttp>;
-  Pair: TPair<string, string>;
+  ApiClient: IShared<THTTPClient>;
   Parameter: TClientVirtualApiCallParameter;
   Index: Integer;
   Query: string;
@@ -71,30 +70,25 @@ var
   SourceStream: IShared<TStringStream>;
   ResponseContent: string;
   Headers: IShared<TStringList>;
+  Response: IHttpResponse;
 begin
   inherited;
 
   Guard.CheckNotNull(Call, 'Call');
   Guard.CheckNotNull(Call.ResponseHeaders, 'Call.ResponseHeaders');
 
-  ApiClient := Shared.Make(TIdHttp.Create(nil));
-  ApiClient.HandleRedirects := Call.HandleRedirects;
-  ApiClient.Request.UserAgent := 'FidoLib websocket client';
-  ApiClient.Request.ContentType := GetAcceptHeaderWithApiVersion(Call.ContentType);
-  ApiClient.Request.CharSet := 'utf-8';
-  ApiClient.Response.ContentType := GetAcceptHeaderWithApiVersion(Call.ContentType);
-
-  ApiClient.ConnectTimeout := Call.Timeout;
-  ApiClient.ReadTimeout := Call.Timeout;
-
   if Call.Url.StartsWith('https://', True) then
-  begin
-    ApiClient.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(ApiClient);
-    TIdSSLIOHandlerSocketOpenSSL(ApiClient.IOHandler).SSLOptions.Mode := TIdSSLMode.sslmClient;
-    TIdSSLIOHandlerSocketOpenSSL(ApiClient.IOHandler).SSLOptions.SSLVersions := [TIdSSLVersion.sslvTLSv1, TIdSSLVersion.sslvTLSv1_1, TIdSSLVersion.sslvTLSv1_2];
-    TIdSSLIOHandlerSocketOpenSSL(ApiClient.IOHandler).SSLOptions.Method := sslvTLSv1_2;
-    TIdSSLIOHandlerSocketOpenSSL(ApiClient.IOHandler).PassThrough := False;
-  end;
+    ApiClient := Shared.Make(THttpClient(TURLSchemes.GetURLClientInstance('HTTPS')))
+  else
+    ApiClient := Shared.Make(THttpClient(TURLSchemes.GetURLClientInstance('HTTP')));
+  ApiClient.HandleRedirects := Call.HandleRedirects;
+  ApiClient.UserAgent := 'FidoLib Http client';
+  ApiClient.ContentType := GetAcceptHeaderWithApiVersion(Call.ContentType);
+  ApiClient.AcceptCharSet := 'utf-8';
+
+  ApiClient.ConnectionTimeout := Call.Timeout;
+  ApiClient.SendTimeout := Call.Timeout;
+  ApiClient.ResponseTimeout := Call.Timeout;
 
   FormData := Shared.Make(TStringList.Create);
 
@@ -107,7 +101,7 @@ begin
         Query := Query + Utilities.IfThen<string>(Query.IsEmpty, '', '&') + Format('%s=%s', [Parameter.Name, Parameter.Value]);
       end;
       pkHeader: begin
-        ApiClient.Request.CustomHeaders.AddValue(Parameter.Name, Parameter.Value);
+        ApiClient.CustomHeaders[Parameter.Name] := Parameter.Value;
       end;
       pkForm: begin
         FormData.AddPair(Parameter.Name, Parameter.Value);
@@ -126,13 +120,34 @@ begin
   try
     case Call.ApiMethod of
       rmUnknown: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmUnknown]]));
-      rmGET: ResponseContent := ApiClient.Get(Call.Url + Query);
-      rmPOST: ResponseContent := ApiClient.Post(Call.Url + Query, SourceStream);
-      rmPUT: ResponseContent := ApiClient.Put(Call.Url + Query, SourceStream);
-      rmPATCH: ResponseContent := ApiClient.Patch(Call.Url + Query, SourceStream);
-      rmDELETE: ResponseContent := ApiClient.Delete(Call.Url + Query);
-      rmHEAD: ApiClient.Head(Call.Url + Query);
-      rmOPTIONS: ResponseContent := ApiClient.Options(Call.Url + Query);
+      rmGET: begin
+        Response := ApiClient.Get(Call.Url + Query);
+        ResponseContent := Response.ContentAsString;
+      end;
+      rmPOST: begin
+        Response := ApiClient.Post(Call.Url + Query, SourceStream);
+        ResponseContent := Response.ContentAsString;
+      end;
+      rmPUT: begin
+        Response := ApiClient.Put(Call.Url + Query, SourceStream);
+        ResponseContent := Response.ContentAsString;
+      end;
+      rmPATCH: begin
+        Response := ApiClient.Patch(Call.Url + Query, SourceStream);
+        ResponseContent := Response.ContentAsString;
+      end;
+      rmDELETE: begin
+        Response := ApiClient.Delete(Call.Url + Query);
+        ResponseContent := Response.ContentAsString;
+      end;
+      rmHEAD: begin
+        Response := ApiClient.Head(Call.Url + Query);
+        ResponseContent := Response.ContentAsString;
+      end;
+      rmOPTIONS: begin
+        Response := ApiClient.Options(Call.Url + Query);
+        ResponseContent := Response.ContentAsString;
+      end;
       rmCOPY: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmCOPY]]));
       rmLINK: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmLINK]]));
       rmUNLINK: raise EClientVirtualApi.Create(Format('Method %s is not supported.', [SHttpMethod[rmUNLINK]]));
@@ -144,16 +159,16 @@ begin
     end;
 
     Headers := Shared.Make(TStringList.Create);
-    for Index := 0 to ApiClient.Response.RawHeaders.Count - 1 do
-      Headers.AddPair(ApiClient.Response.RawHeaders.Names[Index], ApiClient.Response.RawHeaders.Values[ApiClient.Response.RawHeaders.Names[Index]]);
+    for var Pair in Response.Headers do
+      Headers.AddPair(Pair.Name, Pair.Value);
 
-    Call.Finish(ApiClient.ResponseCode, ResponseContent, Headers);
+    Call.Finish(Response.StatusCode, ResponseContent, Headers);
   except
     on E: Exception do
     begin
       Headers := Shared.Make(TStringList.Create);
-      for Index := 0 to ApiClient.Response.RawHeaders.Count - 1 do
-        Headers.AddPair(ApiClient.Response.RawHeaders.Names[Index], ApiClient.Response.RawHeaders.Values[ApiClient.Response.RawHeaders.Names[Index]]);
+      for var Pair in Response.Headers do
+        Headers.AddPair(Pair.Name, Pair.Value);
       Call.Finish(-1, E.Message, Headers);
     end;
   end;

@@ -34,6 +34,7 @@ uses
   Fido.Http.Request.Intf,
   Fido.Http.Response.Intf,
   Fido.JSON.Marshalling,
+  Fido.Web.Server.Intf,
   Fido.Api.Server.Exceptions;
 
 type
@@ -55,6 +56,7 @@ type
     function Port: Word;
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
+    procedure SetWebServer(const WebServer: IWebServer);
     procedure RegisterResource(const Resource: TObject);
     procedure RegisterRequestMiddleware(const Name: string; const Step: TApiRequestMiddlewareFunc);
     procedure RegisterResponseMiddleware(const Name: string; const Step: TApiResponseMiddlewareProc);

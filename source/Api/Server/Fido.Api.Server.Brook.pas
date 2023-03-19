@@ -67,8 +67,8 @@ type
     procedure OnHTTPCommandEvent(Sender: TObject; Request: TBrookHTTPRequest; Response: TBrookHTTPResponse);
     procedure OnCommandError(Sender: TObject; Request: TBrookHTTPRequest; Response: TBrookHTTPResponse; Exception: Exception);
   public
-    constructor Create(const Port: Word; const MaxConnections: Integer; const Threaded: Boolean; const ThreadPoolSize: Cardinal; const ResponseMimeType: TMimeType; const WebServer: IWebServer;
-      const SSLCertData: TSSLCertData; const ApiRequestFactory: TBrookApiServerRequestFactory = nil; const ApiResponseFactory: TBrookApiServerResponseFactory = nil);
+    constructor Create(const Port: Word; const MaxConnections: Integer; const Threaded: Boolean; const ThreadPoolSize: Cardinal; const ResponseMimeType: TMimeType; const SSLCertData: TSSLCertData;
+      const ApiRequestFactory: TBrookApiServerRequestFactory = nil; const ApiResponseFactory: TBrookApiServerResponseFactory = nil);
     destructor Destroy; override;
 
     function IsActive: Boolean; override;
@@ -85,7 +85,6 @@ constructor TBrookApiServer.Create(
   const Threaded: Boolean;
   const ThreadPoolSize: Cardinal;
   const ResponseMimeType: TMimeType;
-  const WebServer: IWebServer;
   const SSLCertData: TSSLCertData;
 
   const ApiRequestFactory: TBrookApiServerRequestFactory;
@@ -93,7 +92,7 @@ constructor TBrookApiServer.Create(
 var
   UseSSL: Boolean;
 begin
-  inherited Create(Port, WebServer, SSLCertData);
+  inherited Create(Port, SSLCertData);
 
   FApiServerRequestFactory := ApiRequestFactory;
   FApiServerResponseFactory := ApiResponseFactory;

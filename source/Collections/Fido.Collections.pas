@@ -35,7 +35,7 @@ uses
   Fido.Collections.DeepObservableList;
 
 type
-  TCollections = class
+  TCollections = class(Spring.Collections.TCollections)
   public
     class function GetListOfDeepObservable<T: IObservable>: IDeepObservableList<T>; overload; static;
     class function GetListOfDeepObservable<T: IObservable>(const Collection: IEnumerable<T>): IDeepObservableList<T>; overload; static;

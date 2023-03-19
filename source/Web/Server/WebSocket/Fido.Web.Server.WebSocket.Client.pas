@@ -30,14 +30,8 @@ uses
   System.Classes,
   System.Generics.Collections,
 
-  IdCustomTCPServer,
-  IdHashSHA,
-  IdSSLOpenSSL,
   IdContext,
-  IdSSL,
-  IdIOHandler,
   IdGlobal,
-  IdCoderMIME,
 
   Spring,
   Spring.Collections,

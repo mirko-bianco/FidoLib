@@ -42,11 +42,6 @@ type
   EAnonAction = class(EFidoException);
 
   AnonAction = class
-  private type
-    TExFmxObject = class(TFmxObject)
-    published
-      property Action;
-    end;
   public
     class procedure Setup(const Owner: TComponent; const Control: TFmxObject; const OnExecuteProc: TProc<TObject>; const OnExecuteProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore;
       const OnChangeProc: TProc<TObject> = nil; const OnChangeProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore; const OnStateChangeProc: TProc<TObject> = nil; const OnStateChangeProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore; const OnUpdateProc: TProc<TObject> = nil; const OnUpdateProcOriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore); overload; static;

@@ -31,10 +31,12 @@ uses
 
 type
   Curry = record
+    class function Cook<P1, R>(const SourceFunction: Func<P1, R>): Func<P1, Func<R>>; overload; static;
     class function Cook<P1, P2, R>(const SourceFunction: Func<P1, P2, R>): Func<P1, Func<P2, R>>; overload; static;
     class function Cook<P1, P2, P3, R>(const SourceFunction: Func<P1, P2, P3, R>): Func<P1, Func<P2, Func<P3, R>>>; overload; static;
     class function Cook<P1, P2, P3, P4, R>(const SourceFunction: Func<P1, P2, P3, P4, R>): Func<P1, Func<P2, Func<P3, Func<P4, R>>>>; overload; static;
 
+    class function Cook<P1>(const SourceProcedure: Action<P1>): Func<P1, Action>; overload; static;
     class function Cook<P1, P2>(const SourceProcedure: Action<P1, P2>): Func<P1, Action<P2>>; overload; static;
     class function Cook<P1, P2, P3>(const SourceProcedure: Action<P1, P2, P3>): Func<P1, Func<P2, Action<P3>>>; overload; static;
     class function Cook<P1, P2, P3, P4>(const SourceProcedure: Action<P1, P2, P3, P4>): Func<P1, Func<P2, Func<P3, Action<P4>>>>; overload; static;
@@ -62,6 +64,28 @@ begin
       result := procedure(const Parameter2: P2)
         begin
           SourceProcedure(Parameter1, Parameter2);
+        end;
+    end;
+end;
+
+class function Curry.Cook<P1, R>(const SourceFunction: Func<P1, R>): Func<P1, Func<R>>;
+begin
+  Result := function(const Parameter1: P1): Func<R>
+    begin
+      result := function: R
+        begin
+          Result := SourceFunction(Parameter1);
+        end;
+    end;
+end;
+
+class function Curry.Cook<P1>(const SourceProcedure: Action<P1>): Func<P1, Action>;
+begin
+  Result := function(const Parameter1: P1): Action
+    begin
+      result := procedure
+        begin
+          SourceProcedure(Parameter1);
         end;
     end;
 end;

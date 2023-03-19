@@ -51,11 +51,6 @@ type
     published
       procedure OnEvent(Sender: TObject);
     end;
-
-    TExFmxObject = class(TFmxObject)
-    public
-      property Action;
-    end;
   protected
     class function Generate(const Owner: TComponent; const Control: TFmxObject; const Proc: TProc<TObject>; const OriginalEvent: TNotifyEvent = nil;
       const OriginalEventExecutionType: TOriginalEventExecutionType = oeetBefore): TNotifyEvent; static;
@@ -101,10 +96,9 @@ begin
 
   Ctx := TRttiContext.Create;
   Prop := Ctx.GetType(Control.ClassType).GetProperty('Action');
-  if not Assigned(Prop) then
-    raise EDelegatedNotifyEvent.CreateFmt('Property "%s.Action" does not exist', [Control.Name]);
 
-  LocalAction := Prop.GetValue(Control).AsType<TBasicAction>;
+  if Assigned(Prop) then
+    LocalAction := Prop.GetValue(Control).AsType<TBasicAction>;
 
   CompositeProc := procedure(Sender: TObject)
     begin

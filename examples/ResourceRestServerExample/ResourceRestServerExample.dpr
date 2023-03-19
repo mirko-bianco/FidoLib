@@ -25,11 +25,11 @@ begin
   RestServer := TIndyApiServer.Create(
     8080,
     50,
-    TResourceWebServer.Create(TStreamResourceReader.Create),
     TSSLCertData.CreateEmpty);
   try
     try
       RestServer.RegisterResource(TTestResource.Create);
+      RestServer.SetWebServer(TResourceWebServer.Create(TStreamResourceReader.Create));
       RestServer.SetActive(True);
 
       Readln;

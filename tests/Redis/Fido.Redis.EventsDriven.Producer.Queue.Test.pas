@@ -49,7 +49,7 @@ begin
   Assert.WillNotRaiseAny(
     procedure
     begin
-      Producer.Push(Key, Payload);
+      Producer.Push(Key, Payload).Value;
     end);
 
   Client.Received(Times.Once).LPUSH(Key, EncodedPayload, INFINITE);

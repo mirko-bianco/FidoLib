@@ -114,13 +114,25 @@ end;
 
 {$REGION ' Context<T> '}
 function Context<T>.Map<TOut>(const Func: MonadFunc<TOut>): Context<TOut>;
+var
+  LSelf: Context<T>;
 begin
-  Result := Func(Self);
+  LSelf := Self;
+  Result := function: TOut
+    begin
+      Result := Func(LSelf);
+    end;
 end;
 
 function Context<T>.Map<TOut>(const Func: FunctorFunc<TOut>): Context<TOut>;
+var
+  LSelf: Context<T>;
 begin
-  Result := Context<TOut>.New(Func(Self));
+  LSelf := Self;
+  Result := Context<TOut>.New(function: TOut
+    begin
+      Result := Func(LSelf)
+    end);
 end;
 
 function Context<T>.MapAsync<TOut>(
@@ -131,8 +143,7 @@ var
   LSelf: Context<T>;
 begin
   LSelf := Self;
-  Result := Context<TOut>.New(
-    function: TOut
+  Result := Context<TOut>.New(function: TOut
     begin
       Result := Func(LSelf);
     end,
@@ -148,8 +159,7 @@ var
   LSelf: Context<T>;
 begin
   LSelf := Self;
-  Result := Context<TOut>.New(
-    function: TOut
+  Result := Context<TOut>.New(function: TOut
     begin
       Result := Func(LSelf);
     end,
@@ -339,3 +349,4 @@ end;
 {$ENDREGION}
 
 end.
+

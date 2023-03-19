@@ -91,10 +91,19 @@ type
     procedure MapAsyncFunctor;
 
     [Test]
+    procedure MapAsyncFunctorPaused;
+
+    [Test]
     procedure MapAsyncApplicative;
 
     [Test]
+    procedure MapAsyncApplicativePaused;
+
+    [Test]
     procedure MapAsyncMonad;
+
+    [Test]
+    procedure MapAsyncMonadPaused;
 
     [Test]
     procedure VoidMapProcFunctorFuncToFunctorProc;
@@ -178,16 +187,25 @@ type
     procedure RetryFunctorAsyncWorks;
 
     [Test]
+    procedure RetryFunctorAsyncPausedWorks;
+
+    [Test]
     procedure RetryOfFunctorWorks;
 
     [Test]
     procedure RetryOfFunctorAsyncWorks;
 
     [Test]
+    procedure RetryOfFunctorAsyncPausedWorks;
+
+    [Test]
     procedure RetryOfMonadWorks;
 
     [Test]
     procedure RetryOfMonadAsyncWorks;
+
+    [Test]
+    procedure RetryOfMonadAsyncPausedWorks;
 
     [Test]
     procedure TryFunctorDoesNotRaiseAnyExceptionWhenItWorks;
@@ -289,22 +307,26 @@ end;
 
 procedure TFunctionalTests.MapApplicative;
 var
-  Value: string;
+  Value: Context<string>;
   Appl: Context<Context<Integer>.FunctorFunc<string>>;
+  Called: Boolean;
 begin
+  Called := False;
   Appl := Context<Context<Integer>.FunctorFunc<string>>.New(function(const Input: Integer): string
     begin
+      Called := True;
       Result := IntToStr(Input);
     end);
 
   Value := Context<Integer>.New(100).Map<string>(Appl);
 
-  Assert.AreEqual('100', Value);
+  Assert.IsFalse(Called);
+  Assert.AreEqual('100', Value.Value);
 end;
 
 procedure TFunctionalTests.MapAsyncApplicative;
 var
-  Value: string;
+  Value: Context<string>;
   Appl: Context<Context<Integer>.FunctorFunc<string>>;
 begin
   Appl := Context<Context<Integer>.FunctorFunc<string>>.New(function(const Input: Integer): string
@@ -314,25 +336,65 @@ begin
 
   Value := Context<Integer>.New(100).MapAsync<string>(Appl, 100);
 
-  Assert.AreEqual('100', Value);
+  Assert.AreEqual('100', Value.Value);
+end;
+
+procedure TFunctionalTests.MapAsyncApplicativePaused;
+var
+  Value: Context<string>;
+  Appl: Context<Context<Integer>.FunctorFunc<string>>;
+  Executed: Boolean;
+begin
+  Executed := False;
+  Appl := Context<Context<Integer>.FunctorFunc<string>>.New(function(const Input: Integer): string
+    begin
+      Executed := True;
+      Result := IntToStr(Input);
+    end);
+
+  Value := Context<Integer>.New(100).MapAsync<string>(Appl, 100);
+
+  Assert.AreEqual('100', Value.Value);
 end;
 
 procedure TFunctionalTests.MapAsyncFunctor;
 var
-  Value: string;
+  Value: Context<string>;
+  Called: Boolean;
 begin
+  Called := False;
   Value := Context<Integer>.New(100).MapAsync<string>(function(const Input: Integer): string
     begin
+      Called := True;
       Result := IntToStr(Input);
     end,
     100);
 
-  Assert.AreEqual('100', Value);
+  Assert.IsFalse(Called);
+  Assert.AreEqual('100', Value.Value);
+end;
+
+procedure TFunctionalTests.MapAsyncFunctorPaused;
+var
+  Value: Context<string>;
+  Executed: Boolean;
+begin
+  Executed := False;
+  Value := Context<Integer>.New(100).MapAsync<string>(function(const Input: Integer): string
+    begin
+      Executed := True;
+      Result := IntToStr(Input);
+    end,
+    100,
+    True);
+
+  Assert.IsFalse(Executed);
+  Assert.AreEqual('100', Value.Value);
 end;
 
 procedure TFunctionalTests.MapAsyncMonad;
 var
-  Value: string;
+  Value: Context<string>;
 begin
   Value := Context<Integer>.New(100).MapAsync<string>(function(const Input: Integer): Context<string>
     begin
@@ -340,45 +402,71 @@ begin
     end,
     100);
 
-  Assert.AreEqual('100', Value);
+  Assert.AreEqual('100', Value.Value);
+end;
+
+procedure TFunctionalTests.MapAsyncMonadPaused;
+var
+  Value: Context<string>;
+  Executed: Boolean;
+begin
+  Executed := False;
+  Value := Context<Integer>.New(100).MapAsync<string>(function(const Input: Integer): Context<string>
+    begin
+      Executed := True;
+      Result := Context<string>.New(IntToStr(Input));
+    end,
+    100,
+    True);
+
+  Assert.IsFalse(Executed);
+  Assert.AreEqual('100', Value.Value);
 end;
 
 procedure TFunctionalTests.MapFunctor;
 var
-  Value: string;
+  Value: Context<string>;
+  Called: Boolean;
 begin
+  Called := False;
   Value := Context<Integer>.New(100).Map<string>(function(const Input: Integer): string
     begin
+      Called := True;
       Result := IntToStr(Input);
     end);
 
-  Assert.AreEqual('100', Value);
+  Assert.IsFalse(Called);
+  Assert.AreEqual('100', Value.Value);
 end;
 
 procedure TFunctionalTests.MapMonad;
 var
-  Value: string;
+  Value: Context<string>;
+  Called: Boolean;
 begin
+  Called := False;
   Value := Context<Integer>.New(100).Map<string>(function(const Input: Integer): Context<string>
     begin
+      Called := True;
       Result := Context<string>.New(IntToStr(Input));
     end);
 
-  Assert.AreEqual('100', Value);
+  Assert.IsFalse(Called);
+  Assert.AreEqual('100', Value.Value);
 end;
 
 procedure TFunctionalTests.TestSeveralClasses;
 var
   Gateway: IGateway;
   Repo: IRepo;
-  Result: Integer;
+  Result: Context<Integer>;
 begin
   Gateway := TGateway.Create;
   Repo := TRepo.Create(Gateway);
 
   Result := Repo.Run(2);
 
-  Assert.AreEqual(8, Result);
+  Assert.AreEqual(8, Result.Value);
 
   Repo := nil;
   Gateway := nil;
@@ -389,18 +477,26 @@ var
   Result: Context<Integer>;
   WhenTrue: Context<Integer>;
   WhenFalse: Context<Integer>;
+  CalledTrue: Boolean;
+  CalledFalse: Boolean;
 begin
+  CalledTrue := False;
+  CalledFalse := False;
   WhenTrue := function: Integer
     begin
+      CalledTrue := True;
       Result := 1;
     end;
   WhenFalse := function: Integer
     begin
+      CalledFalse := True;
       Result := 0;
     end;
 
   Result := ThenElse.New(False).&Then<Integer>(WhenTrue, WhenFalse);
 
+  Assert.IsFalse(CalledTrue);
+  Assert.IsFalse(CalledFalse);
   Assert.AreEqual(0, Result.Value);
 end;
 
@@ -408,14 +504,18 @@ procedure TFunctionalTests.ThenElseWhenFalse2;
 var
   Result: Context<Integer>;
   WhenTrue: Context<Integer>;
+  CalledTrue: Boolean;
 begin
+  CalledTrue := False;
   WhenTrue := function: Integer
     begin
+      CalledTrue := True;
       Result := 1;
     end;
 
   Result := ThenElse.New(False).&Then<Integer>(WhenTrue);
 
+  Assert.IsFalse(CalledTrue);
   Assert.AreEqual(0, Result.Value);
 end;
 
@@ -424,18 +524,26 @@ var
   Result: Context<Integer>;
   WhenTrue: Context<Integer>;
   WhenFalse: Context<Integer>;
+  CalledTrue: Boolean;
+  CalledFalse: Boolean;
 begin
+  CalledTrue := False;
+  CalledFalse := False;
   WhenTrue := function: Integer
     begin
+      CalledTrue := True;
       Result := 1;
     end;
   WhenFalse := function: Integer
     begin
+      CalledFalse := True;
       Result := 0;
     end;
 
   Result := ThenElse.New(True).&Then<Integer>(WhenTrue, WhenFalse);
 
+  Assert.IsFalse(CalledTrue);
+  Assert.IsFalse(CalledFalse);
   Assert.AreEqual(1, Result.Value);
 end;
 
@@ -443,14 +551,18 @@ procedure TFunctionalTests.ThenElseWhenTrue2;
 var
   Result: Context<Integer>;
   WhenTrue: Context<Integer>;
+  CalledTrue: Boolean;
 begin
+  CalledTrue := False;
   WhenTrue := function: Integer
     begin
+      CalledTrue := True;
       Result := 1;
     end;
 
   Result := ThenElse.New(True).&Then<Integer>(WhenTrue);
 
+  Assert.IsFalse(CalledTrue);
   Assert.AreEqual(1, Result.Value);
 end;
 
@@ -474,31 +586,31 @@ end;
 
 procedure TFunctionalTests.TryAsyncFunctorRaiseExceptionWhenItFails;
 var
-  Result: Integer;
+  ExceptionRaised: Boolean;
 begin
-  Assert.WillRaise(procedure
-    begin
-      Result := &Try<string>.New('100e').MapAsync<Integer>(StrToInt, 100).Match(function(const E: Exception): Nullable<Integer>
-        begin
-        end);
-    end,
-    EConvertError);
-
-  Assert.AreEqual(0, Result);
+  ExceptionRaised := False;
+  try
+    &Try<string>.New('100e').MapAsync<Integer>(StrToInt, 10000).Match(function(const E: Exception): Nullable<Integer>
+      begin
+      end).Value;
+  except
+    on E: EConvertError do
+      ExceptionRaised := True;
+  end;
+  Assert.IsTrue(ExceptionRaised);
 end;
 
 procedure TFunctionalTests.TryAsyncFunctorRaisesAnExceptionWhenItDoesNotWork;
 var
-  Result: Integer;
   Flag: Boolean;
 begin
   Flag := False;
   Assert.WillRaise(procedure
     begin
-      Result := &Try<string>.New('100sss').MapAsync<Integer>(StrToInt, 100).Match(EFunctionalTests, '', procedure
+      &Try<string>.New('100sss').MapAsync<Integer>(StrToInt, 1000).Match(EFunctionalTests, '', procedure
         begin
           Flag := True;
-        end);
+        end).Value;
     end,
     EFunctionalTests);
 
@@ -539,7 +651,7 @@ begin
         begin
           Result := StrToInt(Value);
         end,
-        100).Match(EFunctionalTests, '', procedure
+        1000).Match(EFunctionalTests, '', procedure
         begin
           Flag := True;
         end);
@@ -551,37 +663,49 @@ end;
 
 procedure TFunctionalTests.TryFunctorDoesNotRaiseAnyExceptionWhenItWorks;
 var
-  Result: Integer;
-  Flag: Boolean;
+  Result: Context<Integer>;
+  FinallyCalled: Boolean;
+  ExceptionRaised: Boolean;
+  Called: Boolean;
 begin
-  Flag := False;
-  Assert.WillNotRaiseAny(procedure
-    begin
-      Result := &Try<string>.New('100').Map<Integer>(StrToInt).Match(EFunctionalTests, '', procedure
-        begin
-          Flag := True;
-        end);
-    end);
-
-  Assert.AreEqual(100, Result);
-  Assert.AreEqual(True, Flag);
+  FinallyCalled := False;
+  ExceptionRaised := False;
+  Called := False;
+  try
+    Result := &Try<string>.New('100').Map<Integer>(function(const Value: string): Integer
+      begin
+        Result := StrToInt(Value);
+        Called := True;
+      end).Match(EFunctionalTests, '', procedure
+      begin
+        FinallyCalled := True;
+      end);
+  except
+    ExceptionRaised := True;
+  end;
+  Assert.IsFalse(Called);
+  Assert.AreEqual(100, Result.Value);
+  Assert.IsTrue(FinallyCalled);
+  Assert.IsFalse(ExceptionRaised);
 end;
 
 procedure TFunctionalTests.TryFunctorRaisesAnExceptionWhenItDoesNotWork;
 var
-  Result: Integer;
   Flag: Boolean;
+  ExceptionRaised: Boolean;
 begin
   Flag := False;
-  Assert.WillRaise(procedure
-    begin
-      Result := &Try<string>.New('100sss').Map<Integer>(StrToInt).Match(EFunctionalTests, '', procedure
-        begin
-          Flag := True;
-        end);
-    end,
-    EFunctionalTests);
-
+  ExceptionRaised := False;
+  try
+    &Try<string>.New('100sss').Map<Integer>(StrToInt).Match(EFunctionalTests, '', procedure
+      begin
+        Flag := True;
+      end).Value;
+  except
+    on E: EFunctionalTests do
+      ExceptionRaised := True;
+  end;
+  Assert.IsTrue(ExceptionRaised);
   Assert.AreEqual(True, Flag);
 end;
 
@@ -685,15 +809,38 @@ end;
 
 procedure TFunctionalTests.RetryOfFunctorWorks;
 var
-  Result: string;
+  Result: Context<string>;
+  Called: Boolean;
 begin
+  Called := False;
   Result := Retry<Integer>.New(100).Map<string>(function(const Value: Integer): string
     begin
+      Called := True;
       Result := IntToStr(Value)
     end,
     Retries.GetRetriesOnExceptionFunc());
 
-  Assert.AreEqual('100', Result);
+  Assert.IsFalse(Called);
+  Assert.AreEqual('100', Result.Value);
+end;
+
+procedure TFunctionalTests.RetryOfMonadAsyncPausedWorks;
+var
+  Result: Context<string>;
+  Executed: Boolean;
+begin
+  Executed := False;
+  Result := Retry<Integer>.New(100).MapAsync<string>(function(const Value: Integer): Context<string>
+    begin
+      Executed := True;
+      Result := IntToStr(Value)
+    end,
+    100,
+    False,
+    Retries.GetRetriesOnExceptionFunc());
+
+  Assert.IsFalse(Executed);
+  Assert.AreEqual('100', Result.Value);
 end;
 
 procedure TFunctionalTests.RetryOfMonadAsyncWorks;
@@ -713,15 +860,38 @@ end;
 
 procedure TFunctionalTests.RetryOfMonadWorks;
 var
-  Result: string;
+  Result: Context<string>;
+  Called: Boolean;
 begin
+  Called := False;
   Result := Retry<Integer>.New(100).Map<string>(function(const Value: Integer): Context<string>
     begin
+      Called := True;
       Result := IntToStr(Value)
     end,
     Retries.GetRetriesOnExceptionFunc());
 
-  Assert.AreEqual('100', Result);
+  Assert.IsFalse(Called);
+  Assert.AreEqual('100', Result.Value);
+end;
+
+procedure TFunctionalTests.RetryOfFunctorAsyncPausedWorks;
+var
+  Result: Context<string>;
+  Executed: Boolean;
+begin
+  Executed := False;
+  Result := Retry<Integer>.New(100).MapAsync<string>(function(const Value: Integer): string
+    begin
+      Executed := True;
+      Result := IntToStr(Value)
+    end,
+    100,
+    False,
+    Retries.GetRetriesOnExceptionFunc());
+
+  Assert.IsFalse(Executed);
+  Assert.AreEqual('100', Result.Value);
 end;
 
 procedure TFunctionalTests.RetryOfFunctorAsyncWorks;
@@ -737,6 +907,26 @@ begin
     Retries.GetRetriesOnExceptionFunc());
 
   Assert.AreEqual('100', Result);
+end;
+
+procedure TFunctionalTests.RetryFunctorAsyncPausedWorks;
+var
+  Result: Context<Boolean>;
+  Executed: Boolean;
+begin
+  Executed := False;
+  Result := Retry.MapAsync<Boolean>(Context<Boolean>.New(function: Boolean
+    begin
+      Executed := True;
+      Result := True;
+      Sleep(10);
+    end),
+    100,
+    True,
+    Retries.GetRetriesOnExceptionFunc());
+
+  Assert.IsFalse(Executed);
+  Assert.AreEqual(True, Result.Value);
 end;
 
 procedure TFunctionalTests.RetryFunctorAsyncWorks;
@@ -757,28 +947,32 @@ end;
 
 procedure TFunctionalTests.RetryFunctorWorks;
 var
-  Result: Boolean;
+  Result: Context<Boolean>;
+  Called: Boolean;
 begin
-  Result := Retry.Map<Boolean>(function: Boolean
+  Called := False;
+  Result := Retry.Map<Boolean>(Context<Boolean>.New(function: Boolean
     begin
+      Called := True;
       Result := True;
-    end,
+    end),
     Retries.GetRetriesOnExceptionFunc());
 
-  Assert.AreEqual(True, Result);
+  Assert.IsFalse(Called);
+  Assert.AreEqual(True, Result.Value);
 end;
 
 procedure TFunctionalTests.IfThenFunctorWhenFalse;
 var
   WhenTrue: Context<Integer>.FunctorFunc<Integer>;
-  Result: Integer;
-  Called: Boolean;
+  Result: Context<Integer>;
+  CalledTrue: Boolean;
 begin
-  Called := False;
+  CalledTrue := False;
   WhenTrue := function(const Value: Integer): Integer
     begin
       Result := 1;
-      Called := True;
+      CalledTrue := True;
     end;
 
   Result := &If<Integer>.New(1).Map(function(const Value: Integer): Boolean
@@ -786,8 +980,8 @@ begin
       Result := Value > 5;
     end).&Then<Integer>(WhenTrue, 0);
 
-  Assert.AreEqual(0, Result);
-  Assert.AreEqual(False, Called);
+  Assert.AreEqual(0, Result.Value);
+  Assert.AreEqual(False, CalledTrue);
 end;
 
 procedure TFunctionalTests.IfThenFunctorWhenFalse2;
@@ -809,7 +1003,7 @@ begin
     end).&Then<Integer>(WhenTrue);
 
   Assert.AreEqual(0, Result);
-  Assert.AreEqual(False, Called);
+  Assert.IsFalse(Called);
 end;
 
 procedure TFunctionalTests.IfThenFunctorWhenFalse3;
@@ -837,7 +1031,7 @@ end;
 procedure TFunctionalTests.IfThenFunctorWhenFalse4;
 var
   WhenTrue: Context<Integer>;
-  Result: Integer;
+  Result: Context<Integer>;
   Called: Boolean;
 begin
   Called := False;
@@ -852,18 +1046,21 @@ begin
       Result := Value > 5;
     end).&Then<Integer>(WhenTrue);
 
-  Assert.AreEqual(0, Result);
+  Assert.AreEqual(0, Result.Value);
   Assert.AreEqual(False, Called);
 end;
 
 procedure TFunctionalTests.IfThenFunctorWhenTrue;
 var
   WhenTrue: Context<Integer>.FunctorFunc<Integer>;
-  Result: Integer;
+  Result: Context<Integer>;
+  Called: Boolean;
 begin
+  Called := False;
   WhenTrue := function(const Value: Integer): Integer
     begin
       Result := 1;
+      Called := True;
     end;
 
   Result := &If<Integer>.New(100).Map(function(const Value: Integer): Boolean
@@ -871,17 +1068,22 @@ begin
       Result := Value > 5;
     end).&Then<Integer>(WhenTrue, 0);
 
-  Assert.AreEqual(1, Result);
+  Assert.IsFalse(Called);
+  Assert.AreEqual(1, Result.Value);
+  Assert.IsTrue(Called);
 end;
 
 procedure TFunctionalTests.IfThenFunctorWhenTrue2;
 var
   WhenTrue: Context<Integer>.FunctorFunc<Integer>;
-  Result: Integer;
+  Result: Context<Integer>;
+  Called: Boolean;
 begin
+  Called := False;
   WhenTrue := function(const Value: Integer): Integer
     begin
       Result := 1;
+      Called := True;
     end;
 
   Result := &If<Integer>.New(100).Map(function(const Value: Integer): Boolean
@@ -889,17 +1091,22 @@ begin
       Result := Value > 5;
     end).&Then<Integer>(WhenTrue);
 
-  Assert.AreEqual(1, Result);
+  Assert.IsFalse(Called);
+  Assert.AreEqual(1, Result.Value);
+  Assert.IsTrue(Called);
 end;
 
 procedure TFunctionalTests.IfThenFunctorWhenTrue3;
 var
   WhenTrue: Context<Integer>;
-  Result: Integer;
+  Result: Context<Integer>;
+  Called: Boolean;
 begin
+  Called := False;
   WhenTrue := function: Integer
     begin
       Result := 1;
+      Called := True;
     end;
 
   Result := &If<Integer>.New(100).Map(function(const Value: Integer): Boolean
@@ -907,17 +1114,22 @@ begin
       Result := Value > 5;
     end).&Then<Integer>(WhenTrue, 0);
 
-  Assert.AreEqual(1, Result);
+  Assert.IsFalse(Called);
+  Assert.AreEqual(1, Result.Value);
+  Assert.IsTrue(Called);
 end;
 
 procedure TFunctionalTests.IfThenFunctorWhenTrue4;
 var
   WhenTrue: Context<Integer>;
-  Result: Integer;
+  Result: Context<Integer>;
+  Called: Boolean;
 begin
+  Called := False;
   WhenTrue := function: Integer
     begin
       Result := 1;
+      Called := True;
     end;
 
   Result := &If<Integer>.New(100).Map(function(const Value: Integer): Boolean
@@ -925,7 +1137,9 @@ begin
       Result := Value > 5;
     end).&Then<Integer>(WhenTrue);
 
-  Assert.AreEqual(1, Result);
+  Assert.IsFalse(Called);
+  Assert.AreEqual(1, Result.Value);
+  Assert.IsTrue(Called);
 end;
 
 procedure TFunctionalTests.IfThenMonadWhenFalse;
@@ -1019,11 +1233,14 @@ end;
 procedure TFunctionalTests.IfThenMonadWhenTrue;
 var
   WhenTrue: Context<Integer>.FunctorFunc<Integer>;
-  Result: Integer;
+  Result: Context<Integer>;
+  Called: Boolean;
 begin
+  Called := False;
   WhenTrue := function(const Value: Integer): Integer
     begin
       Result := 1;
+      Called := True;
     end;
 
   Result := &If<Integer>.New(100).Map(function(const Value: Integer): Context<Boolean>
@@ -1031,17 +1248,22 @@ begin
       Result := Value > 5;
     end).&Then<Integer>(WhenTrue, 0);
 
-  Assert.AreEqual(1, Result);
+  Assert.IsFalse(Called);
+  Assert.AreEqual(1, Result.Value);
+  Assert.IsTrue(Called);
 end;
 
 procedure TFunctionalTests.IfThenMonadWhenTrue2;
 var
   WhenTrue: Context<Integer>.FunctorFunc<Integer>;
   Result: Integer;
+  Called: Boolean;
 begin
+  Called := False;
   WhenTrue := function(const Value: Integer): Integer
     begin
       Result := 1;
+      Called := True;
     end;
 
   Result := &If<Integer>.New(100).Map(function(const Value: Integer): Context<Boolean>
@@ -1050,16 +1272,20 @@ begin
     end).&Then<Integer>(WhenTrue);
 
   Assert.AreEqual(1, Result);
+  Assert.AreEqual(True, Called);
 end;
 
 procedure TFunctionalTests.IfThenMonadWhenTrue3;
 var
   WhenTrue: Context<Integer>;
   Result: Integer;
+  Called: Boolean;
 begin
+  Called := False;
   WhenTrue := function: Integer
     begin
       Result := 1;
+      Called := True;
     end;
 
   Result := &If<Integer>.New(100).Map(function(const Value: Integer): Context<Boolean>
@@ -1068,16 +1294,20 @@ begin
     end).&Then<Integer>(WhenTrue, 0);
 
   Assert.AreEqual(1, Result);
+  Assert.AreEqual(True, Called);
 end;
 
 procedure TFunctionalTests.IfThenMonadWhenTrue4;
 var
   WhenTrue: Context<Integer>;
   Result: Integer;
+  Called: Boolean;
 begin
+  Called := False;
   WhenTrue := function: Integer
     begin
       Result := 1;
+      Called := True;
     end;
 
   Result := &If<Integer>.New(100).Map(function(const Value: Integer): Context<Boolean>
@@ -1086,6 +1316,7 @@ begin
     end).&Then<Integer>(WhenTrue);
 
   Assert.AreEqual(1, Result);
+  Assert.AreEqual(True, Called);
 end;
 
 procedure TFunctionalTests.VoidMapFuncFuncToFunctorFunc;

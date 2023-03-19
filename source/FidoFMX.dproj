@@ -120,6 +120,8 @@
         <DCCReference Include="DesignPatterns\Fido.Gui.Fmx.DesignPatterns.Observer.Anon.pas"/>
         <DCCReference Include="Events\Fido.Gui.Fmx.NotifyEvent.Delegated.pas"/>
         <DCCReference Include="Binding\Fido.Gui.Fmx.Binding.pas"/>
+        <DCCReference Include="Gui\Fmx\Fido.Gui.Fmx.Grid.ViewModel.Intf.pas"/>
+        <DCCReference Include="Gui\Fmx\Fido.Gui.Fmx.Grid.ViewModel.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

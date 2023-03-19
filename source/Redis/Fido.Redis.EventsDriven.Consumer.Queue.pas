@@ -75,11 +75,7 @@ begin
 end;
 
 function TRedisQueueEventsDrivenConsumer.DoRPop(const Timeout: Cardinal): Context<string>.MonadFunc<Nullable<string>>;
-var
-  Client: IFidoRedisClient;
 begin
-  Client := FRedisClient;
-
   Result := function(const Key: string): Context<Nullable<string>>
     begin
       Result := FRedisClient.RPOP(Key, Timeout);
@@ -103,18 +99,14 @@ function TRedisQueueEventsDrivenConsumer.Pop(
 var
   NullValue: Nullable<string>;
 begin
-  Result := &If<Nullable<string>>.New(Retry<string>.New(Key).Map<Nullable<string>>(DoRPop(Timeout), Retries.GetRetriesOnExceptionFunc())).Map(HasValue).&Then<Nullable<string>>(DecodeValue, NullValue);
+  Result := &If<Nullable<string>>.New(Retry<string>.New(Key).Map<Nullable<string>>(DoRPop(Timeout), Retries.GetRetriesOnExceptionFunc()).Value).Map(HasValue).&Then<Nullable<string>>(DecodeValue, NullValue);
 end;
 
 function TRedisQueueEventsDrivenConsumer.DoLPush(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Integer>;
-var
-  Client: IFidoRedisClient;
 begin
-  Client := FRedisClient;
-
   Result := function(const Params: TArray<string>): Context<Integer>
     begin
-      Result := Client.LPUSH(Params[0], Params[1], Timeout);
+      Result := FRedisClient.LPUSH(Params[0], Params[1], Timeout);
     end
 end;
 

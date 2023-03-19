@@ -868,14 +868,16 @@ A server is the engine that will respond to incoming requests. Fido library prov
   IApiServer = interface(IInvokable)
     ['{AA282BB3-418E-4835-8752-73D8DCCD326A}']
 
+    function Port: Word;
     function IsActive: Boolean;
     procedure SetActive(const Value: Boolean);
-
+    procedure SetWebServer(const WebServer: IWebServer);
     procedure RegisterResource(const Resource: TObject);
-    procedure RegisterWebSocket(const WebSocketClass: TClass);
-    procedure RegisterRequestMiddleware(const Name: string; const Step: TRequestMiddlewareFunc);
-    procedure RegisterResponseMiddleware(const Name: string; const Step: TResponseMiddlewareProc);
-    procedure RegisterExceptionMiddleware(const Middleware: TExceptionMiddlewareProc);
+    procedure RegisterRequestMiddleware(const Name: string; const Step: TApiRequestMiddlewareFunc);
+    procedure RegisterResponseMiddleware(const Name: string; const Step: TApiResponseMiddlewareProc);
+    procedure RegisterExceptionMiddleware(const MiddlewareProc: TApiExceptionMiddlewareProc);
+    procedure RegisterGlobalMiddleware(const MiddlewareProc: TApiGlobalMiddlewareProc);
+    procedure RegisterFormatExceptionToResponse(const FormatExceptionToResponseProc: TApiFormatExceptionToResponseProc);
   end;
 ```
 
@@ -906,13 +908,13 @@ begin
   RestServer := TIndyApiServer.Create(
     8080,
     50,
-    TFileWebServer.Create(
-      'public',
-      'index.html'),
     TSSLCertData.CreateEmpty);
   try
     try
       RestServer.RegisterResource(TTestResource.Create);
+      RestServer.SetWeBserver(TFileWebServer.Create(
+        'public',
+        'index.html'));
       RestServer.SetActive(True);
 
       Readln;
@@ -1311,7 +1313,6 @@ After that the `TConsulAwareApiServer` will simply decorate the `IApiServer` and
         TIndyApiServer.Create(
           IniFile.ReadInteger('Server', 'Port', 8080),
           IniFile.ReadInteger('Server', 'MaxConnections', 50),
-          TNullWebServer.Create,
           TSSLCertData.CreateEmpty),
         Container.Resolve<IConsulService>,
         IniFile.ReadString('Server', 'ServiceName', 'Authentication'));

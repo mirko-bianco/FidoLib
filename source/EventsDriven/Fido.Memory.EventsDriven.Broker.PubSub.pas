@@ -87,11 +87,21 @@ var
   EventsArray: TArray<TProc<string, PayloadType>>;
   SuccessFlag: Boolean;
 
-  ThenFunc: TFunc<Boolean>;
 begin
   Result := False;
 
-  ThenFunc := function: Boolean
+  Result := ThenElse.New(TryOut<Boolean>.New(function: Boolean
+    begin
+      FLock.BeginRead;
+      if not FNotifications.TryGetValue(Key, Events) then
+        Exit(False);
+
+      EventsArray := Events.Values.ToArray;
+      Result := True;
+    end).Match(procedure
+    begin
+      FLock.EndRead;
+    end)).&Then<Boolean>(Context<Boolean>.New(function: Boolean
     begin
       TCollections.CreateList<TProc<string, PayloadType>>(EventsArray).ForEach(
         procedure(const Event: TProc<string, PayloadType>)
@@ -102,27 +112,14 @@ begin
             end);
         end);
       Result := True;
-    end;
-
-  FLock.BeginRead;
-  Result := ThenElse.New(TryOut<Boolean>.New(function: Boolean
-    begin
-      if not FNotifications.TryGetValue(Key, Events) then
-        Exit(False);
-
-      EventsArray := Events.Values.ToArray;
-      Result := True;
-    end).Match(procedure
-    begin
-      FLock.EndRead;
-    end)).&Then<Boolean>(ThenFunc());
+    end));
 end;
 
 procedure TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Stop(const Consumer: IPubSubEventsDrivenConsumer<PayloadType>);
 begin
-  FLock.BeginWrite;
   TryOut<Void>.New(function: Void
     begin
+      FLock.BeginWrite;
       FNotifications.Keys.ForEach(
         procedure(const Key: string)
         begin
@@ -131,7 +128,7 @@ begin
     end).Match(procedure
     begin
       FLock.EndWrite;
-    end);
+    end).Value;
 end;
 
 procedure TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Subscribe(
@@ -141,9 +138,9 @@ procedure TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Subscribe(
 var
   Events: IDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>;
 begin
-  FLock.BeginWrite;
   TryOut<Void>.New(function: Void
     begin
+      FLock.BeginWrite;
       if not FNotifications.TryGetValue(Key, Events) then
       begin
         Events := TCollections.CreateDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>;
@@ -154,7 +151,7 @@ begin
     end).Match(procedure
     begin
       FLock.EndWrite;
-    end);
+    end).Value;
 end;
 
 procedure TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Unsubscribe(
@@ -163,9 +160,9 @@ procedure TAbstractMemoryPubSubEventsDrivenBroker<PayloadType>.Unsubscribe(
 var
   Events: IDictionary<IPubSubEventsDrivenConsumer<PayloadType>, TProc<string, PayloadType>>;
 begin
-  FLock.BeginWrite;
   TryOut<Void>.New(function: Void
     begin
+      FLock.BeginWrite;
       if not FNotifications.TryGetValue(Key, Events) then
         Exit;
 
@@ -173,7 +170,7 @@ begin
     end).Match(procedure
     begin
       FLock.EndWrite;
-    end);
+    end).Value;
 end;
 
 { TMemoryPubSubEventsDrivenBroker<PayloadType> }

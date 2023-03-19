@@ -31,10 +31,7 @@ uses
   System.Math,
   System.JSON,
   System.Generics.Collections,
-
-  IdURI,
-  IdHTTP,
-  IdSSLOpenSSL,
+  System.NetEncoding,
 
   Spring,
   Spring.Collections,
@@ -256,7 +253,7 @@ var
   Response: string;
   Url: string;
 begin
-  Url := TIdURI.URLEncode(
+  Url := TNetEncoding.URL.Encode(
     Utilities.IfThen<string>(Secured, 'https://', 'http://') + Host + '/SignalR/negotiate');
 
   Response := FWebSocketClient.Get(Url, CustomHeaders);
@@ -275,7 +272,7 @@ var
   Url: string;
   CustomHeaders: IShared<TStringList>;
 begin
-  Url := TIdURI.URLEncode(Utilities.IfThen(Secured, 'https://', 'http://') + Host + '/SignalR/connect' +
+  Url := TNetEncoding.URL.Encode(Utilities.IfThen(Secured, 'https://', 'http://') + Host + '/SignalR/connect' +
     '?transport=webSockets' +
     '&clientProtocol=' + NegotiationResponse.ProtocolVersion +
     '&connectionToken=' + NegotiationResponse.ConnectionToken +

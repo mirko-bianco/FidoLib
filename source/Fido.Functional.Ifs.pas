@@ -236,9 +236,12 @@ var
 begin
   LSelf := Self;
   Result := function: TOut
+  var
+    Value: T;
   begin
-    if LSelf.FFlagFunc(LSelf.FValue) then
-      Result := WhenTrue(LSelf.FValue)
+    Value := LSelf.FValue;
+    if LSelf.FFlagFunc(Value) then
+      Result := WhenTrue(Value)
     else
       Result := WhenFalse;
   end;
@@ -250,11 +253,14 @@ var
 begin
   LSelf := Self;
   Result := function: TOut
+  var
+    Value: T;
   begin
-    if LSelf.FFlagFunc(LSelf.FValue) then
-      Result := WhenTrue(LSelf.FValue)
+    Value := LSelf.FValue;
+    if LSelf.FFlagFunc(Value) then
+      Result := WhenTrue(Value)
     else
-      Result := WhenFalse(LSelf.FValue);
+      Result := WhenFalse(Value);
   end;
 end;
 {$ENDREGION}

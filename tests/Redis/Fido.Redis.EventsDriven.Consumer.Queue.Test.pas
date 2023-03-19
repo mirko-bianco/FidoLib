@@ -115,7 +115,7 @@ begin
   Assert.WillNotRaiseAny(
     procedure
     begin
-      Consumer.PushBack(Key, Payload);
+      Consumer.PushBack(Key, Payload).Value;
     end);
 
   Client.Received(Times.Once).LPUSH(Key, EncodedPayload, INFINITE);

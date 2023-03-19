@@ -39,6 +39,8 @@ contains
   Fido.Gui.Fmx.Action.Anon in 'Actions\Fido.Gui.Fmx.Action.Anon.pas',
   Fido.Gui.Fmx.DesignPatterns.Observer.Anon in 'DesignPatterns\Fido.Gui.Fmx.DesignPatterns.Observer.Anon.pas',
   Fido.Gui.Fmx.NotifyEvent.Delegated in 'Events\Fido.Gui.Fmx.NotifyEvent.Delegated.pas',
-  Fido.Gui.Fmx.Binding in 'Binding\Fido.Gui.Fmx.Binding.pas';
+  Fido.Gui.Fmx.Binding in 'Binding\Fido.Gui.Fmx.Binding.pas',
+  Fido.Gui.Fmx.Grid.ViewModel.Intf in 'Gui\Fmx\Fido.Gui.Fmx.Grid.ViewModel.Intf.pas',
+  Fido.Gui.Fmx.Grid.ViewModel in 'Gui\Fmx\Fido.Gui.Fmx.Grid.ViewModel.pas';
 
 end.
