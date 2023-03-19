@@ -28,6 +28,7 @@ uses
   System.SysUtils,
   System.Generics.Defaults,
   System.Rtti,
+  System.Math,
   FMX.Grid,
 
   Spring,
@@ -156,9 +157,7 @@ begin
 
   FGetSelectedRow := function: Integer
     begin
-      Result := Grid.Row;
-      if Result > Grid.RowCount then
-        Result := Grid.RowCount - 1;
+      Result := Min(Grid.Row, Grid.RowCount - 1);
     end;
 
   FGetSelectedColumn := function: Integer

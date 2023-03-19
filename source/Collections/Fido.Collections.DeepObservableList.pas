@@ -56,6 +56,18 @@ type
     function IsPaused: boolean;
     procedure Pause;
     procedure Resume(const AndBroadcast: string = '');
+  public const
+    ITEM_ADDED = 'Item added';
+    ITEMS_ADDED = 'Items added';
+    ITEMS_CLEARED = 'Items cleared';
+    ITEM_DELETED = 'Item deleted';
+    ITEMS_DELETED = 'Items deleted';
+    ITEM_EXTRACTED = 'Item extracted';
+    ITEMS_EXTRACTED = 'Items extracted';
+    ITEM_INSERTED = 'Item inserted';
+    ITEM_REMOVED = 'Item removed';
+    ITEMS_INSERTED = 'Items inserted';
+    ITEMS_REMOVED = 'Items removed';
   public
     constructor Create; overload;
 
@@ -114,7 +126,7 @@ begin
   if Supports(Item, IObservable, Observable) then
     Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Item added');
+  FDelegatedObservable.Broadcast(ITEM_ADDED);
 end;
 
 procedure TDeepObservableList<T>.AddRange(const values: IEnumerable<T>);
@@ -128,7 +140,7 @@ begin
       if Supports(GetCurrent, IObservable, Observable) then
         Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items added');
+  FDelegatedObservable.Broadcast(ITEMS_ADDED);
 end;
 
 procedure TDeepObservableList<T>.AddRange(const values: array of T);
@@ -141,7 +153,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items added');
+  FDelegatedObservable.Broadcast(ITEMS_ADDED);
 end;
 
 procedure TDeepObservableList<T>.Broadcast(
@@ -161,7 +173,7 @@ begin
 
   inherited;
 
-  FDelegatedObservable.Broadcast('Items cleared');
+  FDelegatedObservable.Broadcast(ITEMS_CLEARED);
 end;
 
 constructor TDeepObservableList<T>.Create;
@@ -178,7 +190,7 @@ begin
     Observable.UnregisterObserver(Self);
   inherited;
 
-  FDelegatedObservable.Broadcast('Item deleted');
+  FDelegatedObservable.Broadcast(ITEM_DELETED);
 end;
 
 procedure TDeepObservableList<T>.DeleteRange(index, count: Integer);
@@ -195,7 +207,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items deleted');
+  FDelegatedObservable.Broadcast(ITEMS_DELETED);
 end;
 
 function TDeepObservableList<T>.Extract(const Item: T): T;
@@ -206,7 +218,7 @@ begin
   if Supports(Result, IObservable, Observable) then
     Observable.UnregisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Item extracted');
+  FDelegatedObservable.Broadcast(ITEM_EXTRACTED);
 end;
 
 function TDeepObservableList<T>.ExtractAll(const predicate: Predicate<T>): TArray<T>;
@@ -219,7 +231,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.UnregisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items extracted');
+  FDelegatedObservable.Broadcast(ITEMS_EXTRACTED);
 end;
 
 function TDeepObservableList<T>.ExtractAt(index: Integer): T;
@@ -231,7 +243,7 @@ begin
   if Supports(Result, IObservable, Observable) then
     Observable.UnregisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Item extracted');
+  FDelegatedObservable.Broadcast(ITEM_EXTRACTED);
 end;
 
 procedure TDeepObservableList<T>.ExtractRange(const values: array of T);
@@ -244,7 +256,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.UnregisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items extracted');
+  FDelegatedObservable.Broadcast(ITEMS_EXTRACTED);
 end;
 
 procedure TDeepObservableList<T>.ExtractRange(const values: IEnumerable<T>);
@@ -257,7 +269,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.UnregisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items extracted');
+  FDelegatedObservable.Broadcast(ITEMS_EXTRACTED);
 end;
 
 function TDeepObservableList<T>.GetIdentity: string;
@@ -276,7 +288,7 @@ begin
   if Supports(Item, IObservable, Observable) then
     Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Item inserted');
+  FDelegatedObservable.Broadcast(ITEM_INSERTED);
 end;
 
 procedure TDeepObservableList<T>.InsertRange(index: Integer; const values: IEnumerable<T>);
@@ -289,7 +301,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items inserted');
+  FDelegatedObservable.Broadcast(ITEMS_INSERTED);
 end;
 
 procedure TDeepObservableList<T>.InsertRange(index: Integer; const values: array of T);
@@ -302,7 +314,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items removed');
+  FDelegatedObservable.Broadcast(ITEMS_REMOVED);
 end;
 
 function TDeepObservableList<T>.IsPaused: boolean;
@@ -339,7 +351,7 @@ begin
   if Supports(Item, IObservable, Observable) then
     Observable.UnregisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Item removed');
+  FDelegatedObservable.Broadcast(ITEM_REMOVED);
 end;
 
 function TDeepObservableList<T>.RemoveAll(const predicate: Predicate<T>): Integer;
@@ -356,7 +368,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items removed');
+  FDelegatedObservable.Broadcast(ITEMS_REMOVED);
 end;
 
 function TDeepObservableList<T>.RemoveRange(const values: array of T): Integer;
@@ -373,7 +385,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items removed');
+  FDelegatedObservable.Broadcast(ITEMS_REMOVED);
 end;
 
 function TDeepObservableList<T>.RemoveRange(const values: IEnumerable<T>): Integer;
@@ -386,7 +398,7 @@ begin
 
   Result := inherited;
 
-  FDelegatedObservable.Broadcast('Items removed');
+  FDelegatedObservable.Broadcast(ITEMS_REMOVED);
 end;
 
 procedure TDeepObservableList<T>.Resume(const AndBroadcast: string);
@@ -409,7 +421,7 @@ begin
     if Supports(Item, IObservable, Observable) then
        Observable.RegisterObserver(Self);
 
-  FDelegatedObservable.Broadcast('Items extracted');
+  FDelegatedObservable.Broadcast(ITEMS_EXTRACTED);
 end;
 
 end.
