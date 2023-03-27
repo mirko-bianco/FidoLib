@@ -156,7 +156,6 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="rtl.dcp"/>
-        <DCCReference Include="dbrtl.dcp"/>
         <DCCReference Include="CustomIPTransport.dcp"/>
         <DCCReference Include="IndySystem.dcp"/>
         <DCCReference Include="IndyProtocols.dcp"/>
@@ -168,10 +167,6 @@
         <DCCReference Include="Spring.Core.dcp"/>
         <DCCReference Include="Spring.Data.dcp"/>
         <DCCReference Include="JOSE.dcp"/>
-        <DCCReference Include="DbxCommonDriver.dcp"/>
-        <DCCReference Include="FireDAC.dcp"/>
-        <DCCReference Include="FireDACCommonDriver.dcp"/>
-        <DCCReference Include="FireDACCommon.dcp"/>
         <DCCReference Include="soaprtl.dcp"/>
         <DCCReference Include="Collections\Fido.Collections.DeepObservableList.pas"/>
         <DCCReference Include="Collections\Fido.Collections.pas"/>
@@ -262,14 +257,11 @@
         <DCCReference Include="Api\Server\Fido.Api.Server.Indy.pas"/>
         <DCCReference Include="Api\Server\Fido.Api.Server.Intf.pas"/>
         <DCCReference Include="Api\Server\Resources\Fido.Api.Server.Resource.Attributes.pas"/>
-        <DCCReference Include="Db\Fido.Db.Connections.FireDac.pas"/>
         <DCCReference Include="Db\Fido.Db.ListDataset.pas"/>
         <DCCReference Include="Db\Fido.Db.Migrations.Model.Intf.pas"/>
         <DCCReference Include="Db\Fido.Db.Migrations.Model.pas"/>
         <DCCReference Include="Db\Fido.Db.Migrations.Repository.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.ScriptRunner.FireDac.pas"/>
         <DCCReference Include="Db\Fido.Db.ScriptRunner.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.StatementExecutor.FireDac.pas"/>
         <DCCReference Include="Db\Fido.Db.Transaction.Handler.Base.pas"/>
         <DCCReference Include="Db\Fido.Db.Transaction.Handler.Intf.pas"/>
         <DCCReference Include="Db\Fido.Db.Transaction.Intf.pas"/>
@@ -288,7 +280,6 @@
         <DCCReference Include="Api\Server\Fido.Api.Server.Abstract.pas"/>
         <DCCReference Include="Logging\Fido.Logging.Appenders.PermanentFile.pas"/>
         <DCCReference Include="Collections\Fido.Collections.PerXDictionary.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.Connections.FireDac.PerThread.pas"/>
         <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.AgentService.V1.Intf.pas"/>
         <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.Configuration.pas"/>
         <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.Constants.pas"/>
@@ -358,7 +349,6 @@
         <DCCReference Include="Caching\Fido.Caching.TwoParams.pas"/>
         <DCCReference Include="Caching\Fido.Caching.pas"/>
         <DCCReference Include="Fido.Exceptions.Marshalling.pas"/>
-        <DCCReference Include="Db\Fido.Db.Transaction.Handler.FireDac.pas"/>
         <DCCReference Include="Fido.Channels.Impl.pas"/>
         <DCCReference Include="Fido.Channels.Intf.pas"/>
         <DCCReference Include="Fido.Channels.pas"/>
