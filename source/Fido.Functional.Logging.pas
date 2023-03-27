@@ -43,9 +43,6 @@ type
 
 implementation
 
-{$REGION ' Logging '}
-{$ENDREGION}
-
 { Logging }
 
 class function Logging.LogDuration<T>(

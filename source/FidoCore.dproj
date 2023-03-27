@@ -353,6 +353,7 @@
         <DCCReference Include="Fido.Channels.Intf.pas"/>
         <DCCReference Include="Fido.Channels.pas"/>
         <DCCReference Include="EventsDriven\Fido.EventsDriven.pas"/>
+        <DCCReference Include="Fido.Functional.Logging.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

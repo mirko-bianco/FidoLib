@@ -82,14 +82,12 @@ begin
   FoundMigrations := TCollections.CreateList<string>(TStringComparer.OrdinalIgnoreCase);
   FoundMigrations.InsertRange(0, TDirectory.GetFiles(FScriptsFolder, '*.sql', TSearchOption.soTopDirectoryOnly));
   ToRunMigrations := TCollections.CreateList<string>(TStringComparer.OrdinalIgnoreCase);
-
   FoundMigrations.ForEach(procedure(const Migration: string)
     begin
       FileName := ExtractFileName(Migration);
-      if not AlreadyRunMigrations.Contains(FileName) then
+      if not FileName.IsEmpty and not AlreadyRunMigrations.Contains(FileName) then
         ToRunMigrations.Add(Migration);
     end);
-
   ToRunMigrations.ForEach(procedure(const Migration: string)
     begin
       Script := Shared.Make(TStringList.Create);

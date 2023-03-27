@@ -91,6 +91,7 @@ type
 
     class operator Implicit(const Value: &If<T>): Context<T>;
     class operator Implicit(const Value: Context<T>): &If<T>;
+    class operator Implicit(const Value: T): &If<T>;
 
     function Map(const Func: Context<T>.FunctorFunc<Boolean>): FunctorThenElse<T>; overload; //Functor and Applicative
     function Map(const Func: Context<T>.MonadFunc<Boolean>): MonadThenElse<T>; overload; //Monad
@@ -105,6 +106,11 @@ begin
 end;
 
 class operator &If<T>.Implicit(const Value: Context<T>): &If<T>;
+begin
+  Result := &If<T>.New(Value);
+end;
+
+class operator &If<T>.Implicit(const Value: T): &If<T>;
 begin
   Result := &If<T>.New(Value);
 end;
@@ -340,5 +346,7 @@ begin
     end;
 end;
 {$ENDREGION}
+
+
 
 end.

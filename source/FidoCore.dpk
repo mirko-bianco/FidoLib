@@ -228,6 +228,7 @@ contains
   Fido.Channels.Impl in 'Fido.Channels.Impl.pas',
   Fido.Channels.Intf in 'Fido.Channels.Intf.pas',
   Fido.Channels in 'Fido.Channels.pas',
-  Fido.EventsDriven in 'EventsDriven\Fido.EventsDriven.pas';
+  Fido.EventsDriven in 'EventsDriven\Fido.EventsDriven.pas',
+  Fido.Functional.Logging in 'Fido.Functional.Logging.pas';
 
 end.
