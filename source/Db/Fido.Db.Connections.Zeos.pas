@@ -112,6 +112,8 @@ begin
 
       Result.Properties.Clear;
 
+      Result.Properties.AddStrings(Params);
+
       Result.LoginPrompt := False;
 
       Result.AfterDisconnect := OnAfterDisconnect;
