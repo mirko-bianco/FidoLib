@@ -1,13 +1,13 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{F31D0E23-9928-4E7E-B287-5F5EBC98C583}</ProjectGuid>
-        <MainSource>FidoCore.dpk</MainSource>
+        <ProjectGuid>{1BDFE10C-617E-49ED-AF25-B644EC5CCBF0}</ProjectGuid>
+        <MainSource>FidoAdo.dpk</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <TargetedPlatforms>1025</TargetedPlatforms>
+        <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Package</AppType>
         <FrameworkType>None</FrameworkType>
-        <ProjectVersion>19.3</ProjectVersion>
+        <ProjectVersion>19.5</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -20,21 +20,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Android64' and '$(Base)'=='true') or '$(Base_Android64)'!=''">
         <Base_Android64>true</Base_Android64>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='iOSDevice64' and '$(Base)'=='true') or '$(Base_iOSDevice64)'!=''">
-        <Base_iOSDevice64>true</Base_iOSDevice64>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='OSX64' and '$(Base)'=='true') or '$(Base_OSX64)'!=''">
-        <Base_OSX64>true</Base_OSX64>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='OSXARM64' and '$(Base)'=='true') or '$(Base_OSXARM64)'!=''">
-        <Base_OSXARM64>true</Base_OSXARM64>
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
@@ -53,30 +38,6 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='iOSDevice64' and '$(Cfg_2)'=='true') or '$(Cfg_2_iOSDevice64)'!=''">
-        <Cfg_2_iOSDevice64>true</Cfg_2_iOSDevice64>
-        <CfgParent>Cfg_2</CfgParent>
-        <Cfg_2>true</Cfg_2>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='OSX64' and '$(Cfg_2)'=='true') or '$(Cfg_2_OSX64)'!=''">
-        <Cfg_2_OSX64>true</Cfg_2_OSX64>
-        <CfgParent>Cfg_2</CfgParent>
-        <Cfg_2>true</Cfg_2>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='OSXARM64' and '$(Cfg_2)'=='true') or '$(Cfg_2_OSXARM64)'!=''">
-        <Cfg_2_OSXARM64>true</Cfg_2_OSXARM64>
-        <CfgParent>Cfg_2</CfgParent>
-        <Cfg_2>true</Cfg_2>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
-        <Cfg_2_Win32>true</Cfg_2_Win32>
-        <CfgParent>Cfg_2</CfgParent>
-        <Cfg_2>true</Cfg_2>
-        <Base>true</Base>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_E>false</DCC_E>
         <DCC_F>false</DCC_F>
@@ -86,11 +47,13 @@
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <GenDll>true</GenDll>
         <GenPackage>true</GenPackage>
-        <SanitizedProjectName>FidoCore</SanitizedProjectName>
+        <SanitizedProjectName>FidoAdo</SanitizedProjectName>
         <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
         <VerInfo_Locale>8192</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;CFBundleName=</VerInfo_Keys>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;dxEMF.DataProvider;Winapi;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;dxEMF.DataProvider;Data.Win;Winapi;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_DcpOutput>..\built\$(Platform)\$(Config)\Dcp</DCC_DcpOutput>
+        <DCC_BplOutput>..\built\$(Platform)\$(Config)\Bpl</DCC_BplOutput>
         <DCC_DcuOutput>..\built\$(Platform)\$(Config)\Dcu</DCC_DcuOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
@@ -108,19 +71,8 @@
         <EnabledSysJars>android-support-v4.dex.jar;cloud-messaging.dex.jar;fmx.dex.jar;google-analytics-v2.dex.jar;google-play-billing.dex.jar;google-play-licensing.dex.jar;google-play-services-ads-7.0.0.dex.jar;google-play-services-analytics-7.0.0.dex.jar;google-play-services-base-7.0.0.dex.jar;google-play-services-gcm-7.0.0.dex.jar;google-play-services-identity-7.0.0.dex.jar;google-play-services-maps-7.0.0.dex.jar;google-play-services-panorama-7.0.0.dex.jar;google-play-services-plus-7.0.0.dex.jar;google-play-services-wallet-7.0.0.dex.jar</EnabledSysJars>
         <Android_LauncherIcon192>$(BDS)\bin\Artwork\Android\FM_LauncherIcon_192x192.png</Android_LauncherIcon192>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_iOSDevice64)'!=''">
-        <iOS_AppStore1024>$(BDS)\bin\Artwork\iOS\iPhone\FM_ApplicationIcon_1024x1024.png</iOS_AppStore1024>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_OSX64)'!=''">
-        <VerInfo_Keys>CFBundleName=$(MSBuildProjectName);CFBundleDisplayName=$(MSBuildProjectName);CFBundleIdentifier=$(MSBuildProjectName);CFBundleVersion=1.0.0;CFBundleShortVersionString=1.0.0;CFBundlePackageType=APPL;CFBundleSignature=????;CFBundleAllowMixedLocalizations=YES;CFBundleExecutable=$(MSBuildProjectName);NSHighResolutionCapable=true;LSApplicationCategoryType=public.app-category.utilities;NSLocationUsageDescription=The reason for accessing the location information of the user;NSContactsUsageDescription=The reason for accessing the contacts;NSCalendarsUsageDescription=The reason for accessing the calendar data;NSRemindersUsageDescription=The reason for accessing the reminders;NSCameraUsageDescription=The reason for accessing the camera;NSMicrophoneUsageDescription=The reason for accessing the microphone;NSMotionUsageDescription=The reason for accessing the accelerometer;NSDesktopFolderUsageDescription=The reason for accessing the Desktop folder;NSDocumentsFolderUsageDescription=The reason for accessing the Documents folder;NSDownloadsFolderUsageDescription=The reason for accessing the Downloads folder;NSNetworkVolumesUsageDescription=The reason for accessing files on a network volume;NSRemovableVolumesUsageDescription=The reason for accessing files on a removable volume;NSSpeechRecognitionUsageDescription=The reason for requesting to send user data to Apple&apos;s speech recognition servers</VerInfo_Keys>
-        <BT_BuildType>Debug</BT_BuildType>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_OSXARM64)'!=''">
-        <VerInfo_Keys>CFBundleName=$(MSBuildProjectName);CFBundleDisplayName=$(MSBuildProjectName);CFBundleIdentifier=$(MSBuildProjectName);CFBundleVersion=1.0.0;CFBundleShortVersionString=1.0.0;CFBundlePackageType=APPL;CFBundleSignature=????;CFBundleAllowMixedLocalizations=YES;CFBundleExecutable=$(MSBuildProjectName);NSHighResolutionCapable=true;LSApplicationCategoryType=public.app-category.utilities;NSLocationUsageDescription=The reason for accessing the location information of the user;NSContactsUsageDescription=The reason for accessing the contacts;NSCalendarsUsageDescription=The reason for accessing the calendar data;NSRemindersUsageDescription=The reason for accessing the reminders;NSCameraUsageDescription=The reason for accessing the camera;NSMicrophoneUsageDescription=The reason for accessing the microphone;NSMotionUsageDescription=The reason for accessing the accelerometer;NSDesktopFolderUsageDescription=The reason for accessing the Desktop folder;NSDocumentsFolderUsageDescription=The reason for accessing the Documents folder;NSDownloadsFolderUsageDescription=The reason for accessing the Downloads folder;NSNetworkVolumesUsageDescription=The reason for accessing files on a network volume;NSRemovableVolumesUsageDescription=The reason for accessing files on a removable volume;NSSpeechRecognitionUsageDescription=The reason for requesting to send user data to Apple&apos;s speech recognition servers</VerInfo_Keys>
-        <BT_BuildType>Debug</BT_BuildType>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_Namespace>System.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
@@ -137,223 +89,19 @@
         <DCC_Optimize>false</DCC_Optimize>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_iOSDevice64)'!=''">
-        <BT_BuildType>Debug</BT_BuildType>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_OSX64)'!=''">
-        <DCC_RemoteDebug>true</DCC_RemoteDebug>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_OSXARM64)'!=''">
-        <DCC_RemoteDebug>true</DCC_RemoteDebug>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-    </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="rtl.dcp"/>
-        <DCCReference Include="CustomIPTransport.dcp"/>
-        <DCCReference Include="IndySystem.dcp"/>
-        <DCCReference Include="IndyProtocols.dcp"/>
-        <DCCReference Include="IndyCore.dcp"/>
-        <DCCReference Include="bindengine.dcp"/>
-        <DCCReference Include="bindcomp.dcp"/>
-        <DCCReference Include="RESTComponents.dcp"/>
+        <DCCReference Include="dbrtl.dcp"/>
+        <DCCReference Include="adortl.dcp"/>
         <DCCReference Include="Spring.Base.dcp"/>
-        <DCCReference Include="Spring.Core.dcp"/>
-        <DCCReference Include="Spring.Data.dcp"/>
-        <DCCReference Include="JOSE.dcp"/>
-        <DCCReference Include="soaprtl.dcp"/>
-        <DCCReference Include="Collections\Fido.Collections.DeepObservableList.pas"/>
-        <DCCReference Include="Collections\Fido.Collections.pas"/>
-        <DCCReference Include="Collections\Fido.Collections.DeepObservableList.Intf.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Observable.Delegated.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Observable.Intf.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Observer.Intf.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Observer.Notification.Intf.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Observer.Notification.pas"/>
-        <DCCReference Include="Environment\Fido.Environment.Intf.pas"/>
-        <DCCReference Include="Environment\Fido.Environment.pas"/>
-        <DCCReference Include="Environment\Fido.Environment.Vault.pas"/>
-        <DCCReference Include="Http\Fido.Http.Request.Intf.pas"/>
-        <DCCReference Include="Http\Fido.Http.Request.pas"/>
-        <DCCReference Include="Http\Fido.Http.Response.Intf.pas"/>
-        <DCCReference Include="Http\Fido.Http.Response.pas"/>
-        <DCCReference Include="Http\Fido.Http.Types.pas"/>
-        <DCCReference Include="Interfaces\Fido.NamedObject.Intf.pas"/>
-        <DCCReference Include="JWT\Fido.JWT.Manager.Intf.pas"/>
-        <DCCReference Include="JWT\Fido.JWT.Manager.pas"/>
-        <DCCReference Include="Logging\Fido.Logging.Appenders.ElasticSearch.pas"/>
-        <DCCReference Include="Resources\Fido.Resource.StreamReader.Intf.pas"/>
-        <DCCReference Include="Resources\Fido.Resource.StreamReader.pas"/>
-        <DCCReference Include="Resources\Fido.Resource.StringReader.Intf.pas"/>
-        <DCCReference Include="Resources\Fido.Resource.StringReader.pas"/>
-        <DCCReference Include="Testing\Fido.Testing.BaseDB.pas"/>
-        <DCCReference Include="Testing\Fido.Testing.Mock.Utils.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.StatementExecutor.Abstract.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.StatementExecutor.Intf.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualQuery.Attributes.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualQuery.Intf.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualQuery.Metadata.Intf.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualQuery.pas"/>
-        <DCCReference Include="Web\Server\Fido.Web.Server.Abstract.pas"/>
-        <DCCReference Include="Web\Server\Fido.Web.Server.Files.pas"/>
-        <DCCReference Include="Web\Server\Fido.Web.Server.Interpreter.Intf.pas"/>
-        <DCCReference Include="Web\Server\Fido.Web.Server.Intf.pas"/>
-        <DCCReference Include="Web\Server\Fido.Web.Server.Resources.pas"/>
-        <DCCReference Include="Fido.Consts.pas"/>
-        <DCCReference Include="Fido.Exceptions.pas"/>
-        <DCCReference Include="Fido.Mappers.pas"/>
-        <DCCReference Include="Fido.Registration.pas"/>
-        <DCCReference Include="Fido.Types.pas"/>
-        <DCCReference Include="Fido.Utilities.pas"/>
-        <DCCReference Include="Fido.VirtualInterface.pas"/>
-        <DCCReference Include="Collections\Fido.Collections.PerThreadDictionary.pas"/>
-        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Tool.pas"/>
-        <DCCReference Include="Fido.Types.TGuid.Variant.pas"/>
-        <DCCReference Include="Logging\Fido.Logging.DeadManSwitch.pas"/>
-        <DCCReference Include="Logging\Fido.Logging.Null.pas"/>
-        <DCCReference Include="Logging\Fido.Logging.Types.pas"/>
-        <DCCReference Include="Logging\Fido.Logging.Appenders.ElasticSearch.Authenticated.pas"/>
-        <DCCReference Include="Logging\Fido.Logging.Utils.pas"/>
-        <DCCReference Include="Fido.Containers.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualStatement.Intf.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualStatement.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualStatement.Attributes.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualStatement.Metadata.Intf.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.VirtualDto.Database.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.ValueEnumerator.Intf.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.ValueEnumerator.pas"/>
-        <DCCReference Include="Fido.VirtualDto.Abstract.pas"/>
-        <DCCReference Include="Json\Fido.JSON.Marshalling.pas"/>
-        <DCCReference Include="Json\Fido.Json.Utilities.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.DataSetAsReadonlyList.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.JSonArrayAsReadonlyList.pas"/>
-        <DCCReference Include="Json\Fido.JSON.Mapping.pas"/>
-        <DCCReference Include="Fido.OwningObject.pas"/>
-        <DCCReference Include="Collections\Fido.Collections.UpdateablePerXDictionary.pas"/>
-        <DCCReference Include="Environment\Fido.Environment.Vault.Intf.pas"/>
-        <DCCReference Include="Http\Fido.Http.RequestInfo.Intf.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.TIdHTTPRequestInfoAsIHTTPRequestInfo.pas"/>
-        <DCCReference Include="Http\Fido.Http.ResponseInfo.Intf.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Adapter.TIdHTTPResponseInfoAsIHTTPResponseInfo.pas"/>
-        <DCCReference Include="Api\Client\Fido.Api.Client.Exception.pas"/>
-        <DCCReference Include="Api\Client\ElasticSearch\Fido.Api.Client.VirtualApi.ElasticSearch.Authenticated.Document.Intf.pas"/>
-        <DCCReference Include="Api\Client\ElasticSearch\Fido.Api.Client.VirtualApi.ElasticSearch.Document.Intf.pas"/>
-        <DCCReference Include="Api\Client\ElasticSearch\Dto\Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Request.pas"/>
-        <DCCReference Include="Api\Client\ElasticSearch\Dto\Fido.Api.Client.VirtualApi.Elasticsearch.Document.Dto.Response.pas"/>
-        <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Abstract.pas"/>
-        <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Attributes.pas"/>
-        <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Call.pas"/>
-        <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Configuration.Intf.pas"/>
-        <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Configuration.pas"/>
-        <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.Intf.pas"/>
-        <DCCReference Include="Api\Client\VirtualApi\Fido.Api.Client.VirtualApi.json.pas"/>
-        <DCCReference Include="Api\Server\Fido.Api.Server.Exceptions.pas"/>
-        <DCCReference Include="Api\Server\Fido.Api.Server.Indy.pas"/>
-        <DCCReference Include="Api\Server\Fido.Api.Server.Intf.pas"/>
-        <DCCReference Include="Api\Server\Resources\Fido.Api.Server.Resource.Attributes.pas"/>
-        <DCCReference Include="Db\Fido.Db.ListDataset.pas"/>
-        <DCCReference Include="Db\Fido.Db.Migrations.Model.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.Migrations.Model.pas"/>
-        <DCCReference Include="Db\Fido.Db.Migrations.Repository.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.ScriptRunner.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.Transaction.Handler.Base.pas"/>
-        <DCCReference Include="Db\Fido.Db.Transaction.Handler.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.Transaction.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.Transaction.pas"/>
-        <DCCReference Include="Db\Fido.Db.Transactional.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.Transactional.pas"/>
-        <DCCReference Include="Db\Fido.Db.TypeConverter.pas"/>
-        <DCCReference Include="Db\Fido.Db.VirtualDataset.pas"/>
-        <DCCReference Include="Db\Fido.Db.ListDatasets.pas"/>
-        <DCCReference Include="Db\Fido.Db.DatasetFieldAttributes.Intf.pas"/>
-        <DCCReference Include="Db\Fido.Db.DatasetFieldAttributes.pas"/>
-        <DCCReference Include="Fido.Immutable.pas"/>
-        <DCCReference Include="Web\Server\Fido.Web.Server.Null.pas"/>
-        <DCCReference Include="DesignPatterns\Fido.DesignPatterns.Retries.pas"/>
-        <DCCReference Include="Fido.Boxes.pas"/>
-        <DCCReference Include="Api\Server\Fido.Api.Server.Abstract.pas"/>
-        <DCCReference Include="Logging\Fido.Logging.Appenders.PermanentFile.pas"/>
-        <DCCReference Include="Collections\Fido.Collections.PerXDictionary.Intf.pas"/>
-        <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.AgentService.V1.Intf.pas"/>
-        <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.Configuration.pas"/>
-        <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.Constants.pas"/>
-        <DCCReference Include="Api\Server\Fido.Api.Server.Consul.pas"/>
-        <DCCReference Include="Api\Server\Resources\Fido.Api.Server.Consul.Resource.Attributes.pas"/>
-        <DCCReference Include="Consul\Fido.Consul.DI.Registration.pas"/>
-        <DCCReference Include="Consul\Fido.Consul.Types.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.Service.Deregister.Intf.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.Service.Deregister.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.Service.Register.Intf.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.Service.Register.pas"/>
-        <DCCReference Include="Api\Client\Consul\Fido.Api.Client.Consul.KVStore.V1.Intf.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Get.Intf.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Get.pas"/>
-        <DCCReference Include="Consul\Fido.Consul.KVStore.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Put.Intf.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Put.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Delete.Intf.pas"/>
-        <DCCReference Include="Consul\UseCases\Fido.Consul.UseCases.KVStore.Delete.pas"/>
-        <DCCReference Include="Consul\Fido.Consul.Service.Intf.pas"/>
-        <DCCReference Include="Consul\Fido.Consul.Service.pas"/>
-        <DCCReference Include="KVStore\Fido.KVStore.JSON.pas"/>
-        <DCCReference Include="KVStore\Fido.KVStore.Intf.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Attributes.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.Intf.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.Queue.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Publisher.Intf.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Publisher.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Consumer.Queue.Intf.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Producer.Intf.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Subscriber.Intf.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Subscriber.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Utils.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Consumer.PubSub.Intf.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Listener.PubSub.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.Broker.PubSub.Intf.pas"/>
-        <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Producer.PubSub.pas"/>
-        <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Consumer.PubSub.pas"/>
-        <DCCReference Include="EventsDriven\Fido.Memory.EventsDriven.Broker.PubSub.pas"/>
-        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Intf.pas"/>
-        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.pas"/>
-        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Client.pas"/>
-        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.Intf.pas"/>
-        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.pas"/>
-        <DCCReference Include="Http\Fido.Http.Utils.pas"/>
-        <DCCReference Include="Web\Server\WebSocket\Fido.Web.Server.WebSocket.Clients.pas"/>
-        <DCCReference Include="Consul\Gateways\Fido.Consul.Gateways.KVStore.Intf.pas"/>
-        <DCCReference Include="Consul\Gateways\Fido.Consul.Gateways.KVStore.pas"/>
-        <DCCReference Include="Consul\Gateways\Fido.Consul.Gateways.Service.Intf.pas"/>
-        <DCCReference Include="Consul\Gateways\Fido.Consul.Gateways.Service.pas"/>
-        <DCCReference Include="Fido.Functional.Ifs.pas"/>
-        <DCCReference Include="Fido.Functional.pas"/>
-        <DCCReference Include="Fido.Functional.Retries.pas"/>
-        <DCCReference Include="Fido.Functional.Tries.pas"/>
-        <DCCReference Include="VirtualStatement\Fido.Virtual.Attributes.pas"/>
-        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.pas"/>
-        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.SignalR.Types.pas"/>
-        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.Intf.pas"/>
-        <DCCReference Include="Web\Client\WebSocket\Fido.Web.Client.WebSocket.TcpClient.pas"/>
-        <DCCReference Include="Fido.Currying.pas"/>
-        <DCCReference Include="Caching\Fido.Caching.FourParams.pas"/>
-        <DCCReference Include="Caching\Fido.Caching.Intf.pas"/>
-        <DCCReference Include="Caching\Fido.Caching.OneParam.FIFO.pas"/>
-        <DCCReference Include="Caching\Fido.Caching.OneParam.Memoize.pas"/>
-        <DCCReference Include="Caching\Fido.Caching.OneParam.Usage.pas"/>
-        <DCCReference Include="Caching\Fido.Caching.ThreeParams.pas"/>
-        <DCCReference Include="Caching\Fido.Caching.TwoParams.pas"/>
-        <DCCReference Include="Caching\Fido.Caching.pas"/>
-        <DCCReference Include="Fido.Exceptions.Marshalling.pas"/>
-        <DCCReference Include="Fido.Channels.Impl.pas"/>
-        <DCCReference Include="Fido.Channels.Intf.pas"/>
-        <DCCReference Include="Fido.Channels.pas"/>
-        <DCCReference Include="EventsDriven\Fido.EventsDriven.pas"/>
-        <DCCReference Include="Fido.Functional.Logging.pas"/>
+        <DCCReference Include="FidoCore.dcp"/>
+        <DCCReference Include="Db\Fido.win.Db.Connection.NestedTransactions.Ado.pas"/>
+        <DCCReference Include="Db\Fido.Win.Db.Connections.Ado.pas"/>
+        <DCCReference Include="Db\Fido.Win.Db.Transaction.Handler.ADO.pas"/>
+        <DCCReference Include="Db\Fido.win.Db.StatementExecutor.ADO.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -372,34 +120,24 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">FidoCore.dpk</Source>
+                    <Source Name="MainSource">FidoAdo.dpk</Source>
                 </Source>
-                <Excluded_Packages>
-                    <Excluded_Packages Name="\\dc1\userfiles$\m.bianco\Documents\Embarcadero\Studio\22.0\CatalogRepository\FMXAppWizard-280-1.0\FMXAppWizard280.bpl">FireMonkey App Wizard</Excluded_Packages>
-                    <Excluded_Packages Name="\\dc1\userfiles$\m.bianco\Documents\tmssoftware\graphql11\packages\d11\..\bpl\Win32\dclGraphQL280.bpl">GraphQL for Delphi - Design-Time Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="Android">False</Platform>
                 <Platform value="Android64">False</Platform>
-                <Platform value="iOSDevice64">True</Platform>
                 <Platform value="Linux64">False</Platform>
-                <Platform value="OSX64">False</Platform>
-                <Platform value="OSXARM64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">False</Platform>
             </Platforms>
-            <Deployment Version="3">
-                <DeployFile LocalName="$(BDS)\Redist\iossimulator\libpcre.dylib" Class="DependencyModule">
+            <Deployment Version="4">
+                <DeployFile LocalName="$(BDS)\Redist\iossimulator\libcgunwind.1.0.dylib" Class="DependencyModule">
                     <Platform Name="iOSSimulator">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\FidoCore.bpl" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>FidoCore.bpl</RemoteName>
+                <DeployFile LocalName="$(BDS)\Redist\iossimulator\libpcre.dylib" Class="DependencyModule">
+                    <Platform Name="iOSSimulator">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -408,8 +146,9 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="$(BDS)\Redist\iossimulator\libcgunwind.1.0.dylib" Class="DependencyModule">
-                    <Platform Name="iOSSimulator">
+                <DeployFile LocalName="..\built\Win32\Debug\Bpl\FidoAdo.bpl" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>FidoAdo.bpl</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -754,7 +493,7 @@
                         <Operation>1</Operation>
                         <Extensions>.dylib</Extensions>
                     </Platform>
-                    <Platform Name="iOSSimulator">
+                    <Platform Name="iOSSimARM64">
                         <Operation>1</Operation>
                         <Extensions>.dylib</Extensions>
                     </Platform>
@@ -788,7 +527,7 @@
                     <Platform Name="iOSDevice64">
                         <Operation>0</Operation>
                     </Platform>
-                    <Platform Name="iOSSimulator">
+                    <Platform Name="iOSSimARM64">
                         <Operation>0</Operation>
                     </Platform>
                     <Platform Name="OSX32">
@@ -804,231 +543,11 @@
                         <Operation>0</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="iOS_AppStore1024">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_AppIcon152">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_AppIcon167">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_Launch2x">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_LaunchDark2x">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_Notification40">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_Setting58">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_SpotLight80">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_AppIcon120">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_AppIcon180">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Launch2x">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Launch3x">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_LaunchDark2x">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_LaunchDark3x">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Notification40">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Notification60">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Setting58">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Setting87">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Spotlight120">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Spotlight80">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
                 <DeployClass Name="ProjectAndroidManifest">
                     <Platform Name="Android">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="Android64">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceDebug">
-                    <Platform Name="iOSDevice32">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSEntitlements"/>
-                <DeployClass Name="ProjectiOSInfoPList"/>
-                <DeployClass Name="ProjectiOSLaunchScreen"/>
-                <DeployClass Name="ProjectiOSResource">
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -1064,7 +583,7 @@
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
-                    <Platform Name="iOSSimulator">
+                    <Platform Name="iOSSimARM64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="Linux64">
@@ -1097,6 +616,34 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
+                <DeployClass Name="ProjectiOSDeviceDebug">
+                    <Platform Name="iOSDevice32">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSEntitlements"/>
+                <DeployClass Name="ProjectiOSInfoPList"/>
+                <DeployClass Name="ProjectiOSLaunchScreen"/>
+                <DeployClass Name="ProjectiOSResource">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
                 <DeployClass Name="UWP_DelphiLogo150">
                     <Platform Name="Win32">
                         <RemoteDir>Assets</RemoteDir>
@@ -1117,17 +664,217 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="Android64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="OSXARM64" Name="$(PROJECTNAME)"/>
+                <DeployClass Name="iOS_AppStore1024">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_AppIcon152">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_AppIcon167">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch2x">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_LaunchDark2x">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Notification40">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Setting58">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_SpotLight80">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_AppIcon120">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_AppIcon180">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Launch2x">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Launch3x">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_LaunchDark2x">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_LaunchDark3x">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\LaunchScreenImage.imageset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Notification40">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Notification60">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Setting58">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Setting87">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Spotlight120">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Spotlight80">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimARM64">
+                        <RemoteDir>..\$(PROJECTNAME).launchscreen\Assets\AppIcon.appiconset</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Android64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSSimARM64" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSXARM64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

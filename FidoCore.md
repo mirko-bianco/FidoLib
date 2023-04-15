@@ -363,7 +363,9 @@ The virtual database clients are interfaces that represent database statements (
 ##### Connectivity
 
 Fido library enables the connection to databases through implementations of the `IStatementExecutor` interface.
-In FidoCore the FireDAC implementation is already available through the classes `TFireDacStatementExecutor` and `TFireDacConnections`.
+In FidoFireDac the FireDAC implementation is already available through the classes `TFireDacStatementExecutor` and `TFireDacConnections`.
+
+Ado and ZeosDB implementation are also available from the FidoAdo and FidoZeos packages.
 
 The virtual database clients will use the `IStatementExecutor` internally to reach the database. All of this is possible when registering the classes into the DI container (I said DI container, not global container...). 
 

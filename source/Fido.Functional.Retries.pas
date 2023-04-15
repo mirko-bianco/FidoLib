@@ -57,6 +57,7 @@ type
 
     class operator Implicit(const Value: Retry<T>): Context<T>;
     class operator Implicit(const Value: Context<T>): Retry<T>;
+    class operator Implicit(const Value: T): Retry<T>;
 
     function Map<TOut>(const Func: Context<T>.FunctorFunc<TOut>; const RetryOnException: Predicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload;//Functor and Applicative
     function Map<TOut>(const Func: Context<T>.MonadFunc<TOut>; const RetryOnException: Predicate<Exception> = nil; const MaxRetries: Integer = 3; const RetryIntervalInMSec: Integer = 250): Context<TOut>; overload;//Monad
@@ -147,6 +148,11 @@ begin
     begin
      Result := Func(Value);
     end;
+end;
+
+class operator Retry<T>.Implicit(const Value: T): Retry<T>;
+begin
+  Result := Retry<T>.New(Value);
 end;
 
 class operator Retry<T>.Implicit(const Value: Context<T>): Retry<T>;

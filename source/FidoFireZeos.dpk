@@ -1,4 +1,4 @@
-package FidoWin;
+package FidoFireZeos;
 
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
@@ -13,8 +13,8 @@ package FidoWin;
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION OFF}
-{$OVERFLOWCHECKS OFF}
-{$RANGECHECKS OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
 {$STACKFRAMES ON}
@@ -31,17 +31,21 @@ package FidoWin;
 requires
   rtl,
   dbrtl,
-  adortl,
-  Spring.Base,
-  FireDAC,
-  FireDACCommonDriver,
-  FireDACCommon,
-  FidoCore;
+  DbxCommonDriver,
+  Spring.Core,
+  FidoCore,
+  ZComponent,
+  ZDbc,
+  ZPlain,
+  ZCore,
+  ZParseSql;
 
 contains
-  Fido.win.Db.Connection.NestedTransactions.Ado in 'Db\Fido.win.Db.Connection.NestedTransactions.Ado.pas',
-  Fido.Win.Db.Connections.Ado in 'Db\Fido.Win.Db.Connections.Ado.pas',
-  Fido.Win.Db.Transaction.Handler.ADO in 'Db\Fido.Win.Db.Transaction.Handler.ADO.pas',
-  Fido.win.Db.StatementExecutor.ADO in 'Db\Fido.win.Db.StatementExecutor.ADO.pas';
+  Fido.Db.Connections.Zeos in 'Db\Fido.Db.Connections.Zeos.pas',
+  Fido.Db.Connections.Zeos.PerThread in 'Db\Fido.Db.Connections.Zeos.PerThread.pas',
+  Fido.Db.ScriptRunner.Zeos in 'Db\Fido.Db.ScriptRunner.Zeos.pas',
+  Fido.Db.StatementExecutor.Zeos in 'Db\Fido.Db.StatementExecutor.Zeos.pas',
+  Fido.Db.Transaction.Handler.Zeos in 'Db\Fido.Db.Transaction.Handler.Zeos.pas';
 
 end.
+

@@ -1,5 +1,5 @@
 (*
- * Copyright 2023 Mirko Bianco (email: writetomirko@gmail.com)
+ * Copyright 2021 Mirko Bianco (email: writetomirko@gmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,49 +20,53 @@
  * SOFTWARE.
  *)
 
-unit Fido.Functional.Logging;
+ unit Fido.Db.ScriptRunner.Zeos;
 
 interface
 
 uses
-  System.SysUtils,
-  System.Threading,
+  System.Classes,
+
+  ZSqlProcessor,
 
   Spring,
-  Spring.Logging,
 
-  Fido.Logging.Utils,
-  Fido.Utilities,
-  Fido.Functional;
+  Fido.Db.Connections.Zeos,
+  Fido.Db.ScriptRunner.Intf;
 
 type
-  Logging = record
+  TZeosDatabaseScriptRunner = class(TInterfacedObject, IDatabaseScriptRunner)
+  private
+    FScriptExecutor: TZSQLProcessor;
   public
-    class function LogDuration<T>(const Logger: ILogger; const ClassName: string; const Method: string; const Context: Context<T>): Context<T>; static;
+    constructor Create(const Connections: TZeosConnections);
+    destructor Destroy; override;
+
+    procedure Execute(const Script: TStrings);
   end;
 
 implementation
 
-{ Logging }
+{ TZeosDatabaseScriptRunner }
 
-class function Logging.LogDuration<T>(
-  const Logger: ILogger;
-  const ClassName: string;
-  const Method: string;
-  const Context: Context<T>): Context<T>;
+constructor TZeosDatabaseScriptRunner.Create(const Connections: TZeosConnections);
 begin
-  Result := Context<T>.New(function: T
-    begin
-      Result := Fido.Logging.Utils.Logging.LogDuration<T>(
-        Logger,
-        ClassName,
-        Method,
-        function: T
-          begin
-            Result := Context.Value;
-          end);
-    end);
+  inherited Create;
+  Guard.CheckNotNull(Connections, 'Connections');
+  FScriptExecutor := TZSQLProcessor.Create(nil);
+  FScriptExecutor.Connection := Connections.GetCurrent;
+end;
 
+destructor TZeosDatabaseScriptRunner.Destroy;
+begin
+  FScriptExecutor.Free;
+  inherited;
+end;
+
+procedure TZeosDatabaseScriptRunner.Execute(const Script: TStrings);
+begin
+  FScriptExecutor.Script.AddStrings(Script);
+  FScriptExecutor.Execute;
 end;
 
 end.

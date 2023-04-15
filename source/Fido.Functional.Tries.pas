@@ -72,6 +72,7 @@ type
 
     class operator Implicit(const Value: &Try<T>): Context<T>;
     class operator Implicit(const Value: Context<T>): &Try<T>;
+    class operator Implicit(const Value: T): &Try<T>;
 
     function Map<TOut>(const Func: Context<T>.FunctorFunc<TOut>): TryOut<TOut>; overload; //Functor and Applicative
     function Map<TOut>(const Func: Context<T>.MonadFunc<TOut>): TryOut<TOut>; overload; //Monad
@@ -97,6 +98,11 @@ end;
 class operator &Try<T>.Implicit(const Value: Context<T>): &Try<T>;
 begin
   Result := &Try<T>.New(Value);
+end;
+
+class operator &Try<T>.Implicit(const Value: T): &Try<T>;
+begin
+  Result := &Try<T>.New(Context<T>.New(Value));
 end;
 
 function &Try<T>.Map<TOut>(const Func: Context<T>.MonadFunc<TOut>): TryOut<TOut>;

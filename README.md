@@ -50,6 +50,8 @@ The Fido library depends on the following open source libraries:
 
 [Brook framework](https://github.com/risoflora/brookframework) (Optional)
 
+[Zeos DB components](https://zeoslib.sourceforge.io/) (Optional)
+
 ## Installation
 
 1) clone the source to a location of your choice
@@ -67,11 +69,9 @@ The Fido library depends on the following open source libraries:
 The Fido Library is made of 4 main packages
 
 - **[FidoCore](./FidoCore.md)** - Contains the core functionalities that are not linked or dependent on any specific OS.
-
-- **[FidoWin](./FidoWin.md)** - Contains the functionalities linked to Windows, such as the ADO implementation of the DB interfaces.
-
+- **FidoFireDac** - Contains the FireDAC implementation of the DB interfaces.
+- **FidoZeos** - Contains the Zeos implementation of the DB interfaces. Please notice that the `PageLimit` and `PagingOffset` attributes are not supported.
+- **FidoAdo** - Contains the ADO implementation of the DB interfaces. Please notice that the `PageLimit` and `PagingOffset` attributes are not supported.
 - **[FidoGui/FidoVcl/FidoFmx](./FidoGui.md)** - Contains the functionalities related to the UI, such as the binding of view models to VCL and FireMonkey components.
-
 - **FidoRedis** - Contains the [Redis](https://redis.io/) implementations for the `IKVStore`, `IDistribuitedEventsQueueProducer` and `IDistribuitedEventsQueueConsumer` interfaces. 
-
 - **FidoBrook** - Contains the [Brook](https://github.com/risoflora/brookframework) implementations for the `IApiServer`interface. As mentioned on their page: Brook [...] core has been developed using the [Sagui library](https://risoflora.github.io/libsagui), that's why it is so fast, compact and useful to run on embedded systems. Please refer on their page to get access to their external libraries.

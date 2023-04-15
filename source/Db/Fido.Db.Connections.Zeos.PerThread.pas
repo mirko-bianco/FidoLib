@@ -20,49 +20,42 @@
  * SOFTWARE.
  *)
 
-unit Fido.Functional.Logging;
+unit Fido.Db.Connections.Zeos.PerThread;
 
 interface
 
 uses
+  System.Classes,
   System.SysUtils,
-  System.Threading,
+  System.Generics.Collections,
+
+  ZAbstractConnection,
+  ZConnection,
 
   Spring,
-  Spring.Logging,
 
-  Fido.Logging.Utils,
-  Fido.Utilities,
-  Fido.Functional;
+  Fido.Collections.PerThreadDictionary,
+  Fido.Collections.PerXDictionary.Intf,
+  Fido.Db.Connections.Zeos;
 
 type
-  Logging = record
+  TZeosPerThreadConnections = class(TZeosConnections)
   public
-    class function LogDuration<T>(const Logger: ILogger; const ClassName: string; const Method: string; const Context: Context<T>): Context<T>; static;
+    constructor Create(const Parameters: TStrings);
   end;
 
 implementation
 
-{ Logging }
+{ TZeosPerThreadConnections }
 
-class function Logging.LogDuration<T>(
-  const Logger: ILogger;
-  const ClassName: string;
-  const Method: string;
-  const Context: Context<T>): Context<T>;
+constructor TZeosPerThreadConnections.Create(const Parameters: TStrings);
 begin
-  Result := Context<T>.New(function: T
+  inherited Create(
+    Parameters,
+    function(const Ownership: TDictionaryOwnerships; const ValueFactoryFunc: Func<TZConnection>): IPerXDictionary<TZConnection>
     begin
-      Result := Fido.Logging.Utils.Logging.LogDuration<T>(
-        Logger,
-        ClassName,
-        Method,
-        function: T
-          begin
-            Result := Context.Value;
-          end);
+      Result := TPerThreadDictionary<TZConnection>.Create(Ownership, ValueFactoryFunc);
     end);
-
 end;
 
 end.
