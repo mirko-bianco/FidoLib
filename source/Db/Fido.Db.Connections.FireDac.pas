@@ -50,7 +50,7 @@ type
     constructor Create(const Parameters: TStrings; const PerXDictionaryFactoryFunc: Func<TDictionaryOwnerships, Func<TFDConnection>, IPerXDictionary<TFDConnection>>);
     destructor Destroy; override;
 
-    function GetCurrent: TFDConnection;
+    function GetCurrent: TFDConnection; virtual;
   end;
 
 implementation

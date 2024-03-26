@@ -317,7 +317,9 @@ begin
             FTraversedTypeInfoMap[LRttiProp.PropertyType.AsInstance.Handle] := LTraverseCount + 1;
             InternalInitFieldDefsObjectClass(LRttiProp.PropertyType.AsInstance.Handle,
                                              Prefix + LRttiProp.Name + '.');
-          end;
+          end
+          else
+            FTraversedTypeInfoMap[LRttiProp.PropertyType.AsInstance.Handle] := LTraverseCount - 1;
         end
         // 2. try framework-approved basic datatypes handled by DataTypeConverter
         else if DataTypeConverter.GotDescriptor(LRttiProp.PropertyType, DataTypeDescriptor) then
@@ -347,10 +349,14 @@ begin
           begin
             FTraversedTypeInfoMap[LMethodInfo.Handle] := LTraverseCount + 1;
             InternalInitFieldDefsObjectClass(LMethodInfo.Handle, Prefix + LMethodInfo.FieldName + '.');
-          end;
+          end
+          else
+            FTraversedTypeInfoMap[LMethodInfo.Handle] := LTraverseCount - 1;
         end
         // else try standard, supported types
         else if DataTypeConverter.GotDescriptor(LMethodInfo.VariableTypeName, DataTypeDescriptor) then
+          AddFieldDef(Prefix + LMethodInfo.FieldName, DataTypeDescriptor.FieldType)
+        else if DataTypeConverter.GotDescriptor(LRttiMeth.ReturnType, DataTypeDescriptor) then
           AddFieldDef(Prefix + LMethodInfo.FieldName, DataTypeDescriptor.FieldType);
       end);
 end;

@@ -48,7 +48,7 @@ type
 
     function Is1(const Value: Integer): Boolean;
     function DoDelete(const Timeout: Cardinal): Context<string>.MonadFunc<Integer>;
-    function DoGet(const Timeout: Integer): Context<string>.FunctorFunc<string>;
+    function DoGet(const Timeout: Cardinal): Context<string>.FunctorFunc<string>;
     function GetValueOrDefault(const Value: Nullable<string>): string;
     function DoPut(const Timeout: Cardinal): Context<TArray<string>>.MonadFunc<Boolean>;
   public
@@ -101,7 +101,8 @@ begin
   Result := Format('%s%s', [FKeyPrefix, Key]);
 end;
 
-function TRedisKVStore.DoGet(const Timeout: Integer): Context<string>.FunctorFunc<string>;
+function TRedisKVStore.DoGet(const Timeout: Cardinal):
+    Context<string>.FunctorFunc<string>;
 var
   Client: IFidoRedisClient;
 begin
@@ -125,7 +126,7 @@ begin
     New(Context<string>.
       New(Key).
       Map<string>(FormatKey)).
-    Map<string>(DoGet(Timeout), Retries.GetRetriesOnExceptionFunc());
+  Map<string>(DoGet(Timeout), Retries.GetRetriesOnExceptionFunc());
 end;
 
 function TRedisKVStore.Is1(const Value: Integer): Boolean;
