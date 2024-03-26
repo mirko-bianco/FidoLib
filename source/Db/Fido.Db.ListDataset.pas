@@ -355,6 +355,8 @@ begin
         end
         // else try standard, supported types
         else if DataTypeConverter.GotDescriptor(LMethodInfo.VariableTypeName, DataTypeDescriptor) then
+          AddFieldDef(Prefix + LMethodInfo.FieldName, DataTypeDescriptor.FieldType)
+        else if DataTypeConverter.GotDescriptor(LRttiMeth.ReturnType, DataTypeDescriptor) then
           AddFieldDef(Prefix + LMethodInfo.FieldName, DataTypeDescriptor.FieldType);
       end);
 end;
