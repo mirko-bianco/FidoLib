@@ -144,17 +144,16 @@ end;
 
 function Mappers.TMappers.GetInstanceValues<TA>(const Instance: TA): IDictionary<string, TValue>;
 var
-  Context: TRttiContext;
-  RttiType: TRttiType;
   InstanceValue: TValue;
   LResult: IDictionary<string, TValue>;
+  TypInfo: PTypeInfo;
 begin
   InstanceValue := TValue.From<TA>(Instance);
   LResult := TCollections.CreateDictionary<string, TValue>;
-  Context := TRttiContext.Create;
-  RttiType := Context.GetType(TypeInfo(TA));
 
-  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+  TypInfo := TypeInfo(TA);
+
+  TCollections.CreateList<TRttiProperty>(TypInfo.RttiType.GetProperties)
     .Where(function(const RttiProp: TRttiProperty): Boolean
       begin
         Result := (RttiProp.Visibility = mvPublished) and RttiProp.IsReadable;
@@ -164,13 +163,13 @@ begin
         LResult[RttiProp.Name.ToUpper] := RttiProp.GetValue(InstanceValue.AsPointer);
       end);
 
-  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+  TCollections.CreateList<TRttiMethod>(TypInfo.RttiType.GetMethods).ForEach(
     procedure(const RttiMeth: TRttiMethod)
     var
       PropertyName: string;
     begin
-      if (((RttiMeth.Visibility = mvPublished) and (RttiType.TypeKind = tkClass)) or
-          ((RttiMeth.Visibility = mvPublic) and (RttiType.TypeKind <> tkClass))) and
+      if (((RttiMeth.Visibility = mvPublished) and (TypInfo.RttiType.TypeKind = tkClass)) or
+          ((RttiMeth.Visibility = mvPublic) and (TypInfo.RttiType.TypeKind <> tkClass))) and
          (RttiMeth.MethodKind = mkFunction) and
          (Length(RttiMeth.GetParameters) = 0) and
          TryGetGetterMethodPropName(RttiMeth, PropertyName) then
@@ -184,36 +183,34 @@ function Mappers.TMappers.SetInstanceValues<TB>(
   const Instance: TB;
   const Values: IDictionary<string, TValue>): Boolean;
 var
-  Context: TRttiContext;
-  RttiType: TRttiType;
+  TypInfo:  PTypeInfo;
   InstanceValue: TValue;
 begin
   InstanceValue := TValue.From<TB>(Instance);
   Result := False;
-  Context := TRttiContext.Create();
   try
-    RttiType := Context.GetType(TypeInfo(TB));
+    TypInfo := TypeInfo(TB);
 
-    TCollections.CreateList<TRttiProperty>(RttiType.GetProperties).ForEach(
+    TCollections.CreateList<TRttiProperty>(TypInfo.RttiType.GetProperties).ForEach(
       procedure(const RttiProp: TRttiProperty)
       var
         Value: TValue;
       begin
-        if (((RttiProp.Visibility = mvPublished) and (RttiType.TypeKind = tkClass)) or
-            ((RttiProp.Visibility = mvPublic) and (RttiType.TypeKind <> tkClass))) and
+        if (((RttiProp.Visibility = mvPublished) and (TypInfo.RttiType.TypeKind = tkClass)) or
+            ((RttiProp.Visibility = mvPublic) and (TypInfo.RttiType.TypeKind <> tkClass))) and
            RttiProp.IsWritable and
            Values.TryGetValue(RttiProp.Name.ToUpper, Value) then
           RttiProp.SetValue(InstanceValue.AsPointer, Value);
       end);
 
-    TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+    TCollections.CreateList<TRttiMethod>(TypInfo.RttiType.GetMethods).ForEach(
       procedure(const RttiMeth: TRttiMethod)
       var
         PropertyName: string;
         Value: TValue;
       begin
-        if (((RttiMeth.Visibility = mvPublished) and (RttiType.TypeKind = tkClass)) or
-            ((RttiMeth.Visibility = mvPublic) and (RttiType.TypeKind <> tkClass))) and
+        if (((RttiMeth.Visibility = mvPublished) and (TypInfo.RttiType.TypeKind = tkClass)) or
+            ((RttiMeth.Visibility = mvPublic) and (TypInfo.RttiType.TypeKind <> tkClass))) and
            (RttiMeth.MethodKind = mkProcedure) and
            (Length(RttiMeth.GetParameters) = 1) and
            TryGetSetterMethodPropName(RttiMeth, PropertyName) and

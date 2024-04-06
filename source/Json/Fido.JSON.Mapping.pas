@@ -416,6 +416,20 @@ initialization
         Result := SmallintValue
     end);
 
+  MappingsUtilities.RegisterPrimitive<Byte>(
+    function(const Value: Byte): string
+    begin
+      Result := IntToStr(Value);
+    end,
+    function(const Value: string; const TypInfo: pTypeInfo): Byte
+    var
+      SmallintValue: Integer;
+    begin
+      Result := 0;
+      if TryStrToInt(Value, SmallintValue) then
+        Result := SmallintValue
+    end);
+
   MappingsUtilities.RegisterPrimitive<TDateTime>(
     function(const Value: TDateTime): string
     begin

@@ -281,7 +281,6 @@ end;
 
 class procedure TAbstractClientVirtualApi<T, IConfiguration>.ValidateMethods;
 var
-  Context: TRttiContext;
   RttiType: TRttiType;
   ConfigurationParams: IDictionary<string, string>;
   MethodParams: IDictionary<string, string>;
@@ -290,7 +289,7 @@ begin
   MethodParams := TCollections.CreateDictionary<string, string>(TIStringComparer.Ordinal);
 
   // Get configuration extra available parameters
-  RttiType := Context.GetType(TypeInfo(IConfiguration));
+  RttiType := PTypeInfo(TypeInfo(IConfiguration)).RttiType;
   if Assigned(RttiType) then
     TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
       procedure(const RttiMethod: TRttiMethod)
@@ -308,7 +307,7 @@ begin
       end);
 
   // Validate the methods
-  RttiType := Context.GetType(TypeInfo(T));
+  RttiType := PTypeInfo(TypeInfo(T)).RttiType;
   if Assigned(RttiType) then
   begin
     FShortApiName := RttiType.Name;
@@ -468,14 +467,12 @@ end;
 
 procedure TAbstractClientVirtualApi<T, IConfiguration>.MapArgumentAndConfiguration(const Arguments: IDictionary<string, TPair<string, TValue>>);
 var
-  Context: TRttiContext;
   ConfigurationRttiType: TRttiType;
   MethodInstanceValue: TValue;
 begin
   // Map configuration settings to arguments
-  Context := TRttiContext.Create;
   MethodInstanceValue := TValue.From<IConfiguration>(FConfiguration);
-  ConfigurationRttiType := Context.GetType(TypeInfo(IConfiguration));
+  ConfigurationRttiType := PTypeInfo(TypeInfo(IConfiguration)).RttiType;
   if Assigned(ConfigurationRttiType) then
     TCollections.CreateList<TRttiMethod>(ConfigurationRttiType.GetMethods)
       .Where(function(const RttiMethod: TRttiMethod): Boolean
@@ -642,7 +639,6 @@ end;
 procedure TAbstractClientVirtualApi<T, IConfiguration>.UpdateConfiguration(const Method: TRttiMethod; const Headers: TStrings);
 var
   Map: IDictionary<string, string>;
-  Context: TRttiContext;
   RttiType: TRttiType;
 begin
   Map := TCollections.CreateDictionary<string, string>;
@@ -664,8 +660,7 @@ begin
         Map[ApiParam] := Attribute.MethodParam;
       end);
 
-  Context := TRttiContext.Create;
-  RttiType := Context.GetType(TypeInfo(IConfiguration));
+  RttiType := PTypeInfo(TypeInfo(IConfiguration)).RttiType;
 
   TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
     .Where(function(const Item: TRttiMethod): Boolean

@@ -72,15 +72,8 @@ begin
       Result := Value.ToJson;
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TMyObject
-    var
-      RttiContext: TRttiContext;
-      RttiType: TRttiType;
-      InstanceType: TRttiInstanceType;
     begin
-      RttiContext := TRttiContext.Create;
-      RttiType := RttiContext.GetType(TypInfo);
-      InstanceType := RttiType.AsInstance;
-      Result := InstanceType.GetMethod('Create').Invoke(InstanceType.MetaclassType, []).AsType<TMyObject>;
+      Result := TypInfo.RttiType.AsInstance.GetMethod('Create').Invoke(TypInfo.RttiType.AsInstance.MetaclassType, []).AsType<TMyObject>;
       Result.Name := 'ItWorked';
     end);
 
@@ -111,15 +104,8 @@ begin
       Result := '{"Name":"It Worked"}';
     end,
     function(const Value: string; const TypInfo: pTypeInfo): TMyObject
-    var
-      RttiContext: TRttiContext;
-      RttiType: TRttiType;
-      InstanceType: TRttiInstanceType;
     begin
-      RttiContext := TRttiContext.Create;
-      RttiType := RttiContext.GetType(TypInfo);
-      InstanceType := RttiType.AsInstance;
-      Result := InstanceType.GetMethod('Create').Invoke(InstanceType.MetaclassType, []).AsType<TMyObject>;
+      Result := TypInfo.RttiType.AsInstance.GetMethod('Create').Invoke(TypInfo.RttiType.AsInstance.MetaclassType, []).AsType<TMyObject>;
       Result.Name := 'ItWorked';
     end);
 

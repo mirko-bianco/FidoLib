@@ -307,18 +307,11 @@ begin
 end;
 
 procedure TJSONVirtualDto.ProcessDtoAttributes(const PIID: PTypeInfo);
-var
-  Context: TRttiContext;
-  RttiType: TRttiType;
 begin
   inherited;
 
-  Context := TRttiContext.Create;
-
-  RttiType := Context.GetType(PIID);
-
   // process all methods (and their attributes)
-  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+  TCollections.CreateList<TRttiMethod>(PIID.RttiType.GetMethods).ForEach(
     procedure(const Method: TRttiMethod)
     begin
       ProcessMethod(Method);
@@ -405,18 +398,15 @@ class function JSONUnmarshaller.ToReadonlyList(
   const ConfigurationName: string): TValue;
 var
   Context: TRttiContext;
-  ListRttiType: TRttiType;
   ElementRttiType: TRttiType;
   TypeName: string;
 begin
   Context := TRttiContext.Create;
 
-  ListRttiType := Context.GetType(TypeInfo);
-
   TypeName := Copy(
-    ListRttiType.QualifiedName,
-    Pos('<', ListRttiType.QualifiedName) + 1,
-    Length(ListRttiType.QualifiedName));
+    TypeInfo.RttiType.QualifiedName,
+    Pos('<', TypeInfo.RttiType.QualifiedName) + 1,
+    Length(TypeInfo.RttiType.QualifiedName));
   TypeName := Copy(TypeName, 1, Pos('>', TypeName) - 1);
 
   ElementRttiType := Context.FindType(TypeName);
@@ -438,7 +428,7 @@ var
   JsonArray: IShared<TJSONArray>;
   ValuesArray: TArray<string>;
   Index: Integer;
-  IntList: IReadOnlyList<Integer>;
+  IntList: IReadOnlyList<Byte>;
 begin
   if not JSONString.IsEmpty then
   begin
@@ -449,7 +439,7 @@ begin
       ValuesArray[Index] := JsonArray.Items[Index].GetValue<string>;
   end;
 
-  IntList := CreateReadonlyListAsValue(TypeInfo(Integer), ValuesArray, ConfigurationName).AsType<IReadonlyList<Integer>>;
+  IntList := CreateReadonlyListAsValue(TypeInfo(Byte), ValuesArray, ConfigurationName).AsType<IReadonlyList<Byte>>;
   TValue.Make(@IntList, TypInfo, Result);
 end;
 
@@ -507,8 +497,6 @@ class function JSONUnmarshaller.ToRecord(
   const TypeInfo: PTypeInfo;
   const ConfigurationName: string): TValue;
 var
-  RttiContext: TRttiContext;
-  RttiType: TRttiType;
   Prop: TRttiProperty;
   Method: TRttiMethod;
   Field: TRttiField;
@@ -526,18 +514,16 @@ begin
   JSONObject := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONObject);
   TValue.Make(nil, TypeInfo, Value);
 
-  RttiContext := TRttiContext.Create;
-  RttiType := RttiContext.GetType(TypeInfo);
   with JSONObject.GetEnumerator do
   begin
     while MoveNext do
     begin
-      Prop := RttiType.GetProperty(GetCurrent.JsonString.Value);
+      Prop := TypeInfo.RttiType.GetProperty(GetCurrent.JsonString.Value);
       if Assigned(Prop) and Prop.IsWritable then
         Prop.SetValue(Value.GetReferenceToRawData, JSONUnmarshaller.To(GetCurrent.JsonValue.ToJSON, Prop.PropertyType.Handle, ConfigurationName))
       else
       begin
-        Method := RttiType.GetMethod(Format('Set%s', [GetCurrent.JsonString.Value]));
+        Method := TypeInfo.RttiType.GetMethod(Format('Set%s', [GetCurrent.JsonString.Value]));
         if Assigned(Method) and (Method.MethodKind = mkProcedure) and (Length(Method.GetParameters) = 1) then
         begin
           Param := JSONUnmarshaller.To(GetCurrent.JsonValue.ToJSON, Method.GetParameters[0].ParamType.Handle, ConfigurationName);
@@ -545,7 +531,7 @@ begin
         end
         else
         begin
-          Field := RttiType.GetField(GetCurrent.JsonString.Value);
+          Field := TypeInfo.RttiType.GetField(GetCurrent.JsonString.Value);
           if Assigned(Field) then
             Field.SetValue(Value.GetReferenceToRawData, JSONUnmarshaller.To(GetCurrent.JsonValue.ToJSON, Field.FieldType.Handle, ConfigurationName));
         end;
@@ -571,13 +557,8 @@ end;
 class function JSONUnmarshaller.&To<T>(
   const JSONString: string;
   const ConfigurationName: string): T;
-var
-  Context: TRttiContext;
-  RttiType: TRttiType;
 begin
-  Context := TRttiContext.Create;
-  RttiType := Context.GetType(TypeInfo(T));
-  Result := JSONUnmarshaller.To(JSONString, RttiType.Handle, ConfigurationName).AsType<T>;
+  Result := JSONUnmarshaller.To(JSONString, TypeInfo(T), ConfigurationName).AsType<T>;
 end;
 
 class function JSONUnmarshaller.ToEnumeration(
@@ -606,15 +587,9 @@ class function JSONUnmarshaller.&To(
   const JSONString: string;
   const TypeInfo: PTypeInfo;
   const ConfigurationName: string): TValue;
-var
-  Context: TRttiContext;
-  RttiType: TRttiType;
 begin
-  Context := TRttiContext.Create;
-  RttiType := Context.GetType(TypeInfo);
-
   try
-    case RttiType.TypeKind of
+    case TypeInfo.Kind of
       tkUnknown,
       tkSet,
       tkMethod,
@@ -623,17 +598,17 @@ begin
       tkProcedure,
       tkArray,
       tkDynArray,
-      tkVariant: raise EJSONUnmarshaller.CreateFmt('JSONUnmarshaller.To<T> does not support type "%s"', [RttiType.QualifiedName]);
+      tkVariant: raise EJSONUnmarshaller.CreateFmt('JSONUnmarshaller.To<T> does not support type "%s"', [TypeInfo.RttiType.QualifiedName]);
 
       tkEnumeration: begin
-        if RttiType.QualifiedName.ToLower.Equals(BooleanName) then
-          Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName)
+        if TypeInfo = System.TypeInfo(Boolean) then
+          Result := JSONUnmarshaller.ToPrimitive(JSONString, TypeInfo, ConfigurationName)
         else
-          Result := JSONUnmarshaller.ToEnumeration(JSONString, RttiType.Handle, ConfigurationName);
+          Result := JSONUnmarshaller.ToEnumeration(JSONString, TypeInfo, ConfigurationName);
       end;
       tkClass: Result := JSONUnmarshaller.ToObject(JSONString, TypeInfo, ConfigurationName);
       tkInterface: begin
-        if RttiType.QualifiedName.ToLower.StartsWith(ArrayInterfaceName) then
+        if TypeInfo.TypeData.GUID = IReadonlyList<Integer> then
           Result := JSONUnmarshaller.ToReadonlyList(JSONString, TypeInfo, ConfigurationName)
         else
           Result := JSONUnmarshaller.ToInterfaceAsValue(JSONString, TypeInfo, ConfigurationName);
@@ -647,15 +622,14 @@ begin
       tkUString,
       tkFloat,
       tkInteger,
-      tkInt64: Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName);
+      tkInt64: Result := JSONUnmarshaller.ToPrimitive(JSONString, TypeInfo, ConfigurationName);
 
       tkRecord,
       tkMRecord: begin
-        if string(TypeInfo.Name).ToLower.StartsWith(NullableName) or
-           string(TypeInfo.Name).ToLower.Equals(GuidName)then
-          Result := JSONUnmarshaller.ToPrimitive(JSONString, RttiType.Handle, ConfigurationName)
+        if Spring.IsNullable(TypeInfo) or (TypeInfo = System.TypeInfo(TGUID)) then
+          Result := JSONUnmarshaller.ToPrimitive(JSONString, TypeInfo, ConfigurationName)
         else
-          Result := JSONUnmarshaller.ToRecord(JSONString, RttiType.Handle, ConfigurationName);
+          Result := JSONUnmarshaller.ToRecord(JSONString, TypeInfo, ConfigurationName);
       end;
     end;
   except
@@ -685,34 +659,52 @@ class function JSONUnmarshaller.CreateReadonlyListAsValue(
   const ElementTypeInfo: PTypeInfo;
   const ValuesArray: array of string;
   const ConfigurationName: string): TValue;
-var
-  Context: TRttiContext;
-  RttiType: TRttiType;
+
+  procedure RaiseNotSupported;
+  begin
+    raise EJSONVirtualDto.CreateFmt('%s is not a supported type for TJSONVirtualDto arrays.', [ElementTypeInfo.RttiType.QualifiedName]);
+  end;
+
 begin
-  Context := TRttiContext.Create;
+  case ElementTypeInfo.Kind of
+    tkUString: Result := CreateList<string>(ValuesArray, ConfigurationName);
+    tkRecord:
+      if ElementTypeInfo = TypeInfo(TGUID) then
+        Result := CreateList<TGuid>(ValuesArray, ConfigurationName)
+      else
+        RaiseNotSupported;
+    tkInteger, tkEnumeration:
+      case ElementTypeInfo.TypeData.OrdType of
+        otSByte: Result := CreateList<ShortInt>(ValuesArray, ConfigurationName);
+        otUByte: Result := CreateList<Byte>(ValuesArray, ConfigurationName);
+        otSWord: Result := CreateList<SmallInt>(ValuesArray, ConfigurationName);
+        otUWord: Result := CreateList<Word>(ValuesArray, ConfigurationName);
+        otSLong: Result := CreateList<Integer>(ValuesArray, ConfigurationName);
+        otULong: Result := CreateList<Cardinal>(ValuesArray, ConfigurationName);
+      end;
 
-  RttiType := Context.GetType(ElementTypeInfo);
-
-  if RttiType.QualifiedName.ToLower = StringName then
-    Result := CreateList<string>(ValuesArray, ConfigurationName)
-  else if RttiType.QualifiedName.ToLower = IntegerName then
-    Result := CreateList<Integer>(ValuesArray, ConfigurationName)
-  else if RttiType.QualifiedName.ToLower = Int64Name then
-    Result := CreateList<Int64>(ValuesArray, ConfigurationName)
-  else if RttiType.QualifiedName.ToLower = GuidName then
-    Result := CreateList<TGuid>(ValuesArray, ConfigurationName)
-  else if RttiType.QualifiedName.ToLower = BooleanName then
-    Result := CreateList<Boolean>(ValuesArray, ConfigurationName)
-  else if RttiType.QualifiedName.ToLower = DatetimeName then
-    Result := CreateList<TDateTime>(ValuesArray, ConfigurationName)
-  else if RttiType.QualifiedName.ToLower = DoubleName then
-    Result := CreateList<Double>(ValuesArray, ConfigurationName)
-  else if RttiType.QualifiedName.ToLower = CurrencyName then
-    Result := CreateList<Currency>(ValuesArray, ConfigurationName)
-  else if RttiType.QualifiedName.ToLower = ExtendedName then
-    Result := CreateList<Extended>(ValuesArray, ConfigurationName)
+    tkInt64:
+      // TODO: check for unsigned UInt64 -
+      // doing that in dynamic way like with the OrdType on tkInteger is not trivial
+      Result := CreateList<Int64>(ValuesArray, ConfigurationName);
+    tkFloat:
+      case ElementTypeInfo.TypeData.FloatType of
+        ftSingle: Result := CreateList<Single>(ValuesArray, ConfigurationName);
+        ftDouble:
+        begin
+          if ElementTypeInfo = TypeInfo(TDateTime) then
+            Result := CreateList<TDateTime>(ValuesArray, ConfigurationName)
+          else
+            Result := CreateList<Double>(ValuesArray, ConfigurationName);
+        end;
+        ftExtended: Result := CreateList<Extended>(ValuesArray, ConfigurationName);
+        ftCurr: Result := CreateList<Currency>(ValuesArray, ConfigurationName);
+      else
+        RaiseNotSupported;
+      end;
   else
-    raise EJSONVirtualDto.CreateFmt('%s is not a supported type for TJSONVirtualDto arrays.', [RttiType.QualifiedName]);
+    RaiseNotSupported;
+  end;
 end;
 
 class function JSONUnmarshaller.ToInterface(
@@ -733,8 +725,6 @@ class function JSONUnmarshaller.ToObject(
   const TypeInfo: PTypeInfo;
   const ConfigurationName: string): TValue;
 var
-  RttiContext: TRttiContext;
-  RttiType: TRttiType;
   InstanceType: TRttiInstanceType;
   Prop: TRttiProperty;
   Method: TRttiMethod;
@@ -748,21 +738,19 @@ begin
     Exit;
   end;
 
-  RttiContext := TRttiContext.Create;
-  RttiType := RttiContext.GetType(TypeInfo);
   JSONObject := Shared.Make(TJSONObject.ParseJSONValue(JSONString) as TJSONObject);
-  InstanceType := RttiType.AsInstance;
+  InstanceType := TypeInfo.RttiType.AsInstance;
   Result := InstanceType.GetMethod('Create').Invoke(InstanceType.MetaclassType, []).Convert(TypeInfo);
   with JSONObject.GetEnumerator do
   begin
     while MoveNext do
     begin
-      Prop := RttiType.GetProperty(GetCurrent.JsonString.Value);
+      Prop := TypeInfo.RttiType.GetProperty(GetCurrent.JsonString.Value);
       if Assigned(Prop) and Prop.IsWritable then
         Prop.SetValue(Result.AsObject, JSONUnmarshaller.To(GetCurrent.JsonValue.ToJSON, Prop.PropertyType.Handle, ConfigurationName))
       else
       begin
-        Method := RttiType.GetMethod(Format('Set%s', [GetCurrent.JsonString.Value]));
+        Method := TypeInfo.RttiType.GetMethod(Format('Set%s', [GetCurrent.JsonString.Value]));
         if Assigned(Method) and (Method.MethodKind = mkProcedure) and (Length(Method.GetParameters) = 1) then
         begin
           Param := JSONUnmarshaller.To(GetCurrent.JsonValue.ToJSON, Method.GetParameters[0].ParamType.Handle, ConfigurationName);
@@ -814,19 +802,14 @@ class function JSONMarshaller.FromInterface(
   const TypInfo: PTypeInfo;
   const ConfigurationName: string): Nullable<string>;
 var
-  RttiContext: TRttiContext;
-  RttiType: TRttiType;
   JSONObject: IShared<TJSONObject>;
   LValue: TValue;
 begin
-  RttiContext := TRttiContext.Create;
-  RttiType := RttiContext.GetType(TypInfo);
-
   JSONObject := Shared.Make(TJSONObject.Create);
 
   LValue := Value;
 
-  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+  TCollections.CreateList<TRttiMethod>(TypInfo.RttiType.GetMethods)
     .Where(function(const Method: TRttiMethod): Boolean
       begin
         Result := (Method.Visibility in [mvPublic]) and (Method.MethodKind = mkFunction) and (Length(Method.GetParameters) = 0);
@@ -848,7 +831,7 @@ begin
         end;
       end);
 
-  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+  TCollections.CreateList<TRttiProperty>(TypInfo.RttiType.GetProperties)
     .Where(function(const Prop: TRttiProperty): Boolean
       begin
         Result := (Prop.Visibility in [mvPublic]) and Prop.IsReadable;
@@ -878,14 +861,9 @@ class function JSONMarshaller.FromObject(
   const TypInfo: PTypeInfo;
   const ConfigurationName: string): Nullable<string>;
 var
-  RttiContext: TRttiContext;
-  RttiType: TRttiType;
   JSONObject: IShared<TJSONObject>;
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
-  RttiContext := TRttiContext.Create;
-  RttiType := RttiContext.GetType(TypInfo);
-
   if MappingsUtilities.TryGetType(TypInfo, Mapping, ConfigurationName) then
   begin
     Result := Mapping.From(Value);
@@ -894,7 +872,7 @@ begin
 
   JSONObject := Shared.Make(TJSONObject.Create);
 
-  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+  TCollections.CreateList<TRttiMethod>(TypInfo.RttiType.GetMethods)
     .Where(function(const Method: TRttiMethod): Boolean
       begin
         Result := (Method.Visibility in [mvPublished]) and (Method.MethodKind = mkFunction) and (Length(Method.GetParameters) = 0);
@@ -915,7 +893,7 @@ begin
         end;
       end);
 
-  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+  TCollections.CreateList<TRttiProperty>(TypInfo.RttiType.GetProperties)
     .Where(function(const Prop: TRttiProperty): Boolean
       begin
         Result := (Prop.Visibility in [mvPublished]) and Prop.IsReadable;
@@ -957,18 +935,15 @@ class function JSONMarshaller.FromReadonlyList(
   const ConfigurationName: string): string;
 var
   Context: TRttiContext;
-  ListRttiType: TRttiType;
   ElementRttiType: TRttiType;
   TypeName: string;
 begin
   Context := TRttiContext.Create;
 
-  ListRttiType := Context.GetType(TypInfo);
-
   TypeName := Copy(
-    ListRttiType.QualifiedName,
-    Pos('<', ListRttiType.QualifiedName) + 1,
-    Length(ListRttiType.QualifiedName));
+    TypInfo.RttiType.QualifiedName,
+    Pos('<', TypInfo.RttiType.QualifiedName) + 1,
+    Length(TypInfo.RttiType.QualifiedName));
   TypeName := Copy(TypeName, 1, Pos('>', TypeName) - 1);
 
   ElementRttiType := Context.FindType(TypeName);
@@ -1128,15 +1103,10 @@ class function JSONMarshaller.FromRecord(
   const TypInfo: PTypeInfo;
   const ConfigurationName: string): Nullable<string>;
 var
-  RttiContext: TRttiContext;
-  RttiType: TRttiType;
   JSONObject: IShared<TJSONObject>;
   LValue: TValue;
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
 begin
-  RttiContext := TRttiContext.Create;
-  RttiType := RttiContext.GetType(TypInfo);
-
   if MappingsUtilities.TryGetType(TypInfo, Mapping, ConfigurationName) then
   begin
     Result := Mapping.From(Value);
@@ -1147,7 +1117,7 @@ begin
 
   LValue := Value;
 
-  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods)
+  TCollections.CreateList<TRttiMethod>(TypInfo.RttiType.GetMethods)
     .Where(function(const Method: TRttiMethod): Boolean
       begin
         Result := (Method.Visibility in [mvPublic]) and (Method.MethodKind = mkFunction) and (Length(Method.GetParameters) = 0);
@@ -1168,7 +1138,7 @@ begin
         end;
       end);
 
-  TCollections.CreateList<TRttiProperty>(RttiType.GetProperties)
+  TCollections.CreateList<TRttiProperty>(TypInfo.RttiType.GetProperties)
     .Where(function(const Prop: TRttiProperty): Boolean
       begin
         Result := (Prop.Visibility in [mvPublic]) and Prop.IsReadable;
@@ -1189,7 +1159,7 @@ begin
         end;
       end);
 
-  TCollections.CreateList<TRttiField>(RttiType.GetFields)
+  TCollections.CreateList<TRttiField>(TypInfo.RttiType.GetFields)
     .Where(function(const Field: TRttiField): Boolean
       begin
         Result := (Field.Visibility in [mvPublic]);
@@ -1218,17 +1188,12 @@ class function JSONMarshaller.InternalFrom(
   const TypInfo: PTypeInfo;
   const ConfigurationName: string): TJsonValue;
 var
-  Context: TRttiContext;
-  RttiType: TRttiType;
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
   MarshalledValue: Nullable<string>;
 begin
   Result := nil;
 
-  Context := TRttiContext.Create;
-  RttiType := Context.GetType(TypInfo);
-
-  case RttiType.TypeKind of
+  case TypInfo.RttiType.TypeKind of
     tkUnknown,
     tkSet,
     tkMethod,
@@ -1237,10 +1202,10 @@ begin
     tkProcedure,
     tkArray,
     tkDynArray,
-    tkVariant: raise EJSONMarshaller.CreateFmt('JSONMarshaller.From<T> does not support type "%s"', [RttiType.QualifiedName]);
+    tkVariant: raise EJSONMarshaller.CreateFmt('JSONMarshaller.From<T> does not support type "%s"', [TypInfo.RttiType.QualifiedName]);
 
     tkEnumeration: begin
-      if RttiType.QualifiedName.ToLower.Equals(BooleanName) then
+      if TypInfo = System.TypeInfo(Boolean) then
       begin
         MarshalledValue := JSONMarshaller.FromPrimitive(Value, TypInfo, ConfigurationName);
         if MarshalledValue.HasValue then
@@ -1251,7 +1216,7 @@ begin
     end;
     tkClass: Result := TJSONObject.ParseJSONValue(JSONMarshaller.FromObject(Value.AsObject, TypInfo, ConfigurationName)) as TJSONObject;
     tkInterface: begin
-      if RttiType.QualifiedName.ToLower.StartsWith(ArrayInterfaceName) then
+      if TypInfo.TypeData.GUID = IReadonlyList<Integer> then
         Result := TJSONObject.ParseJSONValue(JSONMarshaller.FromReadonlyList(Value, TypInfo, ConfigurationName)) as TJSONArray
       else
         Result := TJSONObject.ParseJSONValue(JSONMarshaller.FromInterface(Value, TypInfo, ConfigurationName)) as TJSONObject;
@@ -1263,39 +1228,39 @@ begin
     tkLString,
     tkWString,
     tkUString: begin
-      MarshalledValue := JSONMarshaller.FromPrimitive(Value, RttiType.Handle, ConfigurationName);
+      MarshalledValue := JSONMarshaller.FromPrimitive(Value, TypInfo, ConfigurationName);
       if MarshalledValue.HasValue then
         Result := TJSONString.Create(MarshalledValue);
     end;
     tkFloat,
     tkInteger,
     tkInt64: begin
-      MarshalledValue := JSONMarshaller.FromPrimitive(Value, RttiType.Handle, ConfigurationName);
+      MarshalledValue := JSONMarshaller.FromPrimitive(Value, TypInfo, ConfigurationName);
       if MarshalledValue.HasValue then
         Result := TJSONUnQuotedString.Create(MarshalledValue);
     end;
     tkRecord,
     tkMRecord: begin
-      if string(TypInfo.Name).ToLower.StartsWith(NullableName) then
+      if Spring.IsNullable(TypInfo) then
       begin
-        MarshalledValue := JSONMarshaller.FromPrimitive(Value, RttiType.Handle, ConfigurationName);
+        MarshalledValue := JSONMarshaller.FromPrimitive(Value, TypInfo, ConfigurationName);
         if MarshalledValue.HasValue then
-          if RttiType.QualifiedName.ToLower.Contains(StringName) or
-             RttiType.QualifiedName.ToLower.Contains(DateTimeName) or
-             RttiType.QualifiedName.ToLower.Contains(GuidName) then
+          if TypInfo.RttiType.QualifiedName.ToLower.Contains(StringName) or
+             TypInfo.RttiType.QualifiedName.ToLower.Contains(DateTimeName) or
+             TypInfo.RttiType.QualifiedName.ToLower.Contains(GuidName) then
             Result := TJSONString.Create(MarshalledValue)
           else
             Result := TJSONUnQuotedString.Create(MarshalledValue);
       end
-      else if string(TypInfo.Name).ToLower.StartsWith(GuidName) then
+      else if (TypInfo = System.TypeInfo(TGUID)) then
       begin
-        MarshalledValue := JSONMarshaller.FromPrimitive(Value, RttiType.Handle, ConfigurationName);
+        MarshalledValue := JSONMarshaller.FromPrimitive(Value, TypInfo, ConfigurationName);
         if MarshalledValue.HasValue then
           Result := TJSONString.Create(MarshalledValue);
       end
       else
       begin
-        MarshalledValue := JSONMarshaller.FromRecord(Value, RttiType.Handle, ConfigurationName);
+        MarshalledValue := JSONMarshaller.FromRecord(Value, TypInfo, ConfigurationName);
         if MarshalledValue.HasValue then
           Result := TJSONObject.ParseJSONValue(MarshalledValue) as TJSONObject;
       end;
@@ -1306,13 +1271,8 @@ end;
 { TJSONDTOMethodDescriptor }
 
 function TJSONVirtualDto.TJSONDTOMethodDescriptor.IsArray: Boolean;
-var
-  RttiContext: TRttiContext;
-  RttiType: TRttiType;
 begin
-  RttiContext := TRttiContext.Create;
-  RttiType := RttiContext.GetType(TypeInfo);
-  Result := RttiType.QualifiedName.ToLower.StartsWith(ArrayInterfaceName);
+  Result := TypeInfo.RttiType.QualifiedName.ToLower.StartsWith(ArrayInterfaceName);
 end;
 
 end.
