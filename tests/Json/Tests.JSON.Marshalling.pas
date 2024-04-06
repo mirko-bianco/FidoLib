@@ -117,6 +117,9 @@ type
     procedure JSONMarshallingFromInteger;
 
     [Test]
+    procedure JSONMarshallingFromFloatingPointValues;
+
+    [Test]
     procedure JSONUnmarshallingToNullableInteger;
 
     [Test]
@@ -273,6 +276,13 @@ begin
   List := TCollections.CreateList<TTestEnum>([Enum1, Enum2]);
 
   Assert.AreEqual('[0,1]', JSONMarshaller.From<IReadOnlyList<TTestEnum>>(List.AsReadOnly));
+end;
+
+procedure TJSONMarshallingTests.JSONMarshallingFromFloatingPointValues;
+begin
+  Assert.AreEqual('5.56', JSONMarshaller.From<Extended>(5.56));
+  Assert.AreEqual('5.56', JSONMarshaller.From<Double>(5.56));
+  Assert.AreEqual('5.56', JSONMarshaller.From<Currency>(5.56));
 end;
 
 procedure TJSONMarshallingTests.JSONMarshallingFromInt64;

@@ -167,8 +167,11 @@ begin
     on E: Exception do
     begin
       Headers := Shared.Make(TStringList.Create);
-      for var Pair in Response.Headers do
-        Headers.AddPair(Pair.Name, Pair.Value);
+      if Assigned(Response) then
+      begin
+        for var Pair in Response.Headers do
+          Headers.AddPair(Pair.Name, Pair.Value);
+      end;
       Call.Finish(-1, E.Message, Headers);
     end;
   end;

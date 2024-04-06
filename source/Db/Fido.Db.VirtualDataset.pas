@@ -244,13 +244,13 @@ procedure VirtualDatasetErrorFmt(const Message: string; const Args: array of con
 
 implementation
 
-function FieldListCheckSum(Dataset: TDataSet): Integer;
+function FieldListCheckSum(Dataset: TDataSet): NativeInt;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   Result := 0;
   for I := 0 to Dataset.Fields.Count - 1 do
-    Result := Result + (Integer(Dataset.Fields[I]) shr (I mod 16));
+    Result := Result + (NativeInt(Dataset.Fields[I]) shr (I mod 16));
 end;
 
 procedure VirtualDatasetError(
@@ -1119,7 +1119,7 @@ begin
   FInternalOpen := True;
   FCurrent := -1;
 
-  BookmarkSize := sizeof(Integer);
+  BookmarkSize := sizeof(NativeInt);
 
   FieldDefs.Updated := False;
   FieldDefs.Update;

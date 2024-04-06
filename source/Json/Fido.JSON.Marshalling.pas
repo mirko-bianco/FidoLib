@@ -1222,7 +1222,6 @@ var
   RttiType: TRttiType;
   Mapping: MappingsUtilities.TJSONMarshallingMapping;
   MarshalledValue: Nullable<string>;
-  FloatValue: Extended;
 begin
   Result := nil;
 
@@ -1273,10 +1272,7 @@ begin
     tkInt64: begin
       MarshalledValue := JSONMarshaller.FromPrimitive(Value, RttiType.Handle, ConfigurationName);
       if MarshalledValue.HasValue then
-        if not TryStrToFloat(MarshalledValue.Value, FloatValue) then
-          Result := TJSONString.Create(MarshalledValue)
-        else
-          Result := TJSONUnQuotedString.Create(MarshalledValue);
+        Result := TJSONUnQuotedString.Create(MarshalledValue);
     end;
     tkRecord,
     tkMRecord: begin

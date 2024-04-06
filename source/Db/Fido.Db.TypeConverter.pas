@@ -38,7 +38,8 @@ uses
   Fido.Types.TGuid.Variant;
 
 type
-  TBaseType = (btVariant, btInteger, btString, btDouble, btDate, btDateTime, btInt64, btBoolean, btCurrency, btExtended, btGuid, btSmallint);
+  TBaseType = (btVariant, btInteger, btString, btDouble, btDate, btDateTime, btInt64, btBoolean, btCurrency, btExtended, btGuid, btSmallint,
+    btEnum);
 
   EFidoUnsupportedTypeError = class (EFidoException);
 
@@ -62,7 +63,8 @@ type
     BaseTypeNames : array[TBaseType] of string = (
       'SYSTEM.VARIANT', 'SYSTEM.INTEGER', 'SYSTEM.STRING', 'SYSTEM.DOUBLE',
       'SYSTEM.TDATE', 'SYSTEM.TDATETIME', 'SYSTEM.INT64', 'SYSTEM.BOOLEAN',
-      'SYSTEM.CURRENCY', 'SYSTEM.EXTENDED', 'SYSTEM.TGUID', 'SYSTEM.SMALLINT');
+      'SYSTEM.CURRENCY', 'SYSTEM.EXTENDED', 'SYSTEM.TGUID', 'SYSTEM.SMALLINT',
+      'SYSTEM.ENUM');
   strict private class var
       FTypeCache: IDictionary<string, TDataTypeDescriptor>;
   strict private
@@ -154,6 +156,9 @@ begin
   AddTypeDescriptor(btBoolean, true, tkRecord, ftBoolean);
   AddTypeDescriptor(btGuid, true, tkRecord, ftGuid);
   AddTypeDescriptor(btSmallint, true, tkRecord, ftSmallint);
+
+
+  AddTypeDescriptor(btEnum, false, tkEnumeration, ftInteger);
 end;
 
 class function DataTypeConverter.GetDescriptor(const RttiType: TRttiType): TDataTypeDescriptor;
@@ -172,8 +177,14 @@ end;
 class function DataTypeConverter.GotDescriptor(
   const RttiType: TRttiType;
   out Descriptor: TDataTypeDescriptor): boolean;
+var
+  _RttiTypeQualifiedName: string;
 begin
-  Result := GotDescriptor(RttiType.QualifiedName, Descriptor);
+  _RttiTypeQualifiedName := RttiType.QualifiedName;
+  if (RttiType.TypeKind = tkEnumeration) and (not RttiType.QualifiedName.ToUpper.Equals('SYSTEM.BOOLEAN')) then
+     _RttiTypeQualifiedName := 'SYSTEM.ENUM';
+
+  Result := GotDescriptor(_RttiTypeQualifiedName, Descriptor);
 end;
 
 { TDataTypeDescriptor }
