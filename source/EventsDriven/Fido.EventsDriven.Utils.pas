@@ -107,8 +107,7 @@ class function TEventsDrivenUtilities.PayloadToMethodParams<PayloadType>(const P
 var
   ParametersNo: integer;
   MappingMethod: TMappingMethod;
-  Ctx: TRttiContext;
-  PayloadTypeTypeInfo: Pointer;
+  PayloadTypeTypeInfo: PTypeInfo;
 begin
   Result := [];
 
@@ -116,12 +115,10 @@ begin
   if ParametersNo = 0 then
     Exit(Result);
 
-  Ctx := TRttiContext.Create;
-
   PayloadTypeTypeInfo := TypeInfo(PayloadType);
 
   if not FMappings.TryGetValue(PayloadTypeTypeInfo, MappingMethod) then
-    raise EEventsDrivenUtilities.CreateFmt('TEventsDrivenUtilities.PayloadToMethodParams: Type %s not supported.', [Ctx.GetType(PayloadTypeTypeInfo).QualifiedName]);
+    raise EEventsDrivenUtilities.CreateFmt('TEventsDrivenUtilities.PayloadToMethodParams: Type %s not supported.', [PayloadTypeTypeInfo.RttiType.QualifiedName]);
 
   Result := MappingMethod(TValue.From<PayloadType>(Payload), ParametersNo, Method);
 end;

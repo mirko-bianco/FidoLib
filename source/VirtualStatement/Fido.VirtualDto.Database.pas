@@ -32,6 +32,7 @@ uses
   System.Generics.Collections,
   Data.DB,
 
+  Spring,
   Spring.Collections,
 
   Fido.Utilities,
@@ -110,18 +111,11 @@ begin
 end;
 
 procedure TDatabaseVirtualDto<T>.ProcessDtoAttributes;
-var
-  Context: TRttiContext;
-  RttiType: TRttiType;
 begin
   inherited;
 
-  Context := TRttiContext.Create;
-
-  RttiType := Context.GetType(TypeInfo(T));
-
   // process all methods (and their attributes)
-  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(procedure(const Method: TRttiMethod)
+  TCollections.CreateList<TRttiMethod>(PTypeInfo(TypeInfo(T)).RttiType.GetMethods).ForEach(procedure(const Method: TRttiMethod)
     begin
       ProcessMethod(Method);
     end);

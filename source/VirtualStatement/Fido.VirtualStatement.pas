@@ -534,22 +534,19 @@ end;
 
 procedure TVirtualStatement<T>.ProcessAllAttributes;
 var
-  Context: TRttiContext;
-  RttiType: TRttiType;
+  TypInfo: PTypeInfo;
 begin
-  Context := TRttiContext.Create;
-
-  RttiType := Context.GetType(TypeInfo(T));
+  TypInfo := TypeInfo(T);
 
   // process interface-level attributes
-  TCollections.CreateList<TCustomAttribute>(RttiType.GetAttributes).ForEach(
+  TCollections.CreateList<TCustomAttribute>(TypInfo.RttiType.GetAttributes).ForEach(
     procedure(const Attribute: TCustomAttribute)
     begin
       ProcessAttribute(Attribute);
     end);
 
   // process all methods (and their attributes)
-  TCollections.CreateList<TRttiMethod>(RttiType.GetMethods).ForEach(
+  TCollections.CreateList<TRttiMethod>(TypInfo.RttiType.GetMethods).ForEach(
     procedure(const Method: TRttiMethod)
     begin
       ProcessMethod(Method);

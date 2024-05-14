@@ -373,12 +373,18 @@ end;
 procedure TJSONMarshallingTests.JSONUnmarshallingToEnumReadonlyList;
 var
   List: IReadOnlyList<TTestEnum>;
+  Arr: TArray<TTestEnum>;
 begin
   List := JSONUnmarshaller.&To<IReadOnlyList<TTestEnum>>('[0,1]');
 
   Assert.AreEqual(2, List.Count);
   Assert.AreEqual(Enum1, List[0]);
   Assert.AreEqual(Enum2, List[1]);
+
+  Arr := List.ToArray;
+  Assert.AreEqual(2, Length(Arr));
+  Assert.AreEqual(Enum1, Arr[0]);
+  Assert.AreEqual(Enum2, Arr[1]);
 end;
 
 procedure TJSONMarshallingTests.JSONUnmarshallingToExtended;

@@ -33,6 +33,7 @@ uses
 type
   TNullableExtended = Nullable<Extended>;
   TNullableSmallint = Nullable<Smallint>;
+  TNullableByte = Nullable<Byte>;
 
   TNullableStringArray = TArray<Nullable<string>>;
   TNullableIntegerArray = TArray<Nullable<Integer>>;

@@ -211,7 +211,6 @@ function TListDataSet<T>.GetEntityFieldValue(
   const FieldName: string;
   out Value: Variant): Boolean;
 var
-  Context: TRttiContext;
   LType: TRttiType;
   LMethod: TRttiMethod;
   LResult: Boolean;
@@ -220,10 +219,9 @@ var
 begin
   LResult := False;
   LValue := Null;
-  Context := TRttiContext.Create;
   LEntity := Entity;
 
-  LType := Context.GetType(Entity.TypeInfo);
+  LType := Entity.TypeInfo.RttiType;
   if Length(LType.GetDeclaredProperties) <> 0 then
     Spring.Collections.TCollections.CreateList<TRttiProperty>(LType.GetDeclaredProperties).ForEach(
       Procedure(const LProp: TRttiProperty)
@@ -290,12 +288,9 @@ procedure TListDataSet<T>.InternalInitFieldDefsObjectClass(
   const TypInfo: PTypeInfo;
   const Prefix: string);
 var
-  Context: TRttiContext;
   LRttiType: TRttiType;
 begin
-  Context := TRttiContext.Create();
-
-  LRttiType := Context.GetType(TypInfo);
+  LRttiType := TypInfo.RttiType;
 
   if Length(LRttiType.GetDeclaredProperties) <> 0 then
     Spring.Collections.TCollections.CreateList<TRttiProperty>(LRttiType.GetDeclaredProperties).ForEach(
@@ -443,21 +438,9 @@ procedure TListDataSet<T>.RecordToEntity(
   Entity: TValue;
   const Prefix: string);
 var
-  Context: TRttiContext;
   LTypes: TRttiType;
-//  LMethod: TRttiMethod;
-//  LProp: TRttiProperty;
-//  Field: TField;
-//  LVal: TValue;
-//  LSetterMethod: TRttiMethod;
-//  LMethodInfo: TMethodInfo;
-//  LFieldName: string;
-//  LTraverseCount: Integer;
-//  DataTypeDescriptor: TDataTypeDescriptor;
 begin
-  Context := TRttiContext.Create;
-
-  LTypes := Context.GetType(Entity.TypeInfo);
+  LTypes := Entity.TypeInfo.RttiType;
   if Length(LTypes.GetDeclaredProperties) <> 0 then
     Spring.Collections.TCollections.CreateList<TRttiProperty>(LTypes.GetDeclaredProperties).ForEach(
       procedure(const LProp: TRttiProperty)
